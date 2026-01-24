@@ -13,18 +13,21 @@
 
 ## ✨ 주요 기능
 
-- 🎯 **조건 기반 실행** - 파일 존재 여부, 사용자 선택, 환경 변수 등을 기반으로 단계 실행
-- ⚡ **병렬 실행** - 여러 작업을 동시에 실행
-- 💬 **대화형 프롬프트** - 실행 중 사용자에게 입력과 선택을 요청
-- 🎨 **아름다운 출력** - 색상과 포맷팅이 적용된 깔끔한 박스형 터미널 출력
-- 📝 **YAML & JSON 지원** - 가독성을 위한 YAML 또는 프로그래밍 방식 생성을 위한 JSON 사용
-- 🔄 **변수 치환** - 워크플로우 전반에서 `{{variables}}` 사용
+-  **조건 기반 실행** - 파일 존재 여부, 사용자 선택, 환경 변수 등을 기반으로 단계 실행
 
-## 🔗 리소스
+- **병렬 실행** - 여러 작업을 동시에 병렬로 실행
+
+- **대화형 프롬프트** - 실행 중 사용자에게 입력과 선택을 요청
+
+- **YAML & JSON 지원** - 선언적인 파이프라이닝을 YAML & JSON 형식으로 제공
+
+- **변수 치환** - 워크플로우 전반에서 `{{variables}}` 사용
+
+## 리소스
 
 - 📚 **[문서](https://task-pipeliner.racgoo.com/)** - 완전한 DSL 참조 및 가이드
 - 🎨 **[시각적 생성기](https://task-pipeliner-generator.racgoo.com/)** - 브라우저에서 시각적으로 워크플로우 생성
-- 💻 **CLI 명령어**:
+> **CLI 명령어**:
   ```bash
   tp open generator  # 시각적 생성기 열기
   tp open docs       # 문서 열기
@@ -156,7 +159,7 @@ tp run workflow.yaml
 tp run workflow.json
 ```
 
-## 📖 완전한 DSL 참조
+## DSL 문법
 
 ### 워크플로우 구조
 
@@ -174,8 +177,8 @@ baseDir: ./                            # 선택사항: 명령 실행 기본 디�
                                       #   - 생략 시: 현재 작업 디렉토리 사용
 
 steps:                                 # 필수: 실행할 단계 배열
-  - step1
-  - step2
+  - some-step-1
+  - some-step-2
   # ...
 ```
 
@@ -190,8 +193,8 @@ steps:                                 # 필수: 실행할 단계 배열
                                        //   - 절대 경로: 그대로 사용
                                        //   - 생략 시: 현재 작업 디렉토리 사용
   "steps": [                           // 필수: 실행할 단계 배열
-    { /* step1 */ },
-    { /* step2 */ }
+    { /* some-step-1 */ },
+    { /* some-step-2 */ }
   ]
 }
 ```
@@ -256,36 +259,49 @@ steps:                                 # 필수: 실행할 단계 배열
 **예제:**
 ```yaml
 # 간단한 명령
-- run: npm install
+steps:
+  - run: npm install
 
-# 조건이 있는 명령
-- when:
-    file: ./package.json
-  run: npm install
+  # 조건이 있는 명령
+  - when:
+      file: ./package.json
+    run: npm install
 
-# 변수 치환이 있는 명령
-- run: echo "Building {{version}}"
+  # 변수 입력
+  - choose:
+      message: 실행알 모드를 선택하세요.
+      options:
+        - id: 1.1.1
+          label: 1.1.1 버전 (display 영역에 표시될 문자열)
+        - id: 1.1.2
+          label: 1.1.2 버전 (display 영역에 표시될 문자열)
+        - id: 1.1.3
+          label: 1.1.3 버전 (display 영역에 표시될 문자열)
+      as: version
 
-# 타임아웃이 있는 명령 (30초)
-- run: npm install
-  timeout: 30
+  # 변수 치환이 있는 명령
+  - run: echo "Building {{version}}"
 
-# 재시도가 있는 명령 (최대 3번 재시도)
-- run: npm install
-  retry: 3
+  # 타임아웃이 있는 명령 (30초)
+  - run: npm install
+    timeout: 30
 
-# 타임아웃과 재시도 모두 사용
-- run: npm install
-  timeout: 60
-  retry: 2
+  # 재시도가 있는 명령 (최대 3번 재시도)
+  - run: npm install
+    retry: 3
+
+  # 타임아웃과 재시도 모두 사용
+  - run: npm install
+    timeout: 60
+    retry: 2
 ```
 
 **동작:**
 - 명령은 `baseDir` (지정된 경우) 또는 현재 작업 디렉토리에서 실행됩니다
 - 명령이 실패하면 워크플로우가 중지됩니다 (모든 재시도 후에도 실패한 경우)
-- 출력은 아름다운 포맷팅과 함께 실시간으로 표시됩니다
+- 출력은 CLI 포맷팅과 함께 실시간으로 표시됩니다
 - `timeout`이 지정되면 명령이 시간 제한을 초과하면 종료되고 단계가 실패합니다
-- `retry`가 지정되면 실패한 명령이 지수 백오프(1초, 2초, 4초... 최대 10초 지연)로 재시도됩니다
+- `retry`가 지정되면 성공할때 까지 retry 값 만큼 재시도됩니다
 
 ---
 
@@ -295,17 +311,16 @@ steps:                                 # 필수: 실행할 단계 배열
 
 **문법:**
 ```yaml
-- choose:
-    message: <string>              # 필수: 표시할 질문
-    options:                        # 필수: 옵션 배열
-      - id: <string>                # 필수: 고유 식별자 (값으로 저장됨)
-        label: <string>             # 필수: 표시 텍스트
-      - id: <string>
-        label: <string>
-    as: <variable-name>             # 선택: 결과를 저장할 변수 이름
-                                     #   - 생략 시: choice id로 저장
-                                     #   - 제공 시: 선택된 id를 이 변수에 저장
-  when?: <condition>                # 선택: 조건이 충족될 때만 선택 프롬프트 표시
+steps:
+  - choose:
+      message: <string>              # 필수: 표시할 질문
+      options:                        # 필수: 옵션 배열
+        - id: <string>                # 필수: 고유 식별자 (값으로 저장됨)
+          label: <string>             # 필수: 표시 텍스트
+        - id: <string>
+          label: <string>
+      as: <variable-name>             # 선택: 결과를 저장할 변수 이름
+    when: <condition>                 # 초이스 프롬프트 제공 조건
 ```
 
 **속성:**
@@ -364,7 +379,7 @@ steps:                                 # 필수: 실행할 단계 배열
 ```yaml
 # 'as: env'가 있는 choice 후
 - when:
-    var:
+    var:         # 변수를 사용한다는 정의
       env: prod  # 'env' 변수가 'prod'와 같은지 확인
   run: echo "프로덕션에 배포 중"
 ```
@@ -380,8 +395,8 @@ steps:                                 # 필수: 실행할 단계 배열
 - prompt:
     message: <string>              # 필수: 표시할 질문
     as: <variable-name>            # 필수: 결과를 저장할 변수 이름
-    default?: <string>              # 선택: 기본값
-  when?: <condition>               # 선택: 조건이 충족될 때만 프롬프트 표시
+    default: <string>              # 선택: 기본값
+  when: <condition>               # 선택: 조건이 충족될 때만 프롬프트 표시
 ```
 
 **속성:**
@@ -999,22 +1014,21 @@ steps:
 - **`multi-choice.yaml`** - 여러 순차적 선택
 - **`react.yaml`** - React 전용 워크플로우
 
-## 🏗️ 아키텍처
+## 아키텍처
 
 - **CLI**: Commander.js를 사용한 Node.js + TypeScript
 - **작업 실행**: 스트리밍 출력이 있는 Node.js 자식 프로세스
 - **UI**: 아름다운 터미널 출력을 위한 Boxen과 Chalk
 - **프롬프트**: 대화형 프롬프트를 위한 Inquirer.js
 
-## 🤝 기여하기
+## 기여하기
 
-기여를 환영합니다! Pull Request를 자유롭게 제출해 주세요.
+기여를 환영합니다! ISSUE를 남겨주세요.
 
-## 📄 라이선스
+## 라이선스
 
-MIT © [Your Name]
+Copyright (c) 2024 racgoo
 
-## 🙏 감사의 말
+## 문의 및 연락
 
-TypeScript, Node.js 및 현대적인 CLI 도구를 사용하여 만들었습니다.
-
+문의 사항은 lhsung98@naver.com 으로 메일 보내주세요!

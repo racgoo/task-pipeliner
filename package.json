@@ -19,10 +19,7 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "pnpm build",
-    "docs:dev": "cd docs && pnpm start",
-    "docs:build": "cd docs && pnpm build",
-    "docs:serve": "cd docs && pnpm serve"
+    "prepublishOnly": "pnpm build"
   },
   "keywords": [
     "task",

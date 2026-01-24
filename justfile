@@ -18,9 +18,13 @@ build:
     just lint
     just build-rs
     just build-ts
+    just update-license
+    just clean-up
+
+build-all:
+    just build
     just build-docs 
     just build-generator
-    just clean-up
 
 update-version version:
     pnpm exec node scripts/update-version.js {{version}}
@@ -43,13 +47,17 @@ deploy-docs:
     @echo "Docs deployed to S3: task-pipeliner-docs"
 
 deploy-generator:
-    just build-docs
-    aws s3 sync ./generator/dist s3://task-pipeliner-generator --region us-east-1 --delete
+    just build-generator
+    aws s3 sync ./generator/dist s3://task-pipeliner-generator --region ap-northeast-2 --delete
     @echo "Docs deployed to S3: task-pipeliner-docs"
 
 deploy:
     just deploy-docs
     just deploy-generator
+
+publish:
+    just build
+    pnpm publish
 
 clean-up:
     rm -f ./task-pipeliner*.node ./index.d.ts
@@ -74,3 +82,6 @@ lint:
     just lint-ts
     just lint-rs
 
+update-license:
+    npx license-checker --json --onlyDirectDependencies --excludePrivatePackages | jq -r 'to_entries | .[] | "\(.key): \(.value.licenses // .value.license // "Unknown")"' | sort > OPEN_SOURCE_LICENSE
+    echo "License information saved to OPEN_SOURCE_LICENSE"

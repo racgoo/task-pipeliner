@@ -156,7 +156,7 @@ tp run workflow.yaml
 tp run workflow.json
 ```
 
-## 📖 Complete DSL Reference
+## 📖 DSL Syntax
 
 ### Workflow Structure
 
@@ -167,15 +167,15 @@ A workflow file is a YAML or JSON document with the following structure:
 ```yaml
 name: Workflow Name                    # Optional: Display name for the workflow
 description: |                         # Optional: Multi-line description
-  This workflow does something...
+  This workflow does...
 baseDir: ./                            # Optional: Base directory for command execution
                                       #   - Relative path: resolved from YAML file location
                                       #   - Absolute path: used as-is
                                       #   - If omitted: uses current working directory
 
 steps:                                 # Required: Array of steps to execute
-  - step1
-  - step2
+  - some-step-1
+  - some-step-2
   # ...
 ```
 
@@ -184,14 +184,14 @@ steps:                                 # Required: Array of steps to execute
 ```json
 {
   "name": "Workflow Name",             // Optional: Display name for the workflow
-  "description": "This workflow does something...",  // Optional: Description
+  "description": "This workflow does...",  // Optional: Description
   "baseDir": "./",                     // Optional: Base directory for command execution
                                        //   - Relative path: resolved from JSON file location
                                        //   - Absolute path: used as-is
                                        //   - If omitted: uses current working directory
   "steps": [                           // Required: Array of steps to execute
-    { /* step1 */ },
-    { /* step2 */ }
+    { /* some-step-1 */ },
+    { /* some-step-2 */ }
   ]
 }
 ```
@@ -204,17 +204,11 @@ steps:                                 # Required: Array of steps to execute
 #### `description` (optional)
 - **Type**: `string` (supports multi-line with `|` in YAML)
 - **Description**: Description of what the workflow does
-- **YAML Example**:
+- **Example**:
   ```yaml
   description: |
     This workflow builds the project,
     runs tests, and deploys to production.
-  ```
-- **JSON Example**:
-  ```json
-  {
-    "description": "This workflow builds the project, runs tests, and deploys to production."
-  }
   ```
 
 #### `baseDir` (optional)
@@ -224,17 +218,10 @@ steps:                                 # Required: Array of steps to execute
   - **Relative path** (e.g., `./`, `../frontend`): Resolved relative to the workflow file's directory
   - **Absolute path** (e.g., `/home/user/project`): Used as-is
   - **If omitted**: Uses `process.cwd()` (current working directory)
-- **YAML Example**:
+- **Example**:
   ```yaml
-  baseDir: ./frontend        # Relative to YAML file
+  baseDir: ./frontend        # Relative to workflow file
   baseDir: /app/frontend     # Absolute path
-  ```
-- **JSON Example**:
-  ```json
-  {
-    "baseDir": "./frontend",     // Relative to JSON file
-    "baseDir": "/app/frontend"   // Absolute path
-  }
   ```
 
 #### `steps` (required)
@@ -253,23 +240,11 @@ Each step in the `steps` array can be one of the following types:
 Execute a shell command.
 
 **Syntax:**
-
-**YAML:**
 ```yaml
 - run: <command>
   when?: <condition>  # Optional: Execute only if condition is met
   timeout?: <number>  # Optional: Timeout in seconds
   retry?: <number>    # Optional: Number of retries on failure (default: 0)
-```
-
-**JSON:**
-```json
-{
-  "run": "<command>",
-  "when": { /* condition */ },  // Optional: Execute only if condition is met
-  "timeout": <number>,           // Optional: Timeout in seconds
-  "retry": <number>              // Optional: Number of retries on failure (default: 0)
-}
 ```
 
 **Properties:**
@@ -279,80 +254,51 @@ Execute a shell command.
 - `retry` (optional): `number` - Number of retry attempts if command fails (default: 0, meaning no retry)
 
 **Examples:**
-
-**YAML:**
 ```yaml
 # Simple command
-- run: npm install
+steps:
+  - run: npm install
 
-# Command with condition
-- when:
-    file: ./package.json
-  run: npm install
+  # Command with condition
+  - when:
+      file: ./package.json
+    run: npm install
 
-# Command with variable substitution
-- run: echo "Building {{version}}"
+  # Variable input
+  - choose:
+      message: Select execution mode.
+      options:
+        - id: 1.1.1
+          label: Version 1.1.1 (string displayed in display area)
+        - id: 1.1.2
+          label: Version 1.1.2 (string displayed in display area)
+        - id: 1.1.3
+          label: Version 1.1.3 (string displayed in display area)
+      as: version
 
-# Command with timeout (30 seconds)
-- run: npm install
-  timeout: 30
+  # Command with variable substitution
+  - run: echo "Building {{version}}"
 
-# Command with retry (retry up to 3 times on failure)
-- run: npm install
-  retry: 3
+  # Command with timeout (30 seconds)
+  - run: npm install
+    timeout: 30
 
-# Command with both timeout and retry
-- run: npm install
-  timeout: 60
-  retry: 2
-```
+  # Command with retry (retry up to 3 times)
+  - run: npm install
+    retry: 3
 
-**JSON:**
-```json
-{
-  "steps": [
-    // Simple command
-    { "run": "npm install" },
-    
-    // Command with condition
-    {
-      "when": {
-        "file": "./package.json"
-      },
-      "run": "npm install"
-    },
-    
-    // Command with variable substitution
-    { "run": "echo \"Building {{version}}\"" },
-    
-    // Command with timeout (30 seconds)
-    {
-      "run": "npm install",
-      "timeout": 30
-    },
-    
-    // Command with retry (retry up to 3 times on failure)
-    {
-      "run": "npm install",
-      "retry": 3
-    },
-    
-    // Command with both timeout and retry
-    {
-      "run": "npm install",
-      "timeout": 60,
-      "retry": 2
-    }
-  ]
-}
+  # Using both timeout and retry
+  - run: npm install
+    timeout: 60
+    retry: 2
 ```
 
 **Behavior:**
 - Command runs in the `baseDir` (if specified) or current working directory
 - Workflow stops if command fails (non-zero exit code) after all retries are exhausted
-- Output is displayed in real-time with beautiful formatting
+- Output is displayed in real-time with CLI formatting
 - If `timeout` is specified and command exceeds the time limit, it will be killed and the step will fail
-- If `retry` is specified, failed commands will be retried with exponential backoff (1s, 2s, 4s... up to 10s max delay)
+- If `retry` is specified, the command will be retried up to the retry value until it succeeds
 
 ---
 
@@ -361,43 +307,17 @@ Execute a shell command.
 Prompt user to select from a list of options.
 
 **Syntax:**
-
-**YAML:**
 ```yaml
-- choose:
-    message: <string>              # Required: Question to display
-    options:                        # Required: Array of options
-      - id: <string>                # Required: Unique identifier (stored as value)
-        label: <string>             # Required: Display text
-      - id: <string>
-        label: <string>
-    as: <variable-name>             # Optional: Variable name to store result
-                                     #   - If omitted: stores as choice id
-                                     #   - If provided: stores selected id in this variable
-  when?: <condition>                # Optional: Show choice only if condition is met
-```
-
-**JSON:**
-```json
-{
-  "choose": {
-    "message": "<string>",          // Required: Question to display
-    "options": [                    // Required: Array of options
-      {
-        "id": "<string>",           // Required: Unique identifier (stored as value)
-        "label": "<string>"         // Required: Display text
-      },
-      {
-        "id": "<string>",
-        "label": "<string>"
-      }
-    ],
-    "as": "<variable-name>"         // Optional: Variable name to store result
-                                    //   - If omitted: stores as choice id
-                                    //   - If provided: stores selected id in this variable
-  },
-  "when": { /* condition */ }       // Optional: Show choice only if condition is met
-}
+steps:
+  - choose:
+      message: <string>              # Required: Question to display
+      options:                        # Required: Array of options
+        - id: <string>                # Required: Unique identifier (stored as value)
+          label: <string>             # Required: Display text
+        - id: <string>
+          label: <string>
+      as: <variable-name>             # Optional: Variable name to store result
+    when: <condition>                 # Condition for providing choice prompt
 ```
 
 **Properties:**
@@ -411,8 +331,6 @@ Prompt user to select from a list of options.
 - `when` (optional): `Condition` - Show choice prompt only if condition is met
 
 **Examples:**
-
-**YAML:**
 ```yaml
 # Basic choice
 - choose:
@@ -448,73 +366,6 @@ Prompt user to select from a list of options.
     as: runTests
 ```
 
-**JSON:**
-```json
-{
-  "steps": [
-    // Basic choice
-    {
-      "choose": {
-        "message": "Select environment:",
-        "options": [
-          {
-            "id": "dev",
-            "label": "Development"
-          },
-          {
-            "id": "staging",
-            "label": "Staging"
-          },
-          {
-            "id": "prod",
-            "label": "Production"
-          }
-        ]
-      }
-    },
-    
-    // Choice with variable storage
-    {
-      "choose": {
-        "message": "Select environment:",
-        "options": [
-          {
-            "id": "dev",
-            "label": "Development"
-          },
-          {
-            "id": "prod",
-            "label": "Production"
-          }
-        ],
-        "as": "env"  // Selected id stored in 'env' variable
-      }
-    },
-    
-    // Conditional choice
-    {
-      "when": {
-        "file": "./package.json"
-      },
-      "choose": {
-        "message": "Run tests?",
-        "options": [
-          {
-            "id": "yes",
-            "label": "Yes"
-          },
-          {
-            "id": "no",
-            "label": "No"
-          }
-        ],
-        "as": "runTests"
-      }
-    }
-  ]
-}
-```
-
 **Storage:**
 - Selected option's `id` is stored as:
   1. A choice (accessible via `hasChoice(id)`)
@@ -522,31 +373,12 @@ Prompt user to select from a list of options.
   3. If `as` is provided: also stored as a variable with the `as` name
 
 **Usage in conditions:**
-
-**YAML:**
 ```yaml
 # After choice with 'as: env'
 - when:
-    var:
+    var:         # Definition that uses a variable
       env: prod  # Check if 'env' variable equals 'prod'
   run: echo "Deploying to production"
-```
-
-**JSON:**
-```json
-{
-  "steps": [
-    // After choice with 'as: env'
-    {
-      "when": {
-        "var": {
-          "env": "prod"  // Check if 'env' variable equals 'prod'
-        }
-      },
-      "run": "echo \"Deploying to production\""
-    }
-  ]
-}
 ```
 
 ---
@@ -556,26 +388,12 @@ Prompt user to select from a list of options.
 Ask user for text input.
 
 **Syntax:**
-
-**YAML:**
 ```yaml
 - prompt:
     message: <string>              # Required: Question to display
     as: <variable-name>            # Required: Variable name to store result
-    default?: <string>              # Optional: Default value
-  when?: <condition>               # Optional: Show prompt only if condition is met
-```
-
-**JSON:**
-```json
-{
-  "prompt": {
-    "message": "<string>",         // Required: Question to display
-    "as": "<variable-name>",       // Required: Variable name to store result
-    "default": "<string>"           // Optional: Default value
-  },
-  "when": { /* condition */ }       // Optional: Show prompt only if condition is met
-}
+    default: <string>              # Optional: Default value
+  when: <condition>               # Optional: Show prompt only if condition is met
 ```
 
 **Properties:**
@@ -585,8 +403,6 @@ Ask user for text input.
 - `when` (optional): `Condition` - Show prompt only if condition is met
 
 **Examples:**
-
-**YAML:**
 ```yaml
 # Basic prompt
 - prompt:
@@ -608,51 +424,12 @@ Ask user for text input.
     as: deployReason
 ```
 
-**JSON:**
-```json
-{
-  "steps": [
-    // Basic prompt
-    {
-      "prompt": {
-        "message": "Enter version number:",
-        "as": "version"
-      }
-    },
-    
-    // Prompt with default value
-    {
-      "prompt": {
-        "message": "Enter version number:",
-        "as": "version",
-        "default": "1.0.0"
-      }
-    },
-    
-    // Conditional prompt
-    {
-      "when": {
-        "var": {
-          "env": "prod"
-        }
-      },
-      "prompt": {
-        "message": "Enter production deployment reason:",
-        "as": "deployReason"
-      }
-    }
-  ]
-}
-```
-
 **Storage:**
 - User input is stored as a variable with the name specified in `as`
 - Can be used in commands with `{{variable}}` syntax
 - Can be checked in conditions with `var` conditions
 
 **Usage:**
-
-**YAML:**
 ```yaml
 # Use in command
 - run: echo "Building version {{version}}"
@@ -664,67 +441,29 @@ Ask user for text input.
   run: echo "Deploying stable version"
 ```
 
-**JSON:**
-```json
-{
-  "steps": [
-    // Use in command
-    {
-      "run": "echo \"Building version {{version}}\""
-    },
-    
-    // Check in condition
-    {
-      "when": {
-        "var": {
-          "version": "1.0.0"
-        }
-      },
-      "run": "echo \"Deploying stable version\""
-    }
-  ]
-}
-```
-
 ---
 
 #### 4. `parallel` - Parallel Execution
 
-Execute multiple steps simultaneously. All steps in the `parallel` array execute at the same time.
+Execute multiple steps simultaneously. Like `steps`, `parallel` contains an array of steps, each starting with `-`. All these steps execute at the same time.
 
 **Syntax:**
-
-**YAML:**
 ```yaml
 - parallel:
-    - <step1>  # Each step starts with `-`, just like in `steps`
+    - <step1>  # Each step starts with `-`, same format as `steps`
     - <step2>
     - <step3>
   when?: <condition>  # Optional: Execute parallel block only if condition is met
 ```
 
-**JSON:**
-```json
-{
-  "parallel": [                    // Array of steps to execute in parallel
-    { /* step1 */ },
-    { /* step2 */ },
-    { /* step3 */ }
-  ],
-  "when": { /* condition */ }      // Optional: Execute parallel block only if condition is met
-}
-```
-
 **Properties:**
-- `parallel` (required): `array` of `Step` objects - Steps to execute in parallel
+- `parallel` (required): `array` of `Step` objects - Steps to execute in parallel (same format as `steps`, each step starts with `-`)
 - `when` (optional): `Condition` - Execute parallel block only if condition is met
 
 **Examples:**
-
-**YAML:**
 ```yaml
 # Basic parallel execution
-# Each step inside parallel starts with `-`, just like in `steps`
+# Each step inside parallel starts with `-`, same format as `steps`
 - parallel:
     - run: npm run test:unit
     - run: npm run test:integration
@@ -749,7 +488,7 @@ Execute multiple steps simultaneously. All steps in the `parallel` array execute
     - run: npm run test
     - run: npm run lint
 
-# Parallel can contain any step type (run, choose, prompt, etc.)
+# parallel can contain any step type (run, choose, prompt, etc.)
 - parallel:
     - run: npm run test
     - choose:
@@ -765,84 +504,6 @@ Execute multiple steps simultaneously. All steps in the `parallel` array execute
         as: version
 ```
 
-**JSON:**
-```json
-{
-  "steps": [
-    // Basic parallel execution
-    {
-      "parallel": [
-        { "run": "npm run test:unit" },
-        { "run": "npm run test:integration" },
-        { "run": "npm run lint" }
-      ]
-    },
-    
-    // Parallel with conditions
-    // Each step can have its own 'when' condition
-    {
-      "parallel": [
-        {
-          "when": {
-            "file": "./src"
-          },
-          "run": "echo \"Building frontend...\""
-        },
-        {
-          "when": {
-            "file": "./api"
-          },
-          "run": "echo \"Building backend...\""
-        }
-      ]
-    },
-    
-    // Conditional parallel block
-    // The entire parallel block can have a 'when' condition
-    {
-      "when": {
-        "var": {
-          "env": "staging"
-        }
-      },
-      "parallel": [
-        { "run": "npm run test" },
-        { "run": "npm run lint" }
-      ]
-    },
-    
-    // Parallel can contain any step type (run, choose, prompt, etc.)
-    {
-      "parallel": [
-        { "run": "npm run test" },
-        {
-          "choose": {
-            "message": "Run lint?",
-            "options": [
-              {
-                "id": "yes",
-                "label": "Yes"
-              },
-              {
-                "id": "no",
-                "label": "No"
-              }
-            ],
-            "as": "runLint"
-          }
-        },
-        {
-          "prompt": {
-            "message": "Enter version:",
-            "as": "version"
-          }
-        }
-      ]
-    }
-  ]
-}
-```
-
 **Behavior:**
 - All steps in the `parallel` array start executing at the same time
 - Workflow waits for all parallel steps to complete before continuing
@@ -856,22 +517,10 @@ Execute multiple steps simultaneously. All steps in the `parallel` array execute
 Stop the workflow with an error message.
 
 **Syntax:**
-
-**YAML:**
 ```yaml
 - fail:
     message: <string>
   when?: <condition>  # Optional: Fail only if condition is met
-```
-
-**JSON:**
-```json
-{
-  "fail": {
-    "message": "<string>"           // Required: Error message to display
-  },
-  "when": { /* condition */ }       // Optional: Fail only if condition is met
-}
 ```
 
 **Properties:**
@@ -879,46 +528,13 @@ Stop the workflow with an error message.
 - `when` (optional): `Condition` - Fail only if condition is met
 
 **Examples:**
-
-**YAML:**
 ```yaml
-# Basic fail
-- fail:
-    message: "Build failed"
-
 # Fail if file doesn't exist
 - when:
     not:
       file: ./dist
   fail:
     message: "Build output not found"
-```
-
-**JSON:**
-```json
-{
-  "steps": [
-    // Basic fail
-    {
-      "fail": {
-        "message": "Build failed"
-      }
-    },
-    
-    // Fail if file doesn't exist
-    {
-      "when": {
-        "not": {
-          "file": "./dist"
-        }
-      },
-      "fail": {
-        "message": "Build output not found"
-      }
-    }
-  ]
-}
-```
 
 # Fail based on variable
 - when:
@@ -1020,7 +636,6 @@ when:
 - Returns `false` if variable doesn't exist or values don't match
 - All key-value pairs in the object must match (AND logic)
 
-
 ---
 
 ##### 3. Variable Existence (`var` string)
@@ -1046,7 +661,7 @@ when:
     var: version
   run: echo "Version: {{version}}"
 
-# Using 'has' alias
+# Use 'has' alias
 - when:
     has: projectName
   run: echo "Project: {{projectName}}"
@@ -1055,7 +670,7 @@ when:
 **Behavior:**
 - Returns `true` if variable exists (from `prompt.as` or `choose.as`)
 - Returns `false` if variable doesn't exist
-- Doesn't check the value, only existence
+- Only checks existence, not value
 
 ---
 
@@ -1098,7 +713,7 @@ when:
 **Behavior:**
 - Returns `true` only if ALL conditions in the array are `true`
 - Returns `false` if ANY condition is `false`
-- Short-circuits: stops checking after first `false`
+- Short-circuit evaluation: stops checking after first `false`
 
 ---
 
@@ -1135,7 +750,7 @@ when:
 **Behavior:**
 - Returns `true` if ANY condition in the array is `true`
 - Returns `false` only if ALL conditions are `false`
-- Short-circuits: stops checking after first `true`
+- Short-circuit evaluation: stops checking after first `true`
 
 ---
 
@@ -1173,19 +788,19 @@ when:
         - file: ./dist
         - var:
             env: prod
-  run: echo "Not ready for production"
+  run: echo "Production not ready"
 ```
 
 **Behavior:**
-- Returns `true` if the inner condition is `false`
-- Returns `false` if the inner condition is `true`
+- Returns `true` if inner condition is `false`
+- Returns `false` if inner condition is `true`
 - Can negate any condition type
 
 ---
 
 ##### 5. Nested Conditions
 
-Conditions can be nested to create complex logic.
+Nest conditions to create complex logic.
 
 **Examples:**
 ```yaml
@@ -1222,7 +837,7 @@ Conditions can be nested to create complex logic.
 
 ### Variable Substitution
 
-Variables can be used in commands using `{{variable}}` syntax.
+Variables can be used in commands using the `{{variable}}` syntax.
 
 **Syntax:**
 ```yaml
@@ -1259,7 +874,7 @@ run: echo "{{variableName}}"
 
 ### Complete Example
 
-Here's a complete example demonstrating all features:
+A complete example demonstrating all features:
 
 ```yaml
 name: Complete Workflow Example
@@ -1329,7 +944,7 @@ steps:
       file: ./test-results
     run: echo "Tests completed"
 
-  # 8. Combined conditions (any)
+  # 8. Combined condition (any)
   - when:
       any:
         - var:
@@ -1370,8 +985,8 @@ Check out `examples/yaml-examples/` for YAML workflow examples:
 - **`parallel.yaml`** - Parallel execution example
 - **`conditions.yaml`** - Various condition types
 - **`file-checks.yaml`** - File existence checks
-- **`variables.yaml`** - Variable usage examples
 - **`prompt.yaml`** - User input prompts
+- **`variables.yaml`** - Variable substitution examples
 
 ### JSON Examples
 
@@ -1385,6 +1000,7 @@ Check out `examples/json-examples/` for JSON workflow examples (equivalent to YA
 - **`variables.json`** - Variable substitution examples
 
 **Note:** Both YAML and JSON formats are fully supported. Choose the format that fits your preference - YAML for readability, JSON for programmatic generation.
+- **`variables.yaml`** - Variable usage examples
 - **`prompt.yaml`** - Text prompt examples
 - **`var-value-example.yaml`** - Variable value comparison examples
 - **`choice-as-example.yaml`** - Using `as` keyword in choices
@@ -1404,12 +1020,12 @@ Check out `examples/json-examples/` for JSON workflow examples (equivalent to YA
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please leave an ISSUE.
 
 ## 📄 License
 
-MIT © [Your Name]
+Copyright (c) 2024 racgoo
 
-## 🙏 Acknowledgments
+## 📧 Contact
 
-Built with love using TypeScript, Node.js, and modern CLI tools.
+For inquiries, please email lhsung98@naver.com!
