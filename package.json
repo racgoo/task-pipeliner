@@ -1,0 +1,72 @@
+{
+  "name": "task-pipeliner",
+  "version": "0.1.0",
+  "description": "A task pipeline runner with condition-based workflow execution",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "task-pipeliner": "./dist/cli/index.js",
+    "tp": "./dist/cli/index.js"
+  },
+  "scripts": {
+    "build": "pnpm build:napi && pnpm build:ts && pnpm build:cleanup",
+    "build:napi": "napi build dist --cargo-cwd rust --release",
+    "build:ts": "tsc",
+    "build:cleanup": "rm -f ./task-pipeliner*.node ./index.d.ts",
+    "dev": "tsc --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm build",
+    "docs:dev": "cd docs && pnpm start",
+    "docs:build": "cd docs && pnpm build",
+    "docs:serve": "cd docs && pnpm serve"
+  },
+  "keywords": [
+    "task",
+    "pipeline",
+    "workflow",
+    "automation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@eslint/js": "^9.39.2",
+    "boxen": "^8.0.1",
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "inquirer": "^10.2.2",
+    "log-update": "^7.0.2",
+    "ora": "^9.1.0",
+    "yaml": "^2.3.4",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^2.16.0",
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^8.53.1",
+    "@typescript-eslint/parser": "^8.53.1",
+    "eslint": "^9.39.2",
+    "eslint-plugin-import": "^2.32.0",
+    "jiti": "^2.6.1",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^8.53.1",
+    "vitest": "^1.1.0"
+  },
+  "napi": {
+    "name": "task-pipeliner-rs",
+    "packageName": "task-pipeliner-rs",
+    "outputDir": "./dist",
+    "triples": {
+      "defaults": true,
+      "additional": []
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "packageManager": "pnpm@10.26.1+sha512.664074abc367d2c9324fdc18037097ce0a8f126034160f709928e9e9f95d98714347044e5c3164d65bd5da6c59c6be362b107546292a8eecb7999196e5ce58fa"
+}

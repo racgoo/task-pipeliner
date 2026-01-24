@@ -1,0 +1,11 @@
+node_modules/
+dist/
+rust/target/
+*.log
+.DS_Store
+.env
+.env.local
+
+docs/
+generator/
+examples/
