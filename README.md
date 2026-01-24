@@ -173,8 +173,6 @@ A workflow file is a YAML or JSON document with the following structure:
 
 ```yaml
 name: Workflow Name                    # Optional: Display name for the workflow
-description: |                         # Optional: Multi-line description
-  This workflow does...
 baseDir: ./                            # Optional: Base directory for command execution
                                       #   - Relative path: resolved from YAML file location
                                       #   - Absolute path: used as-is
@@ -191,7 +189,6 @@ steps:                                 # Required: Array of steps to execute
 ```json
 {
   "name": "Workflow Name",             // Optional: Display name for the workflow
-  "description": "This workflow does...",  // Optional: Description
   "baseDir": "./",                     // Optional: Base directory for command execution
                                        //   - Relative path: resolved from JSON file location
                                        //   - Absolute path: used as-is
@@ -208,14 +205,17 @@ steps:                                 # Required: Array of steps to execute
 - **Description**: Display name for the workflow
 - **Example**: `name: "Build and Deploy"`
 
-#### `description` (optional)
-- **Type**: `string` (supports multi-line with `|` in YAML)
-- **Description**: Description of what the workflow does
+#### `baseDir` (optional)
+- **Type**: `string` (relative or absolute path)
+- **Description**: Base directory for all command executions
+- **Resolution**:
+  - **Relative path** (e.g., `./`, `../frontend`): Resolved relative to the workflow file's directory
+  - **Absolute path** (e.g., `/home/user/project`): Used as-is
+  - **If omitted**: Uses `process.cwd()` (current working directory)
 - **Example**:
   ```yaml
-  description: |
-    This workflow builds the project,
-    runs tests, and deploys to production.
+  baseDir: ./frontend        # Relative to workflow file
+  baseDir: /app/frontend     # Absolute path
   ```
 
 #### `baseDir` (optional)
@@ -885,15 +885,6 @@ A complete example demonstrating all features:
 
 ```yaml
 name: Complete Workflow Example
-description: |
-  This workflow demonstrates all DSL features:
-  - baseDir configuration
-  - User choices and prompts
-  - Variable usage
-  - Conditional execution
-  - Parallel execution
-  - File checks
-
 baseDir: ./
 
 steps:

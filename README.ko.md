@@ -173,8 +173,6 @@ tp run workflow.json
 
 ```yaml
 name: Workflow Name                    # 선택사항: 워크플로우 표시 이름
-description: |                         # 선택사항: 여러 줄 설명
-  이 워크플로우는...
 baseDir: ./                            # 선택사항: 명령 실행 기본 디렉토리
                                       #   - 상대 경로: YAML 파일 위치 기준으로 해석
                                       #   - 절대 경로: 그대로 사용
@@ -191,7 +189,6 @@ steps:                                 # 필수: 실행할 단계 배열
 ```json
 {
   "name": "Workflow Name",             // 선택사항: 워크플로우 표시 이름
-  "description": "이 워크플로우는...",  // 선택사항: 설명
   "baseDir": "./",                     // 선택사항: 명령 실행 기본 디렉토리
                                        //   - 상대 경로: JSON 파일 위치 기준으로 해석
                                        //   - 절대 경로: 그대로 사용
@@ -207,16 +204,6 @@ steps:                                 # 필수: 실행할 단계 배열
 - **타입**: `string`
 - **설명**: 워크플로우의 표시 이름
 - **예제**: `name: "빌드 및 배포"`
-
-#### `description` (선택)
-- **타입**: `string` (`|`로 여러 줄 지원)
-- **설명**: 워크플로우가 수행하는 작업에 대한 설명
-- **예제**:
-  ```yaml
-  description: |
-    이 워크플로우는 프로젝트를 빌드하고,
-    테스트를 실행하며, 프로덕션에 배포합니다.
-  ```
 
 #### `baseDir` (선택)
 - **타입**: `string` (상대 또는 절대 경로)
@@ -885,15 +872,6 @@ run: echo "{{variableName}}"
 
 ```yaml
 name: Complete Workflow Example
-description: |
-  이 워크플로우는 모든 DSL 기능을 보여줍니다:
-  - baseDir 설정
-  - 사용자 선택 및 프롬프트
-  - 변수 사용
-  - 조건부 실행
-  - 병렬 실행
-  - 파일 확인
-
 baseDir: ./
 
 steps:
