@@ -2,7 +2,7 @@
 
 > 조건 기반 작업 파이프라인 실행기로 아름다운 CLI 출력을 제공합니다
 
-**버전:** 0.1.3
+**버전:** 0.1.4
 
 ![task-pipeliner-banner](https://github.com/user-attachments/assets/282f3cfc-cd0d-4767-88dd-f3abb8e71bea)
 
