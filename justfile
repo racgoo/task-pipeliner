@@ -39,10 +39,10 @@ build-ts:
     pnpm exec tsc
 
 build-docs:
-    cd ./docs && pnpm run build
+    cd ./docs && rm -rf build && pnpm run build
 
 build-generator:
-    cd ./generator && pnpm run build
+    cd ./generator && rm -rf dist && pnpm run build
 
 deploy-docs:
     just build-docs
