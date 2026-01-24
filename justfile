@@ -56,6 +56,7 @@ deploy:
     just deploy-generator
 
 publish:
+    pnpm exec node scripts/bump-version.js
     just build
     pnpm publish
 
