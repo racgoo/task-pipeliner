@@ -11,6 +11,8 @@
 
 **task-pipeliner** is a modern workflow automation tool that lets you define complex task pipelines using simple YAML or JSON files. With conditional execution, parallel tasks, interactive prompts, and beautiful terminal output, it's perfect for build scripts, deployment workflows, and CI/CD pipelines.
 
+**README-Language-Map** [KR [한국어 버전]](https://github.com/racgoo/task-pipeliner/blob/main/README.ko.md) / [EN [English Version]](https://github.com/racgoo/task-pipeliner)
+
 ## ✨ Features
 
 -  **Condition-based execution** - Run steps based on file existence, user choices, environment variables, and more
