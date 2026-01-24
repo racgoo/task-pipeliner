@@ -11,6 +11,8 @@
 
 **task-pipeliner**는 간단한 YAML 또는 JSON 파일로 복잡한 작업 파이프라인을 정의할 수 있는 현대적인 워크플로우 자동화 도구입니다. 조건부 실행, 병렬 작업, 대화형 프롬프트, 그리고 아름다운 터미널 출력을 제공하여 빌드 스크립트, 배포 워크플로우, CI/CD 파이프라인에 완벽합니다.
 
+**README-Language-Map** [KR [한국어 버전]](https://github.com/racgoo/task-pipeliner/blob/main/README.ko.md) / [EN [English Version]](https://github.com/racgoo/task-pipeliner)
+
 ## ✨ 주요 기능
 
 -  **조건 기반 실행** - 파일 존재 여부, 사용자 선택, 환경 변수 등을 기반으로 단계 실행
