@@ -59,7 +59,6 @@ deploy:
     just deploy-generator
 
 publish:
-    just build
     pnpm publish
 
 clean-up:
