@@ -29,6 +29,9 @@ build-all:
 update-version version:
     pnpm exec node scripts/update-version.js {{version}}
 
+bump-version:
+    pnpm exec node scripts/bump-version.js
+
 build-rs:
     pnpm exec napi build dist --cargo-cwd rust --release
     
@@ -56,7 +59,6 @@ deploy:
     just deploy-generator
 
 publish:
-    pnpm exec node scripts/bump-version.js
     just build
     pnpm publish
 
