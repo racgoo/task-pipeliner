@@ -29,6 +29,14 @@
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/racgoo/task-pipeliner.git"
+  },
+  "homepage": "https://github.com/racgoo/task-pipeliner#readme",
+  "bugs": {
+    "url": "https://github.com/racgoo/task-pipeliner/issues"
+  },
   "dependencies": {
     "@eslint/js": "^9.39.2",
     "boxen": "^8.0.1",

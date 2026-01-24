@@ -13,17 +13,22 @@
 
 ## ✨ Features
 
-- 🎯 **Condition-based execution** - Run steps based on file existence, user choices, environment variables, and more
-- ⚡ **Parallel execution** - Run multiple tasks simultaneously
-- 💬 **Interactive prompts** - Ask users for input and choices during execution
-- 🎨 **Beautiful output** - Clean, boxed terminal output with colors and formatting
-- 📝 **YAML & JSON support** - Use YAML for readability or JSON for programmatic generation
-- 🔄 **Variable substitution** - Use `{{variables}}` throughout your workflows
+-  **Condition-based execution** - Run steps based on file existence, user choices, environment variables, and more
+
+- **Parallel execution** - Run multiple tasks simultaneously
+
+- **Interactive prompts** - Ask users for input and choices during execution
+
+- **YAML & JSON support** - Declarative pipelining in YAML & JSON formats
+
+- **Variable substitution** - Use `{{variables}}` throughout your workflows
 
 ## 🔗 Resources
 
 - 📚 **[Documentation](https://task-pipeliner.racgoo.com/)** - Complete DSL reference and guides
 - 🎨 **[Visual Generator](https://task-pipeliner-generator.racgoo.com/)** - Create workflows visually in your browser
+- 💻 **[GitHub](https://github.com/racgoo/task-pipeliner)** - Source code and issue tracking
+- 📦 **[npm](https://www.npmjs.com/package/task-pipeliner)** - Package on npm registry
 - 💻 **CLI Commands**:
   ```bash
   tp open generator  # Open visual generator
