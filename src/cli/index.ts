@@ -64,12 +64,17 @@ program
       '         run: npm run build\n\n' +
       '  2. Run it:\n' +
       '     tp run workflow.yaml\n' +
-      '     tp run workflow.json\n\n'
+      '     tp run workflow.json\n\n' +
+      '  3. View execution history:\n' +
+      '     tp history           # Interactive menu to view/remove histories\n' +
+      '     tp history show      # View a specific history\n' +
+      '     tp history remove    # Remove a specific history\n' +
+      '     tp history remove-all # Remove all histories\n\n'
   )
   .version('0.1.0')
   .addHelpText(
     'after',
-    '\nExamples:\n  $ tp run workflow.yaml\n  $ tp run examples/simple-project/workflow.yaml\n  $ tp open docs       # Open documentation\n  $ tp open generator  # Open visual generator\n\nResources:\n  📚 Documentation: https://task-pipeliner.racgoo.com/\n  🎨 Visual Generator: https://task-pipeliner-generator.racgoo.com/\n\nSee README.md for complete DSL reference.'
+    '\nExamples:\n  $ tp run workflow.yaml\n  $ tp run examples/simple-project/workflow.yaml\n  $ tp open docs       # Open documentation\n  $ tp open generator  # Open visual generator\n  $ tp history         # View workflow execution history\n  $ tp history show    # Select and view a specific history\n\nResources:\n  📚 Documentation: https://task-pipeliner.racgoo.com/\n  🎨 Visual Generator: https://task-pipeliner-generator.racgoo.com/\n\nSee README.md for complete DSL reference.'
   );
 
 program
