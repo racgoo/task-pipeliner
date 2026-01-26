@@ -72,7 +72,7 @@ export class WorkflowHistoryManager implements HistoryManager {
 
   /**
    * Get all history names
-   * Returns an array of all history file names in the storage directory.
+   * Returns an array of all history file names in the storage directory, sorted by newest first.
    * Returns empty array if directory doesn't exist.
    */
   public async getHistoryNames(): Promise<string[]> {
@@ -80,6 +80,25 @@ export class WorkflowHistoryManager implements HistoryManager {
       // Get all files in the storage directory
       const files = await readdir(WORKFLOW_HISTORY_DIR);
       const fileNames = files.map((file) => basename(file));
+
+      // Sort by timestamp in filename (newest first)
+      // Filename format: workflow-YYYY-MM-DD_HH-mm-ss-<hash>.json
+      fileNames.sort((a, b) => {
+        // Extract timestamp from filename
+        const extractTimestamp = (filename: string): string => {
+          const match = filename.match(/workflow-(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})-/);
+          return match ? match[1] : '';
+        };
+        const timestampA = extractTimestamp(a);
+        const timestampB = extractTimestamp(b);
+        // If timestamps are equal, compare by hash (alphabetically)
+        if (timestampA === timestampB) {
+          return b.localeCompare(a); // Reverse order for hash comparison
+        }
+        // Compare timestamps (newest first = descending order)
+        return timestampB.localeCompare(timestampA);
+      });
+
       return fileNames;
     } catch (error) {
       // Directory doesn't exist or is empty
