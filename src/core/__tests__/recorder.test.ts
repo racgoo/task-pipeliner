@@ -1,5 +1,5 @@
 import { existsSync } from 'fs';
-import { readFile, readdir, rm } from 'fs/promises';
+import { mkdir, readFile, readdir, rm } from 'fs/promises';
 import { join } from 'path';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import type { Step, StepResult, StepStatus } from '../../types/workflow';
@@ -19,6 +19,12 @@ describe('WorkflowRecorder', () => {
       workspace: new Workspace(),
       stepIndex: 0,
     };
+    // Ensure directory exists
+    try {
+      await mkdir(WORKFLOW_HISTORY_DIR, { recursive: true });
+    } catch {
+      // Ignore if already exists
+    }
     // Store initial state of history directory
     try {
       initialFiles = await readdir(WORKFLOW_HISTORY_DIR);
@@ -37,6 +43,12 @@ describe('WorkflowRecorder', () => {
       }
     } catch {
       // Directory doesn't exist, nothing to clean
+    }
+    // Ensure directory exists after cleanup (in case clearAllHistories was called in other tests)
+    try {
+      await mkdir(WORKFLOW_HISTORY_DIR, { recursive: true });
+    } catch {
+      // Ignore if already exists
     }
   });
 
@@ -133,6 +145,9 @@ describe('WorkflowRecorder', () => {
 
   describe('save', () => {
     it('should save records to file', async () => {
+      // Ensure directory exists
+      await mkdir(WORKFLOW_HISTORY_DIR, { recursive: true });
+
       const step: Step = { run: 'echo test' };
       const output: StepResult = { success: true, stdout: ['test'], stderr: [] };
 
@@ -147,6 +162,9 @@ describe('WorkflowRecorder', () => {
     });
 
     it('should save empty records', async () => {
+      // Ensure directory exists
+      await mkdir(WORKFLOW_HISTORY_DIR, { recursive: true });
+
       recorder.recordStart();
 
       const filepath = await recorder.save();
@@ -159,6 +177,13 @@ describe('WorkflowRecorder', () => {
     });
 
     it('should save history with initial timestamp', async () => {
+      // Ensure directory exists
+      try {
+        await mkdir(WORKFLOW_HISTORY_DIR, { recursive: true });
+      } catch {
+        // Ignore if already exists
+      }
+
       const timestamp = Date.now();
       const recorderWithTimestamp = new WorkflowRecorder();
       recorderWithTimestamp.recordStart();

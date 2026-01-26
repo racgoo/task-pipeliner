@@ -1,4 +1,4 @@
-import { mkdir, readdir, rm, writeFile } from 'fs/promises';
+import { mkdir, readdir, readFile, rm, writeFile } from 'fs/promises';
 import { homedir } from 'os';
 import { basename, join } from 'path';
 import dayjs from 'dayjs';
@@ -88,5 +88,15 @@ export class WorkflowHistoryManager implements HistoryManager {
       }
       throw error;
     }
+  }
+
+  /**
+   * Get history from file
+   * Reads the history file and returns the history object.
+   */
+  public async getHistory(filename: string): Promise<History> {
+    // Read the history file
+    const content = await readFile(join(WORKFLOW_HISTORY_DIR, filename), { encoding: 'utf8' });
+    return JSON.parse(content);
   }
 }

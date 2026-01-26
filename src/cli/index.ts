@@ -21,11 +21,14 @@ import { exec } from 'child_process';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { promisify } from 'util';
+import boxen from 'boxen';
 import chalk from 'chalk';
 import { Command } from 'commander';
+import dayjs from 'dayjs';
 import { Executor } from '../core/executor';
 import { WorkflowHistoryManager } from '../core/history';
 import { getParser } from '../core/parser';
+import type { History, Record as WorkflowRecord, Step } from '../types/workflow';
 import { ChoicePrompt } from './prompts';
 
 const execAsync = promisify(exec);
@@ -309,9 +312,14 @@ historyCommand
       process.exit(1);
     }
 
-    // TODO: Display actual history content
-    console.log(chalk.green(`\n✓ Selected history: ${choice.id}`));
-    console.log(chalk.blue(`   ${choice.id}`));
+    try {
+      const history = await historyManager.getHistory(choice.id);
+      displayHistory(history, choice.id);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(chalk.red(`\n✗ Failed to load history: ${errorMessage}`));
+      process.exit(1);
+    }
   });
 
 /**
@@ -374,6 +382,152 @@ historyCommand
  */
 function extractFileName(filePath: string): string {
   return filePath.split('/').pop() ?? filePath;
+}
+
+/**
+ * Display workflow execution history in a formatted way
+ */
+function displayHistory(history: History, filename: string): void {
+  console.log('\n');
+
+  // Calculate total duration
+  const totalDuration = history.records.reduce((sum, record) => sum + record.duration, 0);
+  const successCount = history.records.filter((r) => r.status === 'success').length;
+  const failureCount = history.records.filter((r) => r.status === 'failure').length;
+
+  // Format execution summary
+  const startTime = dayjs(history.initialTimestamp).format('YYYY-MM-DD HH:mm:ss');
+  const durationMs = totalDuration;
+  const durationSec = (durationMs / 1000).toFixed(2);
+
+  // Header box
+  const headerContent = [
+    chalk.bold('Workflow Execution History'),
+    '',
+    `${chalk.cyan('File:')} ${filename}`,
+    `${chalk.cyan('Started:')} ${startTime}`,
+    `${chalk.cyan('Total Duration:')} ${durationSec}s`,
+    `${chalk.cyan('Total Steps:')} ${history.records.length}`,
+    `${chalk.green('✓ Successful:')} ${successCount}`,
+    failureCount > 0 ? `${chalk.red('✗ Failed:')} ${failureCount}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  console.log(
+    boxen(headerContent, {
+      borderStyle: 'round',
+      padding: { top: 1, bottom: 1, left: 2, right: 2 },
+      margin: { top: 0, bottom: 1 },
+      borderColor: 'cyan',
+    })
+  );
+
+  // Display each step
+  history.records.forEach((record, index) => {
+    displayRecord(record, index + 1, history.records.length);
+  });
+
+  console.log('');
+}
+
+/**
+ * Display a single execution record
+ */
+function displayRecord(record: WorkflowRecord, stepNumber: number, totalSteps: number): void {
+  const stepType = getStepType(record.step);
+  const stepDescription = getStepDescription(record.step);
+  const statusIcon = record.status === 'success' ? chalk.green('✓') : chalk.red('✗');
+  const statusText = record.status === 'success' ? chalk.green('Success') : chalk.red('Failed');
+  const duration = `${(record.duration / 1000).toFixed(2)}s`;
+
+  // Step header
+  const stepHeader = [
+    `${statusIcon} ${chalk.bold(`Step ${stepNumber}/${totalSteps}`)} - ${chalk.cyan(stepType)}`,
+    `${chalk.gray('Duration:')} ${duration} | ${chalk.gray('Status:')} ${statusText}`,
+    '',
+    chalk.white(stepDescription),
+  ].join('\n');
+
+  console.log(
+    boxen(stepHeader, {
+      borderStyle: 'round',
+      padding: { top: 1, bottom: 1, left: 2, right: 2 },
+      margin: { top: 0, bottom: 1 },
+      borderColor: record.status === 'success' ? 'green' : 'red',
+    })
+  );
+
+  // Display output if available
+  if (isTaskRunResult(record.output)) {
+    displayTaskOutput(record.output);
+  }
+}
+
+/**
+ * Get step type name
+ */
+function getStepType(step: Step): string {
+  if ('run' in step) return 'Run';
+  if ('choose' in step) return 'Choose';
+  if ('prompt' in step) return 'Prompt';
+  if ('parallel' in step) return 'Parallel';
+  if ('fail' in step) return 'Fail';
+  return 'Unknown';
+}
+
+/**
+ * Get step description
+ */
+function getStepDescription(step: Step): string {
+  if ('run' in step) {
+    return `Command: ${chalk.yellow(step.run)}`;
+  }
+  if ('choose' in step) {
+    return `Message: ${chalk.yellow(step.choose.message)}`;
+  }
+  if ('prompt' in step) {
+    return `Message: ${chalk.yellow(step.prompt.message)} | Variable: ${chalk.cyan(step.prompt.as)}`;
+  }
+  if ('parallel' in step) {
+    return `Parallel execution with ${step.parallel.length} branches`;
+  }
+  if ('fail' in step) {
+    return `Error: ${chalk.red(step.fail.message)}`;
+  }
+  return 'Unknown step type';
+}
+
+/**
+ * Check if output is TaskRunResult
+ */
+function isTaskRunResult(
+  output: unknown
+): output is { success: boolean; stdout: string[]; stderr: string[] } {
+  return (
+    typeof output === 'object' &&
+    output !== null &&
+    'success' in output &&
+    'stdout' in output &&
+    'stderr' in output
+  );
+}
+
+/**
+ * Display task output (stdout/stderr)
+ */
+function displayTaskOutput(output: { success: boolean; stdout: string[]; stderr: string[] }): void {
+  if (output.stdout.length > 0) {
+    const stdoutContent = output.stdout.map((line) => chalk.gray(`  ${line}`)).join('\n');
+    console.log(chalk.green('  Output:'));
+    console.log(stdoutContent);
+  }
+
+  if (output.stderr.length > 0) {
+    const stderrContent = output.stderr.map((line) => chalk.gray(`  ${line}`)).join('\n');
+    console.log(chalk.red('  Errors:'));
+    console.log(stderrContent);
+  }
 }
 
 program.parse();
