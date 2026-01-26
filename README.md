@@ -1119,7 +1119,7 @@ Contributions are welcome! Please leave an ISSUE.
 
 ## 📄 License
 
-Copyright (c) 2024 racgoo
+Copyright (c) 2026 racgoo
 
 ## 📧 Contact
 

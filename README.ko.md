@@ -1119,7 +1119,7 @@ tp history remove-all -y  # 확인 건너뛰기
 
 ## 라이선스
 
-Copyright (c) 2024 racgoo
+Copyright (c) 2026 racgoo
 
 ## 문의 및 연락
 
