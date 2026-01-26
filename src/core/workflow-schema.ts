@@ -1,6 +1,6 @@
 /**
  * Zod Schema for Workflow Validation
- * 
+ *
  * Validates parsed workflow files against the Workflow type definition
  * to ensure type safety at runtime.
  */
@@ -27,9 +27,11 @@ const StatusConditionSchema = z.object({
 });
 
 const StepConditionSchema = z.object({
-  step: z.object({
-    success: z.boolean(),
-  }).optional(),
+  step: z
+    .object({
+      success: z.boolean(),
+    })
+    .optional(),
   last_step: z.enum(['success', 'failure']).optional(),
 });
 
@@ -46,18 +48,20 @@ const ConditionPrimitiveSchema = z.union([
   StepConditionSchema,
 ]);
 
-const ConditionSchema: z.ZodTypeAny = z.lazy(() => z.union([
-  ConditionPrimitiveSchema,
-  z.object({
-    all: z.array(ConditionSchema),
-  }),
-  z.object({
-    any: z.array(ConditionSchema),
-  }),
-  z.object({
-    not: ConditionSchema,
-  }),
-]));
+const ConditionSchema: z.ZodTypeAny = z.lazy(() =>
+  z.union([
+    ConditionPrimitiveSchema,
+    z.object({
+      all: z.array(ConditionSchema),
+    }),
+    z.object({
+      any: z.array(ConditionSchema),
+    }),
+    z.object({
+      not: ConditionSchema,
+    }),
+  ])
+);
 
 /**
  * Step schemas
@@ -94,21 +98,23 @@ const PromptStepSchema = z.object({
 });
 
 // Recursive step schema for parallel steps
-const StepSchema: z.ZodTypeAny = z.lazy(() => z.union([
-  RunStepSchema,
-  ChooseStepSchema,
-  PromptStepSchema,
-  z.object({
-    parallel: z.array(StepSchema),
-    when: ConditionSchema.optional(),
-  }),
-  z.object({
-    fail: z.object({
-      message: z.string(),
+const StepSchema: z.ZodTypeAny = z.lazy(() =>
+  z.union([
+    RunStepSchema,
+    ChooseStepSchema,
+    PromptStepSchema,
+    z.object({
+      parallel: z.array(StepSchema),
+      when: ConditionSchema.optional(),
     }),
-    when: ConditionSchema.optional(),
-  }),
-]));
+    z.object({
+      fail: z.object({
+        message: z.string(),
+      }),
+      when: ConditionSchema.optional(),
+    }),
+  ])
+);
 
 /**
  * Workflow schema
@@ -143,4 +149,3 @@ export function safeValidateWorkflow(data: unknown): {
   }
   return { success: false, error: result.error };
 }
-

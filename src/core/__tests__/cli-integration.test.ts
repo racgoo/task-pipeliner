@@ -58,20 +58,20 @@ describe('CLI Integration - Actual YAML Execution', () => {
     await executor.execute(workflow);
 
     // Check executed commands
-    const executedCommands = mockRun.mock.calls.map(call => call[0]);
-    
+    const executedCommands = mockRun.mock.calls.map((call) => call[0]);
+
     // Verify required commands were executed
     expect(executedCommands).toContain('echo "Building..."');
     expect(executedCommands).toContain('echo "Deploying to staging..."');
-    
+
     // Commands that should not be executed
     expect(executedCommands).not.toContain('echo "Deploying to production..."');
-    
+
     // Check workspace state
     const workspace = (executor as any).workspace;
     expect(workspace.hasChoice('staging')).toBe(true);
     expect(workspace.getChoice('staging')).toBe('staging');
-    
+
     console.log('✅ All assertions passed - workflow executed correctly');
   });
 
@@ -81,14 +81,14 @@ describe('CLI Integration - Actual YAML Execution', () => {
     const workflow = parse(content) as Workflow;
 
     // Check step types
-    const chooseStep = workflow.steps.find(s => 'choose' in s);
+    const chooseStep = workflow.steps.find((s) => 'choose' in s);
     expect(chooseStep).toBeDefined();
     if (!chooseStep) {
       throw new Error('chooseStep should exist');
     }
     expect('choose' in chooseStep).toBe(true);
 
-    const runStepWithWhen = workflow.steps.find(s => 'run' in s && 'when' in s);
+    const runStepWithWhen = workflow.steps.find((s) => 'run' in s && 'when' in s);
     expect(runStepWithWhen).toBeDefined();
     if (!runStepWithWhen) {
       throw new Error('runStepWithWhen should exist');
@@ -97,4 +97,3 @@ describe('CLI Integration - Actual YAML Execution', () => {
     expect('when' in runStepWithWhen).toBe(true);
   });
 });
-

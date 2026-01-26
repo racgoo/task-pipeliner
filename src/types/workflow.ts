@@ -1,14 +1,19 @@
+import { ExecutionContext } from '../core/executor.js';
+import { TaskRunResult } from '../core/task-runner.js';
 import type { Condition } from './condition.js';
 
 /**
  * Workflow Step Types
  */
-export type Step =
-  | RunStep
-  | ChooseStep
-  | PromptStep
-  | ParallelStep
-  | FailStep;
+export type Step = RunStep | ChooseStep | PromptStep | ParallelStep | FailStep;
+
+export interface Record {
+  step: Step;
+  context: ExecutionContext;
+  output: StepResult;
+  duration: number;
+  status: StepStatus;
+}
 
 /**
  * Basic execution step
@@ -79,3 +84,6 @@ export interface Workflow {
   _filePath?: string; // YAML file absolute path (for resolving relative baseDir)
 }
 
+export type StepResult = TaskRunResult | boolean | void;
+
+export type StepStatus = 'success' | 'failure';

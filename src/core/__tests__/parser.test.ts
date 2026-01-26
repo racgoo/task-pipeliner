@@ -12,7 +12,7 @@ steps:
   - run: echo "world"
 `;
       const workflow = parser.parse(yaml);
-      
+
       expect(workflow.name).toBe('test');
       expect(workflow.steps).toHaveLength(2);
       expect(workflow.steps[0]).toHaveProperty('run', 'echo "hello"');
@@ -26,7 +26,7 @@ steps:
   - run: echo "world"
 `;
       const lineNumbers = parser.extractStepLineNumbers(yaml);
-      
+
       expect(lineNumbers.get(0)).toBe(2); // First step is on line 2
       expect(lineNumbers.get(1)).toBe(3); // Second step is on line 3
     });
@@ -37,13 +37,10 @@ steps:
       const parser = new JSONParser();
       const json = JSON.stringify({
         name: 'test',
-        steps: [
-          { run: 'echo "hello"' },
-          { run: 'echo "world"' }
-        ]
+        steps: [{ run: 'echo "hello"' }, { run: 'echo "world"' }],
       });
       const workflow = parser.parse(json);
-      
+
       expect(workflow.name).toBe('test');
       expect(workflow.steps).toHaveLength(2);
       expect(workflow.steps[0]).toHaveProperty('run', 'echo "hello"');
@@ -53,7 +50,7 @@ steps:
     it('should throw error for invalid JSON', () => {
       const parser = new JSONParser();
       const invalidJson = '{ invalid json }';
-      
+
       expect(() => parser.parse(invalidJson)).toThrow('Invalid JSON format');
     });
 
@@ -70,7 +67,7 @@ steps:
   ]
 }`;
       const lineNumbers = parser.extractStepLineNumbers(json);
-      
+
       // JSON steps start at the line where the object starts
       expect(lineNumbers.size).toBeGreaterThan(0);
       expect(lineNumbers.get(0)).toBeDefined();
@@ -106,4 +103,3 @@ steps:
     });
   });
 });
-

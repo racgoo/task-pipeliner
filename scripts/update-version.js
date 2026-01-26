@@ -41,10 +41,7 @@ function updateVersion(version) {
   const readmeKoPath = join(rootDir, 'README.ko.md');
   let readmeKoContent = fs.readFileSync(readmeKoPath, 'utf-8');
   // Replace version in "**버전:** X.X.X" line
-  readmeKoContent = readmeKoContent.replace(
-    /\*\*버전:\*\* \d+\.\d+\.\d+/,
-    `**버전:** ${version}`
-  );
+  readmeKoContent = readmeKoContent.replace(/\*\*버전:\*\* \d+\.\d+\.\d+/, `**버전:** ${version}`);
   // Replace any other hardcoded version numbers
   readmeKoContent = readmeKoContent.replace(
     new RegExp(`\\b${oldVersion.replace(/\./g, '\\.')}\\b`, 'g'),

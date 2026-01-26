@@ -25,4 +25,3 @@ console.log(`Bumping version from ${currentVersion} to ${newVersion}`);
 // Update version using the existing update-version script
 import { execSync } from 'child_process';
 execSync(`pnpm exec node scripts/update-version.js ${newVersion}`, { stdio: 'inherit' });
-

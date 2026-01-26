@@ -25,10 +25,9 @@ describe('Workspace', () => {
     const workspace = new Workspace();
     workspace.setFact('test', true);
     workspace.setChoice('staging', 'staging');
-    
+
     const cloned = workspace.clone();
     expect(cloned.hasFact('test')).toBe(true);
     expect(cloned.hasChoice('staging')).toBe(true);
   });
 });
-

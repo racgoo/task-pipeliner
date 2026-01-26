@@ -124,8 +124,8 @@ steps:
     // All commands should be called with the same baseDir
     expect(mockRun).toHaveBeenCalledTimes(2);
     const expectedBaseDir = resolve(process.cwd(), 'examples');
-    
-    mockRun.mock.calls.forEach(call => {
+
+    mockRun.mock.calls.forEach((call) => {
       expect(call[8]).toBe(expectedBaseDir);
     });
   });
@@ -159,7 +159,7 @@ steps:
 
     // Verify commands were executed
     expect(mockRun).toHaveBeenCalledTimes(2);
-    
+
     // Verify baseDir was resolved correctly
     // baseDir is relative to YAML file directory, so it should be examples/examples
     // But since YAML file is in examples/, and baseDir is ./examples, it resolves to examples/examples
@@ -172,9 +172,8 @@ steps:
     expect(actualBaseDir).toBe(expectedBaseDir);
 
     // Verify all commands used the correct cwd
-    mockRun.mock.calls.forEach(call => {
+    mockRun.mock.calls.forEach((call) => {
       expect(call[8]).toBe(expectedBaseDir);
     });
   });
 });
-

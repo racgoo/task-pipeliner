@@ -55,16 +55,16 @@ describe('Executor - Choice Condition', () => {
         {
           when: {
             var: {
-              env: 'staging'
-            }
+              env: 'staging',
+            },
           },
           run: 'echo "Deploying to staging..."',
         },
         {
           when: {
             var: {
-              env: 'prod'
-            }
+              env: 'prod',
+            },
           },
           run: 'echo "Deploying to production..."',
         },
@@ -82,10 +82,10 @@ describe('Executor - Choice Condition', () => {
     expect(workspace.getVariable('env')).toBe('staging');
 
     // staging step should execute after staging is selected
-    const calls = mockRun.mock.calls.map(call => call[0]);
+    const calls = mockRun.mock.calls.map((call) => call[0]);
     expect(calls).toContain('echo "Deploying to staging..."');
     expect(calls).not.toContain('echo "Deploying to production..."');
-    
+
     // Check call count
     expect(mockRun).toHaveBeenCalledTimes(1);
   });
@@ -106,16 +106,16 @@ describe('Executor - Choice Condition', () => {
         {
           when: {
             var: {
-              env: 'staging'
-            }
+              env: 'staging',
+            },
           },
           run: 'echo "Deploying to staging..."',
         },
         {
           when: {
             var: {
-              env: 'prod'
-            }
+              env: 'prod',
+            },
           },
           run: 'echo "Deploying to production..."',
         },
@@ -128,7 +128,7 @@ describe('Executor - Choice Condition', () => {
     await executor.execute(workflow);
 
     // prod step should execute after prod is selected
-    const calls = mockRun.mock.calls.map(call => call[0]);
+    const calls = mockRun.mock.calls.map((call) => call[0]);
     expect(calls).toContain('echo "Deploying to production..."');
     expect(calls).not.toContain('echo "Deploying to staging..."');
   });
@@ -139,23 +139,19 @@ describe('Executor - Choice Condition', () => {
         {
           choose: {
             message: 'First choice?',
-            options: [
-              { id: 'option1', label: 'Option 1' },
-            ],
+            options: [{ id: 'option1', label: 'Option 1' }],
             as: 'first',
           },
         },
         {
           when: {
             var: {
-              first: 'option1'
-            }
+              first: 'option1',
+            },
           },
           choose: {
             message: 'Second choice?',
-            options: [
-              { id: 'option2', label: 'Option 2' },
-            ],
+            options: [{ id: 'option2', label: 'Option 2' }],
             as: 'second',
           },
         },
@@ -164,13 +160,13 @@ describe('Executor - Choice Condition', () => {
             all: [
               {
                 var: {
-                  first: 'option1'
-                }
+                  first: 'option1',
+                },
               },
               {
                 var: {
-                  second: 'option2'
-                }
+                  second: 'option2',
+                },
               },
             ],
           },
@@ -186,8 +182,7 @@ describe('Executor - Choice Condition', () => {
     await executor.execute(workflow);
 
     // step should execute after both choices are set
-    const calls = mockRun.mock.calls.map(call => call[0]);
+    const calls = mockRun.mock.calls.map((call) => call[0]);
     expect(calls).toContain('echo "Both choices made"');
   });
 });
-

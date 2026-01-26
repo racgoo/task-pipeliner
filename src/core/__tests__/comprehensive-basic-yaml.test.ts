@@ -25,7 +25,7 @@ describe('COMPREHENSIVE: Basic YAML - Must Work', () => {
       console.log(`[EXEC] ${cmd}`);
       return Promise.resolve(true);
     });
-    
+
     // Mock TextPrompt (prevent timeout)
     const textPrompt = (executor as any).textPrompt;
     textPrompt.prompt = vi.fn().mockResolvedValue('1.0.0');
@@ -81,7 +81,7 @@ describe('COMPREHENSIVE: Basic YAML - Must Work', () => {
     // Use executor's actual workspace
     const workspace = (executor as any).workspace;
     const choicePrompt = (executor as any).choicePrompt;
-    
+
     // Mock choicePrompt
     choicePrompt.prompt = vi.fn().mockResolvedValue({ id: 's', label: 'S' });
 
@@ -91,13 +91,16 @@ describe('COMPREHENSIVE: Basic YAML - Must Work', () => {
 
     // Step 1 - executeChooseStep uses this.workspace
     await (executor as any).executeChooseStep(workflow.steps[1], { workspace, stepIndex: 1 });
-    
+
     // Check if choicePrompt was called
     expect(choicePrompt.prompt).toHaveBeenCalled();
-    
+
     // Check in executor's workspace
     const execWorkspace = (executor as any).workspace;
-    console.log('Workspace choices after choose:', Array.from(execWorkspace.state.choices.entries()));
+    console.log(
+      'Workspace choices after choose:',
+      Array.from(execWorkspace.state.choices.entries())
+    );
     expect(execWorkspace.hasChoice('s')).toBe(true);
     expect(execWorkspace.getVariable('choice')).toBe('s');
 
@@ -112,7 +115,10 @@ describe('COMPREHENSIVE: Basic YAML - Must Work', () => {
 
     // Step 2 - Execute
     if (result) {
-      await (executor as any).executeRunStep(step2, { workspace: (executor as any).workspace, stepIndex: 2 });
+      await (executor as any).executeRunStep(step2, {
+        workspace: (executor as any).workspace,
+        stepIndex: 2,
+      });
     }
 
     expect(executedCommands).toContain('step3');
@@ -125,8 +131,8 @@ describe('COMPREHENSIVE: Basic YAML - Must Work', () => {
     const evaluator = new ConditionEvaluator(workspace);
     const condition = {
       var: {
-        env: 'staging'
-      }
+        env: 'staging',
+      },
     };
 
     const result = evaluator.evaluate(condition);
@@ -134,4 +140,3 @@ describe('COMPREHENSIVE: Basic YAML - Must Work', () => {
     expect(workspace.getVariable('env')).toBe('staging');
   });
 });
-

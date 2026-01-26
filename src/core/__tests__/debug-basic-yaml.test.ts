@@ -55,7 +55,7 @@ describe('DEBUG: Basic YAML Execution - Find the Bug', () => {
 
     // Mock staging selection
     mockChoicePrompt.mockResolvedValueOnce({ id: 'staging', label: 'Staging' });
-    
+
     // Set CI environment variable
     const originalCI = process.env.CI;
     process.env.CI = 'false';
@@ -77,20 +77,20 @@ describe('DEBUG: Basic YAML Execution - Find the Bug', () => {
       console.log(`prod choice: ${workspace.hasChoice('prod')}`);
 
       // Required verification: staging step must execute
-      const executedCommands = mockRun.mock.calls.map(call => call[0]);
-      
+      const executedCommands = mockRun.mock.calls.map((call) => call[0]);
+
       expect(executedCommands).toContain('echo "Building..."');
-      
+
       // This is the key: staging step should execute
       expect(executedCommands).toContain('echo "Deploying to staging..."');
-      
+
       // prod step should not execute
       expect(executedCommands).not.toContain('echo "Deploying to production..."');
-      
+
       // Verify workspace state
       expect(workspace.hasChoice('staging')).toBe(true);
       expect(workspace.getChoice('staging')).toBe('staging');
-      
+
       console.log('\n✅ ALL ASSERTIONS PASSED');
     } catch (error) {
       console.error('\n❌ TEST FAILED:', error);
@@ -113,17 +113,15 @@ describe('DEBUG: Basic YAML Execution - Find the Bug', () => {
         {
           choose: {
             message: 'Choose?',
-            options: [
-              { id: 'staging', label: 'Staging' },
-            ],
+            options: [{ id: 'staging', label: 'Staging' }],
             as: 'env',
           },
         },
         {
           when: {
             var: {
-              env: 'staging'
-            }
+              env: 'staging',
+            },
           },
           run: 'echo "Step 3 - Staging"',
         },
@@ -134,7 +132,7 @@ describe('DEBUG: Basic YAML Execution - Find the Bug', () => {
 
     // Log workspace state before and after each step
     const workspace = (executor as any).workspace;
-    
+
     await executor.execute(workflow);
 
     // Workspace state after Step 2 (choose)
@@ -143,8 +141,7 @@ describe('DEBUG: Basic YAML Execution - Find the Bug', () => {
     console.log('  getChoice(staging):', workspace.getChoice('staging'));
 
     // Check if Step 3 executed
-    const calls = mockRun.mock.calls.map(call => call[0]);
+    const calls = mockRun.mock.calls.map((call) => call[0]);
     expect(calls).toContain('echo "Step 3 - Staging"');
   });
 });
-

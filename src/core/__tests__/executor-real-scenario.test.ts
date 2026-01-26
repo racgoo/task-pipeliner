@@ -80,21 +80,21 @@ describe('Executor - Real Scenario Tests', () => {
     await executor.execute(workflow);
 
     // Check execution order
-    const calls = mockRun.mock.calls.map(call => call[0]);
-    
+    const calls = mockRun.mock.calls.map((call) => call[0]);
+
     // Required execution check
     expect(calls).toContain('echo "Building..."');
     expect(calls).toContain('echo "Build started, continuing..."');
     expect(calls).toContain('echo "Deploying to staging..."');
-    
+
     // Should not be executed
     expect(calls).not.toContain('echo "Deploying to production..."');
-    
+
     // Check workspace state
     const workspace = (executor as any).workspace;
     expect(workspace.hasChoice('staging')).toBe(true);
     expect(workspace.hasChoice('prod')).toBe(false);
-    
+
     // Check execution count (3 steps executed)
     expect(mockRun).toHaveBeenCalledTimes(3);
   });
@@ -122,16 +122,16 @@ describe('Executor - Real Scenario Tests', () => {
         {
           when: {
             var: {
-              env: 'staging'
-            }
+              env: 'staging',
+            },
           },
           run: 'echo "Deploying to staging..."',
         },
         {
           when: {
             var: {
-              env: 'prod'
-            }
+              env: 'prod',
+            },
           },
           run: 'echo "Deploying to production..."',
         },
@@ -143,11 +143,11 @@ describe('Executor - Real Scenario Tests', () => {
 
     await executor.execute(workflow);
 
-    const calls = mockRun.mock.calls.map(call => call[0]);
-    
+    const calls = mockRun.mock.calls.map((call) => call[0]);
+
     expect(calls).toContain('echo "Deploying to production..."');
     expect(calls).not.toContain('echo "Deploying to staging..."');
-    
+
     const workspace = (executor as any).workspace;
     expect(workspace.hasChoice('prod')).toBe(true);
     expect(workspace.hasChoice('staging')).toBe(false);
@@ -169,8 +169,8 @@ describe('Executor - Real Scenario Tests', () => {
         {
           when: {
             var: {
-              choice: 'opt1'
-            }
+              choice: 'opt1',
+            },
           },
           run: 'step2',
         },
@@ -184,10 +184,9 @@ describe('Executor - Real Scenario Tests', () => {
     // Check execution order
     expect(mockRun.mock.calls[0][0]).toBe('step1');
     expect(mockRun.mock.calls[1][0]).toBe('step2');
-    
+
     // step2 should execute after choice is set
     const workspace = (executor as any).workspace;
     expect(workspace.hasChoice('opt1')).toBe(true);
   });
 });
-

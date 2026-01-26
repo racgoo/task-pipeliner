@@ -5,12 +5,6 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     // Exclude example projects from test discovery
-    exclude: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '**/examples/**',
-      '**/*.config.*',
-    ],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/examples/**', '**/*.config.*'],
   },
 });
-

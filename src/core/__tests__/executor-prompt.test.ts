@@ -61,9 +61,9 @@ describe('Executor - Prompt Step', () => {
 
     // Prompt should be called
     expect(mockTextPrompt).toHaveBeenCalledWith('What is your name?', undefined);
-    
+
     // step should execute after fact is set
-    const calls = mockRun.mock.calls.map(call => call[0]);
+    const calls = mockRun.mock.calls.map((call) => call[0]);
     expect(calls).toContain('echo "Hello"');
   });
 
@@ -133,9 +133,7 @@ describe('Executor - Prompt Step', () => {
         {
           choose: {
             message: 'Select environment:',
-            options: [
-              { id: 'prod', label: 'Production' },
-            ],
+            options: [{ id: 'prod', label: 'Production' }],
             as: 'env',
           },
         },
@@ -145,8 +143,8 @@ describe('Executor - Prompt Step', () => {
               { file: 'package.json' },
               {
                 var: {
-                  env: 'prod'
-                }
+                  env: 'prod',
+                },
               },
             ],
           },
@@ -168,4 +166,3 @@ describe('Executor - Prompt Step', () => {
     expect(mockRun.mock.calls.length).toBeGreaterThan(0);
   });
 });
-

@@ -3,16 +3,9 @@
  * Conditions ask questions about the workspace, not inspect values
  */
 
-export type ConditionPrimitive =
-  | FileExistsCondition
-  | ChoiceCondition
-  | VarExistsCondition;
+export type ConditionPrimitive = FileExistsCondition | ChoiceCondition | VarExistsCondition;
 
-export type Condition =
-  | ConditionPrimitive
-  | AllCondition
-  | AnyCondition
-  | NotCondition;
+export type Condition = ConditionPrimitive | AllCondition | AnyCondition | NotCondition;
 
 /**
  * 1. File/Directory existence check
@@ -76,4 +69,3 @@ export interface AnyCondition {
 export interface NotCondition {
   not: Condition;
 }
-

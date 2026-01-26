@@ -3,10 +3,10 @@ import inquirer from 'inquirer';
 
 /**
  * Choice Prompt
- * 
+ *
  * Shows user a selection menu with multiple options.
  * User can select one option using arrow keys and Enter.
- * 
+ *
  * Example:
  *   Choose environment:
  *   > Development
@@ -16,7 +16,7 @@ import inquirer from 'inquirer';
 export class ChoicePrompt {
   /**
    * Show choice menu to user and return selected option
-   * 
+   *
    * @param message - Question to ask user
    * @param options - List of options (each has id and label)
    * @returns Selected option object
@@ -34,7 +34,7 @@ export class ChoicePrompt {
         // Convert our options format to inquirer format
         choices: options.map((opt) => ({
           name: opt.label, // What user sees
-          value: opt.id,   // What we get back
+          value: opt.id, // What we get back
         })),
       },
     ]);
@@ -50,25 +50,22 @@ export class ChoicePrompt {
 
 /**
  * Text Prompt
- * 
+ *
  * Asks user to type text input.
  * User can type anything and press Enter.
- * 
+ *
  * Example:
  *   Enter version number: 1.0.0
  */
 export class TextPrompt {
   /**
    * Ask user for text input
-   * 
+   *
    * @param message - Question to ask user
    * @param defaultValue - Optional default value (shown in brackets)
    * @returns User's input text
    */
-  async prompt(
-    message: string,
-    defaultValue?: string
-  ): Promise<string> {
+  async prompt(message: string, defaultValue?: string): Promise<string> {
     // Use inquirer to show text input field
     const { value } = await inquirer.prompt([
       {
@@ -82,4 +79,3 @@ export class TextPrompt {
     return value;
   }
 }
-

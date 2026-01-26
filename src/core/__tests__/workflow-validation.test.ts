@@ -73,9 +73,7 @@ steps:
       const parser = new JSONParser();
       const json = JSON.stringify({
         name: 'test',
-        steps: [
-          { run: 'echo "hello"' }
-        ]
+        steps: [{ run: 'echo "hello"' }],
       });
       const workflow = parser.parse(json);
       expect(workflow.name).toBe('test');
@@ -86,9 +84,7 @@ steps:
       const parser = new JSONParser();
       const json = JSON.stringify({
         name: 'test',
-        steps: [
-          { invalid_step: 'this should fail' }
-        ]
+        steps: [{ invalid_step: 'this should fail' }],
       });
       expect(() => parser.parse(json)).toThrow('Invalid workflow structure');
     });
@@ -96,7 +92,7 @@ steps:
     it('should reject workflow without steps', () => {
       const parser = new JSONParser();
       const json = JSON.stringify({
-        name: 'test'
+        name: 'test',
       });
       expect(() => parser.parse(json)).toThrow('Invalid workflow structure');
     });
@@ -115,11 +111,11 @@ steps:
             run: 'echo "hello"',
             when: {
               var: {
-                env: 'dev'
-              }
-            }
-          }
-        ]
+                env: 'dev',
+              },
+            },
+          },
+        ],
       });
       const workflow = parser.parse(json);
       expect(workflow.steps).toHaveLength(1);
@@ -127,4 +123,3 @@ steps:
     });
   });
 });
-

@@ -57,7 +57,7 @@ export class Workspace {
       return 'pending';
     }
     const value = this.getFact(name);
-    return (value === false || value === 'failed') ? 'failed' : 'ready';
+    return value === false || value === 'failed' ? 'failed' : 'ready';
   }
 
   /**
@@ -171,4 +171,3 @@ export class Workspace {
     return cloned;
   }
 }
-

@@ -42,11 +42,7 @@ describe('Executor - Parallel Step', () => {
     const workflow: Workflow = {
       steps: [
         {
-          parallel: [
-            { run: 'echo "Step 1"' },
-            { run: 'echo "Step 2"' },
-            { run: 'echo "Step 3"' },
-          ],
+          parallel: [{ run: 'echo "Step 1"' }, { run: 'echo "Step 2"' }, { run: 'echo "Step 3"' }],
         },
         {
           run: 'echo "After parallel"',
@@ -57,11 +53,11 @@ describe('Executor - Parallel Step', () => {
     await executor.execute(workflow);
 
     // All parallel steps should execute
-    const calls = mockRun.mock.calls.map(call => call[0]);
+    const calls = mockRun.mock.calls.map((call) => call[0]);
     expect(calls).toContain('echo "Step 1"');
     expect(calls).toContain('echo "Step 2"');
     expect(calls).toContain('echo "Step 3"');
-    
+
     // Execute next step after all parallel steps complete
     expect(calls).toContain('echo "After parallel"');
   });
@@ -91,10 +87,9 @@ describe('Executor - Parallel Step', () => {
     await executor.execute(workflow);
 
     // Check condition by file existence
-    const calls = mockRun.mock.calls.map(call => call[0]);
+    const calls = mockRun.mock.calls.map((call) => call[0]);
     expect(calls).toContain('echo "Package.json exists"');
   });
-
 
   it('should handle parallel steps with file conditions', async () => {
     const workflow: Workflow = {
@@ -120,7 +115,7 @@ describe('Executor - Parallel Step', () => {
     await executor.execute(workflow);
 
     // Execute only parallel steps with satisfied conditions
-    const calls = mockRun.mock.calls.map(call => call[0]);
+    const calls = mockRun.mock.calls.map((call) => call[0]);
     expect(calls).toContain('echo "Branch 1"');
     expect(calls).toContain('echo "Branch 2"');
     expect(calls).toContain('echo "After parallel"');
@@ -130,10 +125,7 @@ describe('Executor - Parallel Step', () => {
     const workflow: Workflow = {
       steps: [
         {
-          parallel: [
-            { run: 'echo "Step 1"' },
-            { run: 'echo "Step 2"' },
-          ],
+          parallel: [{ run: 'echo "Step 1"' }, { run: 'echo "Step 2"' }],
         },
         {
           run: 'echo "After parallel"',
@@ -147,10 +139,9 @@ describe('Executor - Parallel Step', () => {
     await executor.execute(workflow);
 
     // Both steps should execute
-    const calls = mockRun.mock.calls.map(call => call[0]);
+    const calls = mockRun.mock.calls.map((call) => call[0]);
     expect(calls).toContain('echo "Step 1"');
     expect(calls).toContain('echo "Step 2"');
     expect(calls).toContain('echo "After parallel"');
   });
 });
-

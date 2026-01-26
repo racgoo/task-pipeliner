@@ -53,12 +53,12 @@ describe('YAML Integration Tests', () => {
     await executor.execute(workflow);
 
     // All steps should be executed
-    const calls = mockRun.mock.calls.map(call => call[0]);
+    const calls = mockRun.mock.calls.map((call) => call[0]);
     expect(calls).toContain('echo "Building..."');
-    
+
     // Staging step should execute after staging is selected
     expect(calls).toContain('echo "Deploying to staging..."');
-    
+
     // Prod step should not be executed
     expect(calls).not.toContain('echo "Deploying to production..."');
   });
@@ -73,9 +73,9 @@ describe('YAML Integration Tests', () => {
     await executor.execute(workflow);
 
     // Prod step should execute after prod is selected
-    const calls = mockRun.mock.calls.map(call => call[0]);
+    const calls = mockRun.mock.calls.map((call) => call[0]);
     expect(calls).toContain('echo "Deploying to production..."');
-    
+
     // Staging step should not be executed
     expect(calls).not.toContain('echo "Deploying to staging..."');
   });
@@ -89,10 +89,10 @@ describe('YAML Integration Tests', () => {
     await executor.execute(workflow);
 
     // All parallel steps should be executed
-    const calls = mockRun.mock.calls.map(call => call[0]);
+    const calls = mockRun.mock.calls.map((call) => call[0]);
     expect(calls).toContain('echo "Running web tests..."');
     expect(calls).toContain('echo "Running API tests..."');
-    
+
     // Step execution based on selection
     expect(calls).toContain('echo "Deploying with blue-green strategy..."');
   });
@@ -107,11 +107,11 @@ describe('YAML Integration Tests', () => {
 
     // Check workspace state
     const workspace = (executor as any).workspace;
-    
+
     // Staging choice should be set
     expect(workspace.hasChoice('staging')).toBe(true);
     expect(workspace.getChoice('staging')).toBe('staging');
-    
+
     // Prod choice should not be set
     expect(workspace.hasChoice('prod')).toBe(false);
   });
@@ -119,7 +119,7 @@ describe('YAML Integration Tests', () => {
   it('should execute base-dir-example.yaml with baseDir correctly', async () => {
     const yamlContent = readFileSync('examples/yaml-examples/base-dir-example.yaml', 'utf-8');
     const workflow = parse(yamlContent) as Workflow;
-    
+
     // Set file path for baseDir resolution
     workflow._filePath = resolve(process.cwd(), 'examples/yaml-examples/base-dir-example.yaml');
 
@@ -127,7 +127,7 @@ describe('YAML Integration Tests', () => {
 
     // Verify commands were executed
     expect(mockRun).toHaveBeenCalledTimes(2);
-    
+
     // Verify baseDir was resolved correctly
     // baseDir is relative to YAML file directory (examples/), so ./examples resolves to examples/examples
     if (!workflow._filePath) {
@@ -139,9 +139,8 @@ describe('YAML Integration Tests', () => {
     expect(actualBaseDir).toBe(expectedBaseDir);
 
     // Verify all commands used the correct cwd
-    mockRun.mock.calls.forEach(call => {
+    mockRun.mock.calls.forEach((call) => {
       expect(call[8]).toBe(expectedBaseDir); // cwd is 9th parameter (index 8)
     });
   });
 });
-

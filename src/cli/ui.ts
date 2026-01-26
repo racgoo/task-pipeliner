@@ -22,7 +22,7 @@ export function createStepHeaderBox(
   options: BoxOptions = {}
 ): string {
   const { borderColor = 'cyan', isNested = false } = options;
-  
+
   // Create title with line number and file name
   let title: string | undefined;
   if (lineNumber !== undefined) {
@@ -32,29 +32,23 @@ export function createStepHeaderBox(
       title = `line ${lineNumber}`;
     }
   }
-  
+
   // Add indentation when nested
   const displayContent = isNested ? `│ ${content}` : `> ${content}`;
-  
-  return boxen(
-    displayContent,
-    {
-      title: title,
-      borderStyle: 'round',
-      padding: { top: 0, bottom: 0, left: 1, right: 1 },
-      margin: { top: 0, bottom: 0 },
-      borderColor: borderColor,
-    }
-  );
+
+  return boxen(displayContent, {
+    title: title,
+    borderStyle: 'round',
+    padding: { top: 0, bottom: 0, left: 1, right: 1 },
+    margin: { top: 0, bottom: 0 },
+    borderColor: borderColor,
+  });
 }
 
 /**
  * Create step completion message (no box, just colored text)
  */
-export function createStepFooterMessage(
-  success: boolean,
-  _isNested: boolean = false
-): string {
+export function createStepFooterMessage(success: boolean, _isNested: boolean = false): string {
   const statusText = success ? '✓ Completed' : '✗ Failed';
   return success ? chalk.green(statusText) : chalk.red(statusText);
 }
@@ -62,40 +56,32 @@ export function createStepFooterMessage(
 /**
  * Create error box
  */
-export function createErrorBox(
-  error: string,
-): string {
-  return boxen(
-    `✗ ${error}`,
-    {
-      borderStyle: 'round',
-      padding: { top: 0, bottom: 0, left: 1, right: 1 },
-      margin: { top: 0, bottom: 0 },
-      borderColor: 'red',
-    }
-  );
+export function createErrorBox(error: string): string {
+  return boxen(`✗ ${error}`, {
+    borderStyle: 'round',
+    padding: { top: 0, bottom: 0, left: 1, right: 1 },
+    margin: { top: 0, bottom: 0 },
+    borderColor: 'red',
+  });
 }
 
 /**
  * Create parallel execution header box
  */
 export function createParallelHeaderBox(branchCount: number): string {
-  return boxen(
-    `> Starting parallel execution (${branchCount} branches)`,
-    {
-      borderStyle: 'round',
-      padding: { top: 0, bottom: 0, left: 1, right: 1 },
-      margin: { top: 0, bottom: 0 },
-      borderColor: 'yellow',
-    }
-  );
+  return boxen(`> Starting parallel execution (${branchCount} branches)`, {
+    borderStyle: 'round',
+    padding: { top: 0, bottom: 0, left: 1, right: 1 },
+    margin: { top: 0, bottom: 0 },
+    borderColor: 'yellow',
+  });
 }
 
 /**
  * Create parallel execution footer message (no box, just colored text)
  */
 export function createParallelFooterMessage(allSucceeded: boolean): string {
-  const statusText = allSucceeded 
+  const statusText = allSucceeded
     ? '✓ All parallel branches completed'
     : '✗ Some parallel branches failed';
   return allSucceeded ? chalk.green(statusText) : chalk.red(statusText);
@@ -116,4 +102,3 @@ export function formatNestedLine(line: string, isNested: boolean = false): strin
   const prefix = isNested ? '| │ ' : '│ ';
   return `${prefix}${line}`;
 }
-

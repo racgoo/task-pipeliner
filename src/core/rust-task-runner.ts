@@ -23,15 +23,15 @@ export async function loadRustModule(): Promise<RustTaskRunnerModule | null> {
     const path = await import('path');
     const { fileURLToPath } = await import('url');
     const { createRequire } = await import('module');
-    
+
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     const nodePath = path.resolve(__dirname, '../task-pipeliner-rs.node');
-    
+
     // Use require to load .node file in ESM
     const require = createRequire(import.meta.url);
     const module = require(nodePath);
-    
+
     if (module && 'runTask' in module) {
       rustModule = module as RustTaskRunnerModule;
       return rustModule;
@@ -43,4 +43,3 @@ export async function loadRustModule(): Promise<RustTaskRunnerModule | null> {
 
   return null;
 }
-

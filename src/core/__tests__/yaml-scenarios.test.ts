@@ -57,16 +57,16 @@ describe('YAML Scenario Tests', () => {
           {
             when: {
               var: {
-                env: 'staging'
-              }
+                env: 'staging',
+              },
             },
             run: 'echo "Deploying to staging..."',
           },
           {
             when: {
               var: {
-                env: 'prod'
-              }
+                env: 'prod',
+              },
             },
             run: 'echo "Deploying to production..."',
           },
@@ -78,7 +78,7 @@ describe('YAML Scenario Tests', () => {
 
       await executor.execute(workflow);
 
-      const calls = mockRun.mock.calls.map(call => call[0]);
+      const calls = mockRun.mock.calls.map((call) => call[0]);
       expect(calls).toContain('echo "Deploying to staging..."');
       expect(calls).not.toContain('echo "Deploying to production..."');
     });
@@ -113,13 +113,11 @@ describe('YAML Scenario Tests', () => {
       };
 
       const textPrompt = (executor as any).textPrompt;
-      textPrompt.prompt = vi.fn()
-        .mockResolvedValueOnce('John')
-        .mockResolvedValueOnce('2.0.0');
+      textPrompt.prompt = vi.fn().mockResolvedValueOnce('John').mockResolvedValueOnce('2.0.0');
 
       await executor.execute(workflow);
 
-      const calls = mockRun.mock.calls.map(call => call[0]);
+      const calls = mockRun.mock.calls.map((call) => call[0]);
       expect(calls).toContain('echo "Hello, John!"');
       expect(calls).toContain('echo "Building version 2.0.0..."');
     });
@@ -148,8 +146,8 @@ describe('YAML Scenario Tests', () => {
           {
             when: {
               var: {
-                strategy: 'blue_green'
-              }
+                strategy: 'blue_green',
+              },
             },
             run: 'echo "Deploying with blue-green strategy..."',
           },
@@ -161,7 +159,7 @@ describe('YAML Scenario Tests', () => {
 
       await executor.execute(workflow);
 
-      const calls = mockRun.mock.calls.map(call => call[0]);
+      const calls = mockRun.mock.calls.map((call) => call[0]);
       expect(calls).toContain('echo "Running web tests..."');
       expect(calls).toContain('echo "Running API tests..."');
       expect(calls).toContain('echo "Deploying with blue-green strategy..."');
@@ -187,7 +185,7 @@ describe('YAML Scenario Tests', () => {
 
       await executor.execute(workflow);
 
-      const calls = mockRun.mock.calls.map(call => call[0]);
+      const calls = mockRun.mock.calls.map((call) => call[0]);
       expect(calls).toContain('echo "Package.json exists"');
       expect(calls).toContain('echo "File does not exist"');
     });
@@ -215,9 +213,8 @@ describe('YAML Scenario Tests', () => {
 
       await executor.execute(workflow);
 
-      const calls = mockRun.mock.calls.map(call => call[0]);
+      const calls = mockRun.mock.calls.map((call) => call[0]);
       expect(calls).toContain('echo "Building my-app..."');
     });
   });
 });
-

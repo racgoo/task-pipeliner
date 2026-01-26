@@ -1,12 +1,12 @@
 /**
  * Task Runner
- * 
+ *
  * Executes shell commands and displays output in a nice box format.
- * 
+ *
  * Two modes:
  * 1. Real-time mode: Output appears immediately as command runs (normal execution)
  * 2. Buffered mode: Collect all output first, display later (parallel execution)
- * 
+ *
  * Features:
  * - Box-style output with borders
  * - Line-by-line streaming
@@ -35,7 +35,7 @@ interface SpawnOptions {
 export class TaskRunner {
   /**
    * Run a task command with box-style output streaming
-   * 
+   *
    * @param command - Shell command to execute
    * @param stepIndex - Step index in workflow (for tracking)
    * @param stepName - Display name for the step
@@ -65,7 +65,15 @@ export class TaskRunner {
       return this.runBuffered(command, cwd, timeout);
     } else {
       // Display output immediately (normal execution)
-      return this.runRealtime(command, stepName || command, hasCondition, lineNumber, fileName, cwd, timeout);
+      return this.runRealtime(
+        command,
+        stepName || command,
+        hasCondition,
+        lineNumber,
+        fileName,
+        cwd,
+        timeout
+      );
     }
   }
 
@@ -73,7 +81,11 @@ export class TaskRunner {
    * Run command in buffered mode (collect all output for later display)
    * Used for parallel execution where we need to collect output first
    */
-  private async runBuffered(command: string, workingDirectory?: string, timeoutSeconds?: number): Promise<TaskRunResult> {
+  private async runBuffered(
+    command: string,
+    workingDirectory?: string,
+    timeoutSeconds?: number
+  ): Promise<TaskRunResult> {
     const { spawn } = await import('child_process');
     const [commandName, ...commandArgs] = this.parseCommand(command);
     const spawnOptions = this.createSpawnOptions(workingDirectory);
@@ -99,7 +111,10 @@ export class TaskRunner {
       // Collect stdout lines
       child.stdout?.on('data', (data: Buffer) => {
         const dataChunk = data.toString();
-        const { lines: completeLines, remaining: incompleteLine } = this.processStreamBuffer(dataChunk, incompleteStdoutLine);
+        const { lines: completeLines, remaining: incompleteLine } = this.processStreamBuffer(
+          dataChunk,
+          incompleteStdoutLine
+        );
         allStdoutLines.push(...completeLines);
         incompleteStdoutLine = incompleteLine;
       });
@@ -107,7 +122,10 @@ export class TaskRunner {
       // Collect stderr lines
       child.stderr?.on('data', (data: Buffer) => {
         const dataChunk = data.toString();
-        const { lines: completeLines, remaining: incompleteLine } = this.processStreamBuffer(dataChunk, incompleteStderrLine);
+        const { lines: completeLines, remaining: incompleteLine } = this.processStreamBuffer(
+          dataChunk,
+          incompleteStderrLine
+        );
         allStderrLines.push(...completeLines);
         incompleteStderrLine = incompleteLine;
       });
@@ -132,7 +150,11 @@ export class TaskRunner {
           clearTimeout(timeoutId);
         }
         const errorMessage = `Error: ${error.message}`;
-        resolve({ success: false, stdout: allStdoutLines, stderr: [...allStderrLines, errorMessage] });
+        resolve({
+          success: false,
+          stdout: allStdoutLines,
+          stderr: [...allStderrLines, errorMessage],
+        });
       });
     });
   }
@@ -180,16 +202,22 @@ export class TaskRunner {
       // Process stdout: output complete lines immediately
       child.stdout?.on('data', (data: Buffer) => {
         const dataChunk = data.toString();
-        const { lines: completeLines, remaining: incompleteLine } = this.processStreamBuffer(dataChunk, incompleteStdoutLine);
-        completeLines.forEach(line => process.stdout.write(`│ ${line}\n`));
+        const { lines: completeLines, remaining: incompleteLine } = this.processStreamBuffer(
+          dataChunk,
+          incompleteStdoutLine
+        );
+        completeLines.forEach((line) => process.stdout.write(`│ ${line}\n`));
         incompleteStdoutLine = incompleteLine;
       });
 
       // Process stderr: output complete lines immediately
       child.stderr?.on('data', (data: Buffer) => {
         const dataChunk = data.toString();
-        const { lines: completeLines, remaining: incompleteLine } = this.processStreamBuffer(dataChunk, incompleteStderrLine);
-        completeLines.forEach(line => process.stderr.write(`│ ${line}\n`));
+        const { lines: completeLines, remaining: incompleteLine } = this.processStreamBuffer(
+          dataChunk,
+          incompleteStderrLine
+        );
+        completeLines.forEach((line) => process.stderr.write(`│ ${line}\n`));
         incompleteStderrLine = incompleteLine;
       });
 
@@ -246,19 +274,22 @@ export class TaskRunner {
 
   /**
    * Process stream buffer and extract complete lines
-   * 
+   *
    * Command output comes in chunks, not necessarily line-by-line.
    * This function:
    * 1. Combines new chunk with existing buffer
    * 2. Extracts all complete lines (ending with \n)
    * 3. Keeps incomplete line in buffer for next chunk
-   * 
+   *
    * Example:
    * - Buffer: "Hello "
    * - Chunk: "World\nHow are"
    * - Result: lines=["Hello World"], remaining="How are"
    */
-  private processStreamBuffer(chunk: string, buffer: string): { lines: string[]; remaining: string } {
+  private processStreamBuffer(
+    chunk: string,
+    buffer: string
+  ): { lines: string[]; remaining: string } {
     const newBuffer = buffer + chunk;
     const lines: string[] = [];
     let remaining = newBuffer;
@@ -279,7 +310,7 @@ export class TaskRunner {
    */
   private formatNestedOutput(content: string, isNested: boolean): void {
     if (isNested) {
-      content.split('\n').forEach(line => {
+      content.split('\n').forEach((line) => {
         if (line.trim()) {
           console.log(`| ${line}`);
         }
@@ -299,20 +330,22 @@ export class TaskRunner {
     lineNumber?: number,
     fileName?: string
   ): void {
-    const headerBox = createStepHeaderBox(stepName, lineNumber, fileName, { borderColor: 'cyan', isNested });
+    const headerBox = createStepHeaderBox(stepName, lineNumber, fileName, {
+      borderColor: 'cyan',
+      isNested,
+    });
     this.formatNestedOutput(headerBox, isNested);
-    
-    result.stdout.forEach(line => {
+
+    result.stdout.forEach((line) => {
       const formattedLine = formatNestedLine(line, isNested);
       process.stdout.write(`${formattedLine}\n`);
     });
-    result.stderr.forEach(line => {
+    result.stderr.forEach((line) => {
       const formattedLine = formatNestedLine(line, isNested);
       process.stderr.write(`${formattedLine}\n`);
     });
-    
+
     const footerMessage = createStepFooterMessage(result.success, isNested);
     console.log(footerMessage);
   }
 }
-

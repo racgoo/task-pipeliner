@@ -335,4 +335,3 @@ describe('Choose with "as" keyword and var condition - Bug Fix Test', () => {
     expect(calls).not.toContain('echo "Option 2 selected"');
   });
 });
-

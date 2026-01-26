@@ -19,7 +19,7 @@ describe('FINAL VERIFICATION: Basic YAML Must Work', () => {
       executedCommands.push(cmd);
       return Promise.resolve(true);
     });
-    
+
     // Mock TextPrompt (prevent timeout)
     const textPrompt = (executor as any).textPrompt;
     textPrompt.prompt = vi.fn().mockResolvedValue('1.0.0');
@@ -35,12 +35,9 @@ describe('FINAL VERIFICATION: Basic YAML Must Work', () => {
     await executor.execute(workflow);
 
     // Required verification - all of these must pass
-    const requiredCommands = [
-      'echo "Building..."',
-      'echo "Deploying to staging..."',
-    ];
+    const requiredCommands = ['echo "Building..."', 'echo "Deploying to staging..."'];
 
-    requiredCommands.forEach(cmd => {
+    requiredCommands.forEach((cmd) => {
       expect(executedCommands).toContain(cmd);
     });
 
@@ -75,4 +72,3 @@ describe('FINAL VERIFICATION: Basic YAML Must Work', () => {
     console.log('\n✅ FINAL TEST PASSED - Prod choice works correctly');
   });
 });
-

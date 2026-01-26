@@ -12,7 +12,7 @@ describe('BUG REPRODUCTION: Choice condition not working', () => {
 
     const executor = new Executor();
     const executed: string[] = [];
-    
+
     // Use actual taskRunner
     const taskRunner = (executor as any).taskRunner;
     const originalRun = taskRunner.run.bind(taskRunner);
@@ -25,7 +25,7 @@ describe('BUG REPRODUCTION: Choice condition not working', () => {
     // Use actual choicePrompt (mocked)
     const choicePrompt = (executor as any).choicePrompt;
     choicePrompt.prompt = vi.fn().mockResolvedValue({ id: 'staging', label: 'Staging' });
-    
+
     // Mock TextPrompt (prevent timeout)
     const textPrompt = (executor as any).textPrompt;
     textPrompt.prompt = vi.fn().mockResolvedValue('1.0.0');
@@ -39,7 +39,10 @@ describe('BUG REPRODUCTION: Choice condition not working', () => {
       // Verify
       console.log('\n=== EXECUTION RESULT ===');
       console.log('Executed:', executed);
-      console.log('Workspace choices:', Array.from((executor as any).workspace.state.choices.entries()));
+      console.log(
+        'Workspace choices:',
+        Array.from((executor as any).workspace.state.choices.entries())
+      );
 
       // Required: staging step must execute
       expect(executed).toContain('echo "Deploying to staging..."');
@@ -69,7 +72,7 @@ describe('BUG REPRODUCTION: Choice condition not working', () => {
 
     const executor = new Executor();
     const executed: string[] = [];
-    
+
     const taskRunner = (executor as any).taskRunner;
     taskRunner.run = vi.fn().mockImplementation((cmd: string) => {
       executed.push(cmd);
@@ -77,10 +80,11 @@ describe('BUG REPRODUCTION: Choice condition not working', () => {
     });
 
     const choicePrompt = (executor as any).choicePrompt;
-    choicePrompt.prompt = vi.fn()
+    choicePrompt.prompt = vi
+      .fn()
       .mockResolvedValueOnce({ id: 'staging', label: 'S' })
       .mockResolvedValueOnce({ id: 'staging', label: 'S' });
-    
+
     // Mock TextPrompt (prevent timeout)
     const textPrompt = (executor as any).textPrompt;
     textPrompt.prompt = vi.fn().mockResolvedValue('1.0.0');
@@ -101,4 +105,3 @@ describe('BUG REPRODUCTION: Choice condition not working', () => {
     expect(executed).toContain('echo "Staging"');
   });
 });
-

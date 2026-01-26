@@ -6,23 +6,19 @@ import { ChoicePrompt } from '../../cli/prompts.js';
 describe('Real Inquirer Test', () => {
   it('should return correct format from inquirer', async () => {
     const choicePrompt = new ChoicePrompt();
-    
+
     // Mock inquirer directly
     const mockInquirer = vi.spyOn(inquirer, 'prompt');
     mockInquirer.mockResolvedValueOnce({ choice: 'staging' });
 
-    const result = await choicePrompt.prompt(
-      'Test message',
-      [
-        { id: 'staging', label: 'Staging' },
-        { id: 'prod', label: 'Production' },
-      ]
-    );
+    const result = await choicePrompt.prompt('Test message', [
+      { id: 'staging', label: 'Staging' },
+      { id: 'prod', label: 'Production' },
+    ]);
 
     expect(result).toEqual({ id: 'staging', label: 'Staging' });
     expect(result.id).toBe('staging');
-    
+
     mockInquirer.mockRestore();
   });
 });
-

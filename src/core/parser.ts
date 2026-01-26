@@ -1,6 +1,6 @@
 /**
  * Workflow Parser
- * 
+ *
  * Supports both YAML and JSON format workflow files.
  * Uses polymorphism to handle different file formats.
  * Validates parsed data using Zod schemas for type safety.
@@ -34,7 +34,7 @@ export interface WorkflowParser {
  */
 function fixMalformedStep(step: unknown): unknown {
   const stepAsRecord = step as Record<string, unknown>;
-  
+
   // Fix malformed choose structure
   if (
     'choose' in stepAsRecord &&
@@ -90,17 +90,19 @@ export class YAMLParser implements WorkflowParser {
     try {
       parsed = parse(content);
     } catch (error) {
-      throw new Error(`Invalid YAML format: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Invalid YAML format: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
-    
+
     // Fix malformed steps before validation
     if (parsed && typeof parsed === 'object' && 'steps' in parsed) {
       const workflow = parsed as { steps?: unknown[] };
       if (Array.isArray(workflow.steps)) {
-        workflow.steps = workflow.steps.map(step => fixMalformedStep(step));
+        workflow.steps = workflow.steps.map((step) => fixMalformedStep(step));
       }
     }
-    
+
     // Validate using Zod schema
     try {
       const validated = validateWorkflow(parsed);
@@ -108,10 +110,12 @@ export class YAMLParser implements WorkflowParser {
     } catch (error) {
       if (error instanceof ZodError) {
         // Zod validation error
-        const issues = error.issues.map((issue) => {
-          const path = issue.path.length > 0 ? ` at ${issue.path.join('.')}` : '';
-          return `  - ${issue.message}${path}`;
-        }).join('\n');
+        const issues = error.issues
+          .map((issue) => {
+            const path = issue.path.length > 0 ? ` at ${issue.path.join('.')}` : '';
+            return `  - ${issue.message}${path}`;
+          })
+          .join('\n');
         throw new Error(`Invalid workflow structure:\n${issues}`);
       }
       throw error;
@@ -150,17 +154,19 @@ export class JSONParser implements WorkflowParser {
     try {
       parsed = JSON.parse(content);
     } catch (error) {
-      throw new Error(`Invalid JSON format: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Invalid JSON format: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
-    
+
     // Fix malformed steps before validation
     if (parsed && typeof parsed === 'object' && 'steps' in parsed) {
       const workflow = parsed as { steps?: unknown[] };
       if (Array.isArray(workflow.steps)) {
-        workflow.steps = workflow.steps.map(step => fixMalformedStep(step));
+        workflow.steps = workflow.steps.map((step) => fixMalformedStep(step));
       }
     }
-    
+
     // Validate using Zod schema
     try {
       const validated = validateWorkflow(parsed);
@@ -168,10 +174,12 @@ export class JSONParser implements WorkflowParser {
     } catch (error) {
       if (error instanceof ZodError) {
         // Zod validation error
-        const issues = error.issues.map((issue) => {
-          const path = issue.path.length > 0 ? ` at ${issue.path.join('.')}` : '';
-          return `  - ${issue.message}${path}`;
-        }).join('\n');
+        const issues = error.issues
+          .map((issue) => {
+            const path = issue.path.length > 0 ? ` at ${issue.path.join('.')}` : '';
+            return `  - ${issue.message}${path}`;
+          })
+          .join('\n');
         throw new Error(`Invalid workflow structure:\n${issues}`);
       }
       throw error;
@@ -227,7 +235,7 @@ export class JSONParser implements WorkflowParser {
  */
 export function getParser(filePath: string): WorkflowParser {
   const ext = filePath.toLowerCase().split('.').pop();
-  
+
   switch (ext) {
     case 'yaml':
     case 'yml':
@@ -240,4 +248,3 @@ export function getParser(filePath: string): WorkflowParser {
       return new YAMLParser();
   }
 }
-

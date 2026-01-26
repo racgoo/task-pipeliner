@@ -44,9 +44,8 @@ steps:
     expect(workflow.steps[2]).toHaveProperty('when');
     expect(workflow.steps[2].when).toHaveProperty('var');
     expect(workflow.steps[2].when.var).toHaveProperty('env', 'staging');
-    
+
     // cleanup
     unlinkSync('/tmp/test-workflow.yaml');
   });
 });
-

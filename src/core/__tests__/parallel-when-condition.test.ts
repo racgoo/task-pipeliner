@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Workflow } from '../../types/workflow.js';
 import { Executor } from '../executor.js';
 
-
 // Mock TaskRunner
 const mockRun = vi.fn();
 vi.mock('../task-runner', () => ({
@@ -71,13 +70,13 @@ describe('Parallel with when condition - Bug Fix Test', () => {
     await executor.execute(workflow);
 
     const calls = mockRun.mock.calls.map((call) => call[0]);
-    
+
     // Should execute starting server
     expect(calls).toContain('echo "Starting Server"');
-    
+
     // Should NOT execute dev mode (condition not met)
     expect(calls).not.toContain('echo "dev mode"');
-    
+
     // SHOULD execute hard-task mode (condition met)
     expect(calls).toContain('echo "hard-task mode"');
   });
@@ -116,7 +115,7 @@ describe('Parallel with when condition - Bug Fix Test', () => {
     await executor.execute(workflow);
 
     const calls = mockRun.mock.calls.map((call) => call[0]);
-    
+
     // Should NOT execute hard-task mode (condition not met)
     expect(calls).not.toContain('echo "hard-task mode"');
   });
@@ -167,12 +166,11 @@ describe('Parallel with when condition - Bug Fix Test', () => {
     await executor.execute(workflow);
 
     const calls = mockRun.mock.calls.map((call) => call[0]);
-    
+
     // Should execute hard-task mode (condition met)
     expect(calls).toContain('echo "hard-task mode"');
-    
+
     // Should NOT execute dev mode (condition not met)
     expect(calls).not.toContain('echo "dev mode"');
   });
 });
-

@@ -43,16 +43,16 @@ describe('Executor - Choice Integration Test (Real Prompts)', () => {
         {
           when: {
             var: {
-              env: 'staging'
-            }
+              env: 'staging',
+            },
           },
           run: 'echo "Deploying to staging..."',
         },
         {
           when: {
             var: {
-              env: 'prod'
-            }
+              env: 'prod',
+            },
           },
           run: 'echo "Deploying to production..."',
         },
@@ -65,10 +65,10 @@ describe('Executor - Choice Integration Test (Real Prompts)', () => {
     await executor.execute(workflow);
 
     // staging step should execute after staging is selected
-    const calls = mockRun.mock.calls.map(call => call[0]);
+    const calls = mockRun.mock.calls.map((call) => call[0]);
     expect(calls).toContain('echo "Deploying to staging..."');
     expect(calls).not.toContain('echo "Deploying to production..."');
-    
+
     // Check if choice and variable are set in workspace
     const workspace = (executor as any).workspace;
     expect(workspace.hasChoice('staging')).toBe(true);
@@ -81,9 +81,7 @@ describe('Executor - Choice Integration Test (Real Prompts)', () => {
         {
           choose: {
             message: 'Select option',
-            options: [
-              { id: 'option1', label: 'Option 1' },
-            ],
+            options: [{ id: 'option1', label: 'Option 1' }],
           },
         },
       ],
@@ -95,7 +93,7 @@ describe('Executor - Choice Integration Test (Real Prompts)', () => {
     await executor.execute(workflow);
 
     const workspace = (executor as any).workspace;
-    
+
     // Check if choice is set
     expect(workspace.hasChoice('option1')).toBe(true);
     expect(workspace.getChoice('option1')).toBe('option1');
@@ -145,12 +143,12 @@ describe('Executor - Choice Integration Test (Real Prompts)', () => {
     // Test with dev
     vi.spyOn(choicePrompt, 'prompt').mockResolvedValue({ id: 'dev', label: 'dev' });
     await executor.execute(workflow);
-    
+
     const calls = mockRun.mock.calls.map((call) => call[0]);
     expect(calls).toContain('echo "DEV selected"');
     expect(calls).not.toContain('echo "BUILD selected"');
     expect(calls).not.toContain('echo "ECHO selected"');
-    
+
     // Verify variable is stored correctly
     const workspace = (executor as any).workspace;
     expect(workspace.getVariable('optionType')).toBe('dev');
@@ -183,13 +181,12 @@ describe('Executor - Choice Integration Test (Real Prompts)', () => {
     // Select dev, but condition checks for build
     vi.spyOn(choicePrompt, 'prompt').mockResolvedValue({ id: 'dev', label: 'dev' });
     await executor.execute(workflow);
-    
+
     const calls = mockRun.mock.calls.map((call) => call[0]);
     expect(calls).not.toContain('echo "BUILD selected"');
-    
+
     // Verify variable is stored but condition didn't match
     const workspace = (executor as any).workspace;
     expect(workspace.getVariable('optionType')).toBe('dev');
   });
 });
-
