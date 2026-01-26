@@ -25,6 +25,8 @@
 
 - **Variable substitution** - Use `{{variables}}` throughout your workflows
 
+- **Execution history** - Track and review past workflow executions with detailed step-by-step records
+
 ## 🔗 Resources
 
 - 📚 **[Documentation](https://task-pipeliner.racgoo.com/)** - Complete DSL reference and guides
@@ -35,6 +37,10 @@
   ```bash
   tp open generator  # Open visual generator
   tp open docs       # Open documentation
+  tp history         # View workflow execution history
+  tp history show    # Select and view a specific history
+  tp history remove   # Remove a specific history
+  tp history remove-all # Remove all histories
   ```
 
 ## 🚀 Quick Start
@@ -204,19 +210,6 @@ steps:                                 # Required: Array of steps to execute
 - **Type**: `string`
 - **Description**: Display name for the workflow
 - **Example**: `name: "Build and Deploy"`
-
-#### `baseDir` (optional)
-- **Type**: `string` (relative or absolute path)
-- **Description**: Base directory for all command executions
-- **Resolution**:
-  - **Relative path** (e.g., `./`, `../frontend`): Resolved relative to the workflow file's directory
-  - **Absolute path** (e.g., `/home/user/project`): Used as-is
-  - **If omitted**: Uses `process.cwd()` (current working directory)
-- **Example**:
-  ```yaml
-  baseDir: ./frontend        # Relative to workflow file
-  baseDir: /app/frontend     # Absolute path
-  ```
 
 #### `baseDir` (optional)
 - **Type**: `string` (relative or absolute path)
@@ -961,6 +954,110 @@ steps:
   # 10. Variable substitution
   - run: echo "Deploying {{projectName}} version {{version}} to {{env}}"
 ```
+
+---
+
+## 📜 History Management
+
+task-pipeliner automatically records workflow execution history, allowing you to review past executions, debug issues, and track performance.
+
+### Viewing History
+
+All workflow executions are automatically saved to `~/.pipeliner/workflow-history/` with timestamped filenames.
+
+**Interactive Menu:**
+```bash
+tp history
+```
+
+This opens an interactive menu where you can:
+- **Show** - View and select a history to view
+- **Remove** - Delete a specific history file
+- **Remove All** - Delete all history files
+
+**View Specific History:**
+```bash
+tp history show
+```
+
+This command:
+1. Lists all available history files
+2. Lets you select one to view
+3. Displays detailed execution information including:
+   - Execution timestamp
+   - Total duration
+   - Step-by-step results (success/failure)
+   - Command output (stdout/stderr)
+   - Step durations
+
+**Example Output:**
+```
+┌─────────────────────────────────────────┐
+│  Workflow Execution History             │
+│                                         │
+│  File: workflow-2026-01-26_21-51-17...  │
+│  Started: 2026-01-26 21:51:17           │
+│  Total Duration: 5.23s                  │
+│  Total Steps: 3                         │
+│  ✓ Successful: 2                        │
+│  ✗ Failed: 1                            │
+└─────────────────────────────────────────┘
+
+┌─────────────────────────────────────────┐
+│  ✓ Step 1/3 - Run                       │
+│  Duration: 1.23s | Status: Success      │
+│                                         │
+│  Command: npm install                   │
+└─────────────────────────────────────────┘
+```
+
+### Removing History
+
+**Remove Specific History:**
+```bash
+tp history remove
+```
+
+Opens an interactive menu to select which history file to delete.
+
+**Remove All Histories:**
+```bash
+tp history remove-all
+```
+
+Removes all stored workflow execution histories. You'll be prompted for confirmation unless you use the `-y` flag:
+
+```bash
+tp history remove-all -y  # Skip confirmation
+```
+
+### History File Format
+
+History files are stored as JSON in `~/.pipeliner/workflow-history/` with the following structure:
+
+```json
+{
+  "initialTimestamp": 1706281877000,
+  "records": [
+    {
+      "step": { "run": "npm install" },
+      "output": {
+        "success": true,
+        "stdout": ["...", "..."],
+        "stderr": []
+      },
+      "duration": 1234,
+      "status": "success"
+    }
+  ]
+}
+```
+
+Each record contains:
+- **step**: The step definition that was executed
+- **output**: Command output (stdout/stderr) and success status
+- **duration**: Execution time in milliseconds
+- **status**: `"success"` or `"failure"`
 
 ---
 

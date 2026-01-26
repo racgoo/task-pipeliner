@@ -25,6 +25,8 @@
 
 - **변수 치환** - 워크플로우 전반에서 `{{variables}}` 사용
 
+- **실행 히스토리** - 상세한 단계별 기록으로 과거 워크플로우 실행 추적 및 검토
+
 ## 리소스
 
 - 📚 **[문서](https://task-pipeliner.racgoo.com/)** - 완전한 DSL 참조 및 가이드
@@ -35,6 +37,10 @@
   ```bash
   tp open generator  # 시각적 생성기 열기
   tp open docs       # 문서 열기
+  tp history         # 워크플로우 실행 히스토리 보기
+  tp history show    # 특정 히스토리 선택하여 보기
+  tp history remove   # 특정 히스토리 삭제
+  tp history remove-all # 모든 히스토리 삭제
   ```
 
 ## 🚀 빠른 시작
@@ -948,6 +954,110 @@ steps:
   # 10. 변수 치환
   - run: echo "Deploying {{projectName}} version {{version}} to {{env}}"
 ```
+
+---
+
+## 📜 실행 히스토리 관리
+
+task-pipeliner는 워크플로우 실행 히스토리를 자동으로 기록하여 과거 실행 내역을 검토하고, 문제를 디버깅하며, 성능을 추적할 수 있게 해줍니다.
+
+### 히스토리 보기
+
+모든 워크플로우 실행은 타임스탬프가 포함된 파일명으로 `~/.pipeliner/workflow-history/`에 자동으로 저장됩니다.
+
+**인터랙티브 메뉴:**
+```bash
+tp history
+```
+
+이 명령은 다음 옵션을 제공하는 인터랙티브 메뉴를 엽니다:
+- **Show** - 히스토리를 선택하여 보기
+- **Remove** - 특정 히스토리 파일 삭제
+- **Remove All** - 모든 히스토리 파일 삭제
+
+**특정 히스토리 보기:**
+```bash
+tp history show
+```
+
+이 명령은:
+1. 사용 가능한 모든 히스토리 파일을 나열합니다
+2. 하나를 선택하여 볼 수 있게 합니다
+3. 다음을 포함한 상세한 실행 정보를 표시합니다:
+   - 실행 타임스탬프
+   - 총 실행 시간
+   - 단계별 결과 (성공/실패)
+   - 명령 출력 (stdout/stderr)
+   - 각 단계의 실행 시간
+
+**출력 예시:**
+```
+┌─────────────────────────────────────────┐
+│  Workflow Execution History             │
+│                                         │
+│  File: workflow-2026-01-26_21-51-17...  │
+│  Started: 2026-01-26 21:51:17           │
+│  Total Duration: 5.23s                  │
+│  Total Steps: 3                         │
+│  ✓ Successful: 2                        │
+│  ✗ Failed: 1                            │
+└─────────────────────────────────────────┘
+
+┌─────────────────────────────────────────┐
+│  ✓ Step 1/3 - Run                       │
+│  Duration: 1.23s | Status: Success      │
+│                                         │
+│  Command: npm install                   │
+└─────────────────────────────────────────┘
+```
+
+### 히스토리 삭제
+
+**특정 히스토리 삭제:**
+```bash
+tp history remove
+```
+
+삭제할 히스토리 파일을 선택하는 인터랙티브 메뉴를 엽니다.
+
+**모든 히스토리 삭제:**
+```bash
+tp history remove-all
+```
+
+저장된 모든 워크플로우 실행 히스토리를 삭제합니다. `-y` 플래그를 사용하지 않으면 확인 프롬프트가 표시됩니다:
+
+```bash
+tp history remove-all -y  # 확인 건너뛰기
+```
+
+### 히스토리 파일 형식
+
+히스토리 파일은 `~/.pipeliner/workflow-history/`에 다음 구조로 JSON 형식으로 저장됩니다:
+
+```json
+{
+  "initialTimestamp": 1706281877000,
+  "records": [
+    {
+      "step": { "run": "npm install" },
+      "output": {
+        "success": true,
+        "stdout": ["...", "..."],
+        "stderr": []
+      },
+      "duration": 1234,
+      "status": "success"
+    }
+  ]
+}
+```
+
+각 레코드는 다음을 포함합니다:
+- **step**: 실행된 단계 정의
+- **output**: 명령 출력 (stdout/stderr) 및 성공 상태
+- **duration**: 밀리초 단위의 실행 시간
+- **status**: `"success"` 또는 `"failure"`
 
 ---
 
