@@ -215,9 +215,14 @@ historyCommand.action(async () => {
         process.exit(1);
       }
 
-      // TODO: Display actual history content
-      console.log(chalk.green(`\n✓ Selected history: ${selectedChoice.id}`));
-      console.log(chalk.blue(`   ${selectedChoice.id}`));
+      try {
+        const history = await historyManager.getHistory(selectedChoice.id);
+        displayHistory(history, selectedChoice.id);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(chalk.red(`\n✗ Failed to load history: ${errorMessage}`));
+        process.exit(1);
+      }
       break;
     }
     case 'remove': {
@@ -280,102 +285,6 @@ historyCommand.action(async () => {
       process.exit(1);
   }
 });
-
-/**
- * History show subcommand
- * Lists all history files and allows user to select one to view
- */
-historyCommand
-  .command('show')
-  .alias('list')
-  .description('Show and select a history to view')
-  .action(async () => {
-    const historyManager = new WorkflowHistoryManager();
-    const historyNames = await historyManager.getHistoryNames();
-
-    if (historyNames.length === 0) {
-      console.log(chalk.yellow('\n⚠ No history found'));
-      return;
-    }
-
-    const choicePrompt = new ChoicePrompt();
-    const choice = await choicePrompt.prompt(
-      'Select a history to view',
-      historyNames.map((name) => ({
-        id: name,
-        label: name,
-      }))
-    );
-
-    if (!choice?.id) {
-      console.error(chalk.red('\n✗ Invalid choice'));
-      process.exit(1);
-    }
-
-    try {
-      const history = await historyManager.getHistory(choice.id);
-      displayHistory(history, choice.id);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(chalk.red(`\n✗ Failed to load history: ${errorMessage}`));
-      process.exit(1);
-    }
-  });
-
-/**
- * History remove subcommand
- * Removes a specific history file by filename
- */
-historyCommand
-  .command('remove')
-  .alias('rm')
-  .description('Remove a specific history file')
-  .argument('<filename>', 'History filename to remove')
-  .action(async (filename: string) => {
-    try {
-      const historyManager = new WorkflowHistoryManager();
-      await historyManager.removeHistory(filename);
-      console.log(chalk.green(`\n✓ Removed history: ${filename}`));
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(chalk.red(`\n✗ Failed to remove history: ${errorMessage}`));
-      process.exit(1);
-    }
-  });
-
-/**
- * History remove-all subcommand
- * Removes all workflow execution history files
- */
-historyCommand
-  .command('remove-all')
-  .alias('clear')
-  .description('Remove all workflow execution histories')
-  .option('-y, --yes', 'Skip confirmation prompt')
-  .action(async (options: { yes?: boolean }) => {
-    try {
-      if (!options.yes) {
-        const choicePrompt = new ChoicePrompt();
-        const choice = await choicePrompt.prompt('Are you sure you want to remove all histories?', [
-          { id: 'yes', label: 'Yes, remove all' },
-          { id: 'no', label: 'No, cancel' },
-        ]);
-
-        if (choice?.id !== 'yes') {
-          console.log(chalk.yellow('\n✗ Cancelled'));
-          return;
-        }
-      }
-
-      const historyManager = new WorkflowHistoryManager();
-      await historyManager.clearAllHistories();
-      console.log(chalk.green('\n✓ All histories removed'));
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(chalk.red(`\n✗ Failed to remove histories: ${errorMessage}`));
-      process.exit(1);
-    }
-  });
 
 /**
  * Extract filename from file path
