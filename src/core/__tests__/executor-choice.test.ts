@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Workflow } from '../../types/workflow.js';
-import { Executor } from '../executor.js';
+import type { Workflow } from '../../types/workflow';
+import { Executor } from '../executor';
 
 // Mock ChoicePrompt
 const mockPrompt = vi.fn();

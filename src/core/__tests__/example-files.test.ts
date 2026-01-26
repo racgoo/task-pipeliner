@@ -2,8 +2,8 @@ import { readFileSync, mkdirSync, existsSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { parse } from 'yaml';
-import type { Workflow } from '../../types/workflow.js';
-import { Executor } from '../executor.js';
+import type { Workflow } from '../../types/workflow';
+import { Executor } from '../executor';
 
 // Mock ChoicePrompt, TextPrompt
 const mockChoicePrompt = vi.fn();

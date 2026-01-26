@@ -1,10 +1,10 @@
 import { readFileSync } from 'fs';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { parse } from 'yaml';
-import type { Workflow } from '../../types/workflow.js';
-import { ConditionEvaluator } from '../condition-evaluator.js';
-import { Executor } from '../executor.js';
-import { Workspace } from '../workspace.js';
+import type { Workflow } from '../../types/workflow';
+import { ConditionEvaluator } from '../condition-evaluator';
+import { Executor } from '../executor';
+import { Workspace } from '../workspace';
 
 // Perfectly reproduce actual execution
 describe('COMPREHENSIVE: Basic YAML - Must Work', () => {

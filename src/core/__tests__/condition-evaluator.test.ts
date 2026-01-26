@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import type { Condition } from '../../types/condition.js';
-import { ConditionEvaluator } from '../condition-evaluator.js';
-import { Workspace } from '../workspace.js';
+import type { Condition } from '../../types/condition';
+import { ConditionEvaluator } from '../condition-evaluator';
+import { Workspace } from '../workspace';
 
 describe('ConditionEvaluator', () => {
   describe('variable value comparison', () => {

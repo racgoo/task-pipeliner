@@ -15,6 +15,7 @@ test:
 build:
     just install
     just test
+    just clean-record
     just lint
     just build-rs
     just build-ts
@@ -32,11 +33,14 @@ update-version version:
 bump-version:
     pnpm exec node scripts/bump-version.js
 
+clean-record:
+    pnpm exec node scripts/clean-record.js
+
 build-rs:
     pnpm exec napi build dist --cargo-cwd rust --release
     
 build-ts:
-    pnpm exec tsc
+    pnpm run build
 
 build-docs:
     cd ./docs && rm -rf build && pnpm run build

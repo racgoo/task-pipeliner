@@ -1,8 +1,8 @@
 import { readFileSync } from 'fs';
 import { describe, expect, it, vi } from 'vitest';
 import { parse } from 'yaml';
-import type { Workflow } from '../../types/workflow.js';
-import { Executor } from '../executor.js';
+import type { Workflow } from '../../types/workflow';
+import { Executor } from '../executor';
 
 // Bug reproduction test: same environment as actual execution
 describe('BUG REPRODUCTION: Choice condition not working', () => {

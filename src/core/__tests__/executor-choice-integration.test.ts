@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ChoicePrompt } from '../../cli/prompts.js';
-import type { Workflow } from '../../types/workflow.js';
-import { Executor } from '../executor.js';
+import { ChoicePrompt } from '../../cli/prompts';
+import type { Workflow } from '../../types/workflow';
+import { Executor } from '../executor';
 
 // Use actual ChoicePrompt and TextPrompt (without mocking)
 

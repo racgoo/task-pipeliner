@@ -8,8 +8,8 @@
 
 import { parse } from 'yaml';
 import { ZodError } from 'zod';
-import type { Workflow } from '../types/workflow.js';
-import { validateWorkflow } from './workflow-schema.js';
+import type { Workflow } from '../types/workflow';
+import { validateWorkflow } from './workflow-schema';
 
 /**
  * Parser interface for workflow files

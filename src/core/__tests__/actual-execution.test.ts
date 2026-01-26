@@ -1,8 +1,8 @@
 import { readFileSync } from 'fs';
 import { describe, it, expect, vi } from 'vitest';
 import { parse } from 'yaml';
-import { ConditionEvaluator } from '../condition-evaluator.js';
-import { Executor } from '../executor.js';
+import { ConditionEvaluator } from '../condition-evaluator';
+import { Executor } from '../executor';
 
 // Simulate actual execution
 describe('ACTUAL EXECUTION SIMULATION - Must Fix', () => {

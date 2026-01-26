@@ -1,18 +1,29 @@
-import { ExecutionContext } from '../core/executor.js';
-import { TaskRunResult } from '../core/task-runner.js';
-import type { Condition } from './condition.js';
+import { ExecutionContext } from '../core/executor';
+import { TaskRunResult } from '../core/task-runner';
+import type { Condition } from './condition';
 
 /**
  * Workflow Step Types
  */
 export type Step = RunStep | ChooseStep | PromptStep | ParallelStep | FailStep;
 
+/**
+ * Record of workflow execution
+ */
 export interface Record {
   step: Step;
   context: ExecutionContext;
   output: StepResult;
   duration: number;
   status: StepStatus;
+}
+
+/**
+ * History of workflow execution
+ */
+export interface History {
+  initialTimestamp: number;
+  records: Record[];
 }
 
 /**

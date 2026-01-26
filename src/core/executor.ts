@@ -1,14 +1,14 @@
 import { resolve, isAbsolute, dirname } from 'path';
 import logUpdate from 'log-update';
-import { ChoicePrompt, TextPrompt } from '../cli/prompts.js';
-import { createParallelHeaderBox, createParallelFooterMessage, createErrorBox } from '../cli/ui.js';
-import type { Condition } from '../types/condition.js';
-import type { Step, Workflow, ChooseStep, PromptStep, StepResult } from '../types/workflow.js';
-import { ConditionEvaluator } from './condition-evaluator.js';
-import { WorkflowRecorder } from './recorder.js';
-import { TaskRunner, type TaskRunResult } from './task-runner.js';
-import { substituteVariables } from './template.js';
-import { Workspace } from './workspace.js';
+import { ChoicePrompt, TextPrompt } from '../cli/prompts';
+import { createParallelHeaderBox, createParallelFooterMessage, createErrorBox } from '../cli/ui';
+import type { Condition } from '../types/condition';
+import type { Step, Workflow, ChooseStep, PromptStep, StepResult } from '../types/workflow';
+import { ConditionEvaluator } from './condition-evaluator';
+import { WorkflowRecorder } from './recorder';
+import { TaskRunner, type TaskRunResult } from './task-runner';
+import { substituteVariables } from './template';
+import { Workspace } from './workspace';
 
 /**
  * Workflow Executor

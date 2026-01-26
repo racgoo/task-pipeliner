@@ -1,6 +1,6 @@
 import inquirer from 'inquirer';
 import { describe, expect, it, vi } from 'vitest';
-import { ChoicePrompt } from '../../cli/prompts.js';
+import { ChoicePrompt } from '../../cli/prompts';
 
 // Test using actual inquirer
 describe('Real Inquirer Test', () => {

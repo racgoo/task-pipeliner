@@ -6,13 +6,13 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "task-pipeliner": "./dist/cli/index.js",
-    "tp": "./dist/cli/index.js"
+    "task-pipeliner": "./dist/index.js",
+    "tp": "./dist/index.js"
   },
   "scripts": {
     "build": "pnpm build:napi && pnpm build:ts && pnpm build:cleanup",
     "build:napi": "napi build dist --cargo-cwd rust --release",
-    "build:ts": "tsc",
+    "build:ts": "tsup src/cli/index.ts --format cjs,esm --dts --minify",
     "build:cleanup": "rm -f ./task-pipeliner*.node ./index.d.ts",
     "dev": "tsc --watch",
     "lint": "eslint .",
@@ -65,6 +65,7 @@
     "eslint-plugin-prettier": "^5.5.5",
     "jiti": "^2.6.1",
     "prettier": "^3.8.1",
+    "tsup": "^8.5.1",
     "typescript": "^5.3.3",
     "typescript-eslint": "^8.53.1",
     "vitest": "^1.1.0"

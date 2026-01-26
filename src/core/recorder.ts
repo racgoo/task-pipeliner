@@ -1,15 +1,6 @@
-import { mkdir, rm, writeFile } from 'fs/promises';
-import { homedir } from 'os';
-import { join } from 'path';
-import dayjs from 'dayjs';
-import { Record, Step, StepResult, StepStatus } from '../types/workflow';
+import { History, Record, Step, StepResult, StepStatus } from '../types/workflow';
 import { ExecutionContext } from './executor';
-
-/**
- * Default directory for storing workflow execution history
- * Located at ~/.pipeliner/workflow-history/
- */
-const WORKFLOW_HISTORY_DIR = join(homedir(), '.pipeliner', 'workflow-history');
+import { WorkflowHistoryManager } from './history';
 
 /**
  * Interface for recording workflow step execution
@@ -70,26 +61,16 @@ class WorkflowRecorder implements Recorder {
    * Creates the storage directory if it doesn't exist.
    * Generates a timestamp-based filename with random hash if filename is not provided.
    */
-  public async save(filename?: string): Promise<string> {
+  public async save(): Promise<string> {
     // Create storage directory if it doesn't exist
-    await mkdir(WORKFLOW_HISTORY_DIR, { recursive: true });
-
-    // Generate filename with timestamp and random hash
-    const dateFormat = dayjs().format('YYYYMMDDHHmmss');
-    const hash = Math.random().toString(36).slice(2, 6);
-    const filepath = join(WORKFLOW_HISTORY_DIR, filename ?? `workflow-${dateFormat}-${hash}.json`);
-
-    // Save records as JSON
-    await writeFile(filepath, JSON.stringify(this.records, null, 2), { encoding: 'utf8' });
-    return filepath;
-  }
-
-  /**
-   * Clear the storage directory
-   */
-  public async clearStorage(): Promise<void> {
-    // Remove the storage directory and all its contents
-    await rm(WORKFLOW_HISTORY_DIR, { recursive: true, force: true });
+    const historyManager = new WorkflowHistoryManager();
+    // Create history object
+    const resultJson: History = {
+      initialTimestamp: this.initialTimestamp,
+      records: this.records,
+    };
+    // Save history to file
+    return await historyManager.saveHistory(resultJson);
   }
 
   /**

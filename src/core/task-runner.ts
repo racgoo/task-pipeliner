@@ -18,7 +18,7 @@ import {
   createStepFooterMessage,
   createErrorBox,
   formatNestedLine,
-} from '../cli/ui.js';
+} from '../cli/ui';
 
 export interface TaskRunResult {
   success: boolean;

@@ -1,7 +1,7 @@
 import { existsSync } from 'fs';
 import { resolve } from 'path';
-import type { Condition } from '../types/condition.js';
-import type { Workspace } from './workspace.js';
+import type { Condition } from '../types/condition';
+import type { Workspace } from './workspace';
 
 /**
  * Condition Evaluator

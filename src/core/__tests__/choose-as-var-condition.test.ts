@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Workflow } from '../../types/workflow.js';
-import { ConditionEvaluator } from '../condition-evaluator.js';
-import { Executor } from '../executor.js';
-import { Workspace } from '../workspace.js';
+import type { Workflow } from '../../types/workflow';
+import { ConditionEvaluator } from '../condition-evaluator';
+import { Executor } from '../executor';
+import { Workspace } from '../workspace';
 
 // Mock TaskRunner
 const mockRun = vi.fn().mockResolvedValue(true);

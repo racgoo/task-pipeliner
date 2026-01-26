@@ -3,7 +3,7 @@
  * Replaces {{variable}} with actual values from workspace
  */
 
-import type { Workspace } from './workspace.js';
+import type { Workspace } from './workspace';
 
 /**
  * Find variable value from workspace
