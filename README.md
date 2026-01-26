@@ -2,7 +2,7 @@
 
 > A powerful, condition-based task pipeline runner with beautiful CLI output
 
-**Version:** 0.1.5
+**Version:** 0.1.6
 
 ![task-pipeliner-banner](https://github.com/user-attachments/assets/282f3cfc-cd0d-4767-88dd-f3abb8e71bea)
 
