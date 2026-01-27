@@ -4,7 +4,7 @@
 
 **버전:** 0.1.6
 
-![task-pipeliner-banner](https://github.com/user-attachments/assets/282f3cfc-cd0d-4767-88dd-f3abb8e71bea)
+![fox2](https://github.com/user-attachments/assets/fdf8d786-6a91-4d2d-9dc1-72be6f3ccd98)
 
 [![npm version](https://img.shields.io/npm/v/task-pipeliner)](https://www.npmjs.com/package/task-pipeliner)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
