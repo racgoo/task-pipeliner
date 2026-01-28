@@ -215,11 +215,18 @@ export class Executor {
     stepResult: StepResult,
     recorder: WorkflowRecorder
   ): void {
-    const isSuccessful = this.isStepSuccessful(stepResult, step);
+    // For run steps, success is determined by the main run result stored in workspace,
+    // not by any onError fallback that may have executed.
+    const isSuccessful = this.isRunStep(step)
+      ? (() => {
+          const stored = this.workspace.getStepResult(stepIndex);
+          return stored ? stored.success : true;
+        })()
+      : this.isStepSuccessful(stepResult, step);
 
-    // For run steps, allow continue-on-error behavior when configured
+    // For run steps, allow continue-on-error behavior when configured at step level
     if (this.isRunStep(step) && !isSuccessful) {
-      const shouldContinueOnError = step.onError?.continue === true;
+      const shouldContinueOnError = step.continue === true;
 
       if (!shouldContinueOnError) {
         const lineInfo = context.lineNumber ? ` (line ${context.lineNumber})` : '';
@@ -431,25 +438,48 @@ export class Executor {
     bufferOutput: boolean = false,
     hasWhenCondition: boolean = false
   ): Promise<boolean | TaskRunResult> {
+    // Execute main run first
+    const mainResult = await this.executeSingleRun(
+      {
+        run: step.run,
+        timeout: step.timeout,
+        retry: step.retry,
+      },
+      context,
+      bufferOutput,
+      hasWhenCondition
+    );
+
+    const mainSuccess = typeof mainResult === 'boolean' ? mainResult : mainResult.success;
+
+    // Store ONLY main run success status in workspace for this step index.
+    // onError fallback execution does not change step success/failure.
+    this.workspace.setStepResult(context.stepIndex, mainSuccess);
+
+    // If main run succeeded, do not execute onError chain
+    if (mainSuccess || !step.onError) {
+      return mainResult;
+    }
+
+    // If main run failed and onError exists, execute onError chain for side effects only.
+    // The step remains failed regardless of onError results; workspace stepResult is not updated.
     const rootNode: RunChainNode = {
-      run: step.run,
-      timeout: step.timeout,
-      retry: step.retry,
-      onError: step.onError ?? undefined,
+      run: step.onError.run,
+      timeout: step.onError.timeout,
+      retry: step.onError.retry,
+      onError: step.onError.onError ?? undefined,
     };
 
-    const finalResult = await this.executeRunChain(
+    const onErrorResult = await this.executeRunChain(
       rootNode,
       context,
       bufferOutput,
       hasWhenCondition
     );
-    const finalSuccess = typeof finalResult === 'boolean' ? finalResult : finalResult.success;
 
-    // Store final success status in workspace for this step index
-    this.workspace.setStepResult(context.stepIndex, finalSuccess);
-
-    return finalResult;
+    // Return the last onError result (for logging/buffering),
+    // but step success is still determined solely by mainSuccess above.
+    return onErrorResult;
   }
 
   /**

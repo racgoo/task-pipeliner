@@ -34,7 +34,6 @@ export interface RunStepOnError {
   run: string; // fallback command to run on failure
   timeout?: number; // timeout in seconds (optional)
   retry?: number; // number of retries on failure (optional, default: 0)
-  continue?: boolean; // if true, continue workflow even if this chain ultimately fails
   onError?: RunStepOnError; // nested fallback chain
 }
 
@@ -43,6 +42,18 @@ export interface RunStep {
   when?: Condition; // mainly used for choice conditions
   timeout?: number; // timeout in seconds (optional)
   retry?: number; // number of retries on failure (optional, default: 0)
+  /**
+   * If true, continue workflow even if this run step ultimately fails.
+   *
+   * Semantics:
+   * - If main run succeeds, step is successful and workflow continues.
+   * - If main run fails:
+   *   - onError (if present) is executed for side effects only.
+   *   - The step is still considered failed.
+   *   - When continue is true, the workflow records failure but moves on to the next step.
+   *   - When continue is false/undefined, the workflow stops on this failure.
+   */
+  continue?: boolean;
   onError?: RunStepOnError;
 }
 

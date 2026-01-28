@@ -71,7 +71,6 @@ const RunStepOnErrorSchema: z.ZodTypeAny = z.lazy(() =>
     run: z.string(),
     timeout: z.number().optional(),
     retry: z.number().optional(),
-    continue: z.boolean().optional(),
     onError: RunStepOnErrorSchema.optional(),
   })
 );
@@ -81,6 +80,7 @@ const RunStepSchema = z.object({
   when: ConditionSchema.optional(),
   timeout: z.number().optional(),
   retry: z.number().optional(),
+  continue: z.boolean().optional(),
   onError: RunStepOnErrorSchema.optional(),
 });
 

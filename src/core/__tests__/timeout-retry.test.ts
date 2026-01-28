@@ -279,12 +279,10 @@ describe('Timeout and Retry', () => {
   });
 
   describe('onError and continue', () => {
-    it('should execute onError fallback when main run fails and proceed on success', async () => {
+    it('should execute onError fallback when main run fails but still treat step as failed without continue', async () => {
       // Step 1: main fails, onError succeeds
       mockRun.mockResolvedValueOnce(false); // main command
       mockRun.mockResolvedValueOnce(true); // onError fallback
-      // Step 2: succeeds
-      mockRun.mockResolvedValueOnce(true);
 
       const workflow: Workflow = {
         steps: [
@@ -300,52 +298,14 @@ describe('Timeout and Retry', () => {
         ],
       };
 
-      await expect(executor.execute(workflow)).resolves.not.toThrow();
+      // Workflow should stop on first step failure because continue is not set
+      await expect(executor.execute(workflow)).rejects.toThrow();
 
-      // main + onError + next step
-      expect(mockRun).toHaveBeenCalledTimes(3);
-      expect(mockRun).toHaveBeenNthCalledWith(
-        1,
-        'node fail.js',
-        expect.any(Number),
-        'node fail.js',
-        undefined,
-        false,
-        false,
-        undefined,
-        undefined,
-        undefined,
-        undefined
-      );
-      expect(mockRun).toHaveBeenNthCalledWith(
-        2,
-        'echo "error"',
-        expect.any(Number),
-        'echo "error"',
-        undefined,
-        false,
-        false,
-        undefined,
-        undefined,
-        undefined,
-        undefined
-      );
-      expect(mockRun).toHaveBeenNthCalledWith(
-        3,
-        'echo "done"',
-        expect.any(Number),
-        'echo "done"',
-        undefined,
-        false,
-        false,
-        undefined,
-        undefined,
-        undefined,
-        undefined
-      );
+      // main + onError only (second step is never executed)
+      expect(mockRun).toHaveBeenCalledTimes(2);
     });
 
-    it('should continue workflow when all onError chain fails but continue is true', async () => {
+    it('should continue workflow when run fails (with or without onError) and step-level continue is true', async () => {
       // Step 1: main fails, onError fails
       mockRun.mockResolvedValueOnce(false); // main command
       mockRun.mockResolvedValueOnce(false); // onError fallback
@@ -356,9 +316,9 @@ describe('Timeout and Retry', () => {
         steps: [
           {
             run: 'node fail.js',
+            continue: true,
             onError: {
               run: 'echo "error"',
-              continue: true,
             },
           },
           {
@@ -367,14 +327,14 @@ describe('Timeout and Retry', () => {
         ],
       };
 
-      // Should not throw because continue: true on onError
+      // Should not throw because continue: true at step level
       await expect(executor.execute(workflow)).resolves.not.toThrow();
 
       // main + onError + next step
       expect(mockRun).toHaveBeenCalledTimes(3);
     });
 
-    it('should follow nested onError chain until a success occurs', async () => {
+    it('should follow nested onError chain for side effects but keep step failed without continue', async () => {
       // main fails, first onError fails, second onError succeeds
       mockRun.mockResolvedValueOnce(false); // main
       mockRun.mockResolvedValueOnce(false); // onError level 1
@@ -394,8 +354,31 @@ describe('Timeout and Retry', () => {
         ],
       };
 
-      await expect(executor.execute(workflow)).resolves.not.toThrow();
+      // Workflow should still fail because continue is not set at step level
+      await expect(executor.execute(workflow)).rejects.toThrow();
       expect(mockRun).toHaveBeenCalledTimes(3);
+    });
+
+    it('should allow run failure without onError to continue when step-level continue is true', async () => {
+      // Step 1: main fails, no onError
+      mockRun.mockResolvedValueOnce(false);
+      // Step 2: succeeds
+      mockRun.mockResolvedValueOnce(true);
+
+      const workflow: Workflow = {
+        steps: [
+          {
+            run: 'node fail.js',
+            continue: true,
+          },
+          {
+            run: 'echo "done"',
+          },
+        ],
+      };
+
+      await expect(executor.execute(workflow)).resolves.not.toThrow();
+      expect(mockRun).toHaveBeenCalledTimes(2);
     });
   });
 });
