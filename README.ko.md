@@ -245,11 +245,11 @@ steps:                                 # 필수: 실행할 단계 배열
   when?: <condition>  # 선택: 조건이 충족될 때만 실행
   timeout?: <number>  # 선택: 타임아웃 (초 단위)
   retry?: <number>    # 선택: 실패 시 재시도 횟수 (기본값: 0)
+  continue?: <bool>   # 선택: 이 스텝 이후 다음 스텝으로 진행할지 여부 (성공/실패 무관)
   onError?:            # 선택: 에러 처리 동작
-    run: <command>     # 체인에서 앞선 명령이 실패했을 때 실행할 대체 명령
+    run: <command>     # 메인 run 명령이 실패했을 때 실행할 대체 명령 (사이드 이펙트)
     timeout?: <number> # 선택: 이 fallback 명령의 타임아웃
     retry?: <number>   # 선택: 이 fallback 명령의 재시도 횟수
-    continue?: <bool>  # 선택: 체인 전체가 실패해도 워크플로우를 계속 진행할지 여부
     onError?: ...      # 선택: 중첩 fallback (재귀 onError 체인)
 ```
 
@@ -258,10 +258,13 @@ steps:                                 # 필수: 실행할 단계 배열
 - `when` (선택): `Condition` - 실행 전 확인할 조건
 - `timeout` (선택): `number` - 최대 실행 시간 (초 단위). 이 시간을 초과하면 명령이 종료됩니다.
 - `retry` (선택): `number` - 실패 시 재시도 횟수 (기본값: 0, 재시도 없음)
- - `onError.run` (선택): `string` - 이전 체인 명령이 (자신의 재시도 후에도) 실패했을 때 실행할 대체 명령. 체인 안의 어떤 명령이라도 성공하면 이 `run` 단계는 성공으로 간주됩니다.
+- `continue` (선택): `boolean` - 이 스텝 완료 후 다음 스텝으로 진행할지 여부를 제어합니다 (성공/실패와 무관).
+  - `continue: true` - 항상 다음 스텝으로 진행 (이 스텝이 실패해도)
+  - `continue: false` - 항상 워크플로우 중단 (이 스텝이 성공해도)
+  - `continue` 미설정 (기본값) - 성공 시 진행, 실패 시 중단
+ - `onError.run` (선택): `string` - 메인 `run` 명령이 (자신의 재시도 후에도) 실패했을 때 실행할 대체 명령. **onError는 단순히 사이드 이펙트(예: 정리 작업, 롤백)를 수행하며, 스텝의 성공/실패 여부에는 영향을 주지 않습니다.** 메인 `run`이 실패하면 이 스텝은 실패로 간주됩니다.
  - `onError.timeout` (선택): `number` - 이 fallback 명령의 타임아웃.
  - `onError.retry` (선택): `number` - 이 fallback 명령의 재시도 횟수.
- - `onError.continue` (선택): `boolean` - onError 체인 전체가 결국 실패해도, 이 단계를 실패로 기록만 하고 다음 단계로 계속 진행할지 여부.
 
 **예제:**
 ```yaml
@@ -316,13 +319,18 @@ steps:
 
   # 실패를 기록만 하고 워크플로우는 계속 진행
   - run: pnpm typecheck
+    continue: true
     onError:
-      continue: true
+      run: echo "Type check failed, but continuing..."
 ```
 
 **동작:**
 - 명령은 `baseDir` (지정된 경우) 또는 현재 작업 디렉토리에서 실행됩니다
-- 명령이 실패하면 onError 체인을 모두 시도한 뒤, 최종적으로 실패인 경우 워크플로우가 중지됩니다 (`onError.continue` 가 `true`인 경우에는 실패로 기록만 하고 계속 진행)
+- 메인 `run` 명령의 성공/실패 여부가 이 스텝의 최종 결과를 결정합니다. `onError`는 단순히 실패 시 추가 작업(정리, 롤백 등)을 수행할 뿐이며, 스텝의 성공 여부를 변경하지 않습니다.
+- `continue` 플래그는 이 스텝 완료 후 워크플로우 실행을 제어합니다:
+  - `continue: true` - 항상 다음 스텝으로 진행 (성공/실패 무관)
+  - `continue: false` - 항상 워크플로우 중단 (성공/실패 무관)
+  - `continue` 미설정 - 기본 동작: 성공 시 진행, 실패 시 중단
 - 출력은 CLI 포맷팅과 함께 실시간으로 표시됩니다
 - `timeout`이 지정되면 명령이 시간 제한을 초과하면 종료되고 단계가 실패합니다
 - `retry`가 지정되면 성공할때 까지 retry 값 만큼 재시도됩니다

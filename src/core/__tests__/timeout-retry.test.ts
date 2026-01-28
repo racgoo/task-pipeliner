@@ -380,5 +380,72 @@ describe('Timeout and Retry', () => {
       await expect(executor.execute(workflow)).resolves.not.toThrow();
       expect(mockRun).toHaveBeenCalledTimes(2);
     });
+
+    it('should stop workflow when continue is false even if step succeeds', async () => {
+      // Step 1: main succeeds
+      mockRun.mockResolvedValueOnce(true);
+
+      const workflow: Workflow = {
+        steps: [
+          {
+            run: 'echo "done"',
+            continue: false,
+          },
+          {
+            run: 'echo "should not run"',
+          },
+        ],
+      };
+
+      // Workflow should stop even though step succeeded
+      await expect(executor.execute(workflow)).rejects.toThrow();
+      // Only first step should execute
+      expect(mockRun).toHaveBeenCalledTimes(1);
+    });
+
+    it('should stop workflow when continue is false even if step fails', async () => {
+      // Step 1: main fails
+      mockRun.mockResolvedValueOnce(false);
+
+      const workflow: Workflow = {
+        steps: [
+          {
+            run: 'node fail.js',
+            continue: false,
+          },
+          {
+            run: 'echo "should not run"',
+          },
+        ],
+      };
+
+      // Workflow should stop on failure (continue: false)
+      await expect(executor.execute(workflow)).rejects.toThrow();
+      // Only first step should execute
+      expect(mockRun).toHaveBeenCalledTimes(1);
+    });
+
+    it('should continue workflow when continue is true even if step succeeds', async () => {
+      // Step 1: main succeeds
+      mockRun.mockResolvedValueOnce(true);
+      // Step 2: succeeds
+      mockRun.mockResolvedValueOnce(true);
+
+      const workflow: Workflow = {
+        steps: [
+          {
+            run: 'echo "done"',
+            continue: true,
+          },
+          {
+            run: 'echo "next"',
+          },
+        ],
+      };
+
+      // Workflow should continue even with continue: true on success
+      await expect(executor.execute(workflow)).resolves.not.toThrow();
+      expect(mockRun).toHaveBeenCalledTimes(2);
+    });
   });
 });

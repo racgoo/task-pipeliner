@@ -206,7 +206,8 @@ export class Executor {
   }
 
   /**
-   * Handle successful or failed step result (including continue-on-error)
+   * Handle successful or failed step result
+   * The `continue` flag controls whether to proceed to the next step regardless of success/failure
    */
   private handleStepResult(
     step: Step,
@@ -224,23 +225,31 @@ export class Executor {
         })()
       : this.isStepSuccessful(stepResult, step);
 
-    // For run steps, allow continue-on-error behavior when configured at step level
-    if (this.isRunStep(step) && !isSuccessful) {
-      const shouldContinueOnError = step.continue === true;
+    const status: 'success' | 'failure' = isSuccessful ? 'success' : 'failure';
+    recorder.recordEnd(step, context, stepResult, status);
 
-      if (!shouldContinueOnError) {
+    // Check continue flag for run steps
+    // continue: false -> stop workflow (regardless of success/failure)
+    // continue: true -> continue to next step (regardless of success/failure)
+    // continue: undefined -> default behavior (continue on success, stop on failure)
+    if (this.isRunStep(step)) {
+      if (step.continue === false) {
+        // Stop workflow regardless of success/failure
+        const lineInfo = context.lineNumber ? ` (line ${context.lineNumber})` : '';
+        const message = isSuccessful
+          ? `Step ${stepIndex}${lineInfo} completed, but workflow stopped due to continue: false`
+          : `Step ${stepIndex}${lineInfo} failed`;
+        throw new Error(message);
+      }
+      // If continue is true or undefined, check default behavior for failure
+      if (!isSuccessful && step.continue !== true) {
+        // Default: stop on failure (when continue is not explicitly true)
         const lineInfo = context.lineNumber ? ` (line ${context.lineNumber})` : '';
         throw new Error(`Step ${stepIndex}${lineInfo} failed`);
       }
-
-      // Record failure but do not stop the workflow
-      recorder.recordEnd(step, context, stepResult, 'failure');
-      return;
+      // If continue is true, proceed regardless of success/failure
+      // If continue is undefined and successful, proceed (handled by not throwing)
     }
-
-    // Non-run steps or successful run steps
-    const status: 'success' | 'failure' = isSuccessful ? 'success' : 'failure';
-    recorder.recordEnd(step, context, stepResult, status);
   }
 
   /**

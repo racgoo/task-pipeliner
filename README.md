@@ -245,11 +245,11 @@ Execute a shell command.
   when?: <condition>  # Optional: Execute only if condition is met
   timeout?: <number>  # Optional: Timeout in seconds
   retry?: <number>    # Optional: Number of retries on failure (default: 0)
+  continue?: <bool>   # Optional: Continue to next step after this step completes (regardless of success/failure)
   onError?:            # Optional: Error handling behavior
-    run: <command>     # Fallback command when the previous command in the chain fails
+    run: <command>     # Fallback command when main run command fails (side effect)
     timeout?: <number> # Optional: Timeout for this fallback command
     retry?: <number>   # Optional: Retry count for this fallback command
-    continue?: <bool>  # Optional: Continue workflow even if the whole chain still fails
     onError?: ...      # Optional: Nested fallback (recursive onError chain)
 ```
 
@@ -258,10 +258,13 @@ Execute a shell command.
 - `when` (optional): `Condition` - Condition to check before execution
 - `timeout` (optional): `number` - Maximum execution time in seconds. Command will be killed if it exceeds this time.
 - `retry` (optional): `number` - Number of retry attempts if command fails (default: 0, meaning no retry)
- - `onError.run` (optional): `string` - Fallback command executed when the previous command in the chain (after its retries) fails. If any command in the chain succeeds, the step is treated as successful.
+- `continue` (optional): `boolean` - Controls whether to proceed to the next step after this step completes, regardless of success or failure.
+  - `continue: true` - Always proceed to the next step (even if this step fails)
+  - `continue: false` - Always stop the workflow after this step (even if this step succeeds)
+  - `continue` not set (default) - Proceed on success, stop on failure
+ - `onError.run` (optional): `string` - Fallback command executed when the main `run` command (after its retries) fails. **onError only performs side effects (e.g., cleanup, rollback) and does not affect the step's success/failure status.** If the main `run` fails, this step is considered failed regardless of onError execution.
  - `onError.timeout` (optional): `number` - Timeout for this fallback command.
  - `onError.retry` (optional): `number` - Retry count for this fallback command.
- - `onError.continue` (optional): `boolean` - If `true` and the entire onError chain ultimately fails, record the failure but continue to the next step instead of stopping the workflow.
 
 **Examples:**
 ```yaml
@@ -316,13 +319,18 @@ steps:
 
   # Command that records failure but continues workflow
   - run: pnpm typecheck
+    continue: true
     onError:
-      continue: true
+      run: echo "Type check failed, but continuing..."
 ```
 
 **Behavior:**
 - Command runs in the `baseDir` (if specified) or current working directory
-- Workflow stops if command fails (non-zero exit code) after all retries and onError chain are exhausted, unless `onError.continue` is `true`
+- The main `run` command's success/failure determines the final step result. `onError` only performs additional actions (cleanup, rollback, etc.) on failure and does not change the step's success status.
+- The `continue` flag controls workflow execution after this step completes:
+  - `continue: true` - Always proceed to the next step (regardless of success/failure)
+  - `continue: false` - Always stop the workflow (regardless of success/failure)
+  - `continue` not set - Default behavior: proceed on success, stop on failure
 - Output is displayed in real-time with CLI formatting
 - If `timeout` is specified and command exceeds the time limit, it will be killed and the step will fail
 - If `retry` is specified, the command will be retried up to the retry value until it succeeds
