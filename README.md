@@ -245,6 +245,12 @@ Execute a shell command.
   when?: <condition>  # Optional: Execute only if condition is met
   timeout?: <number>  # Optional: Timeout in seconds
   retry?: <number>    # Optional: Number of retries on failure (default: 0)
+  onError?:            # Optional: Error handling behavior
+    run: <command>     # Fallback command when the previous command in the chain fails
+    timeout?: <number> # Optional: Timeout for this fallback command
+    retry?: <number>   # Optional: Retry count for this fallback command
+    continue?: <bool>  # Optional: Continue workflow even if the whole chain still fails
+    onError?: ...      # Optional: Nested fallback (recursive onError chain)
 ```
 
 **Properties:**
@@ -252,6 +258,10 @@ Execute a shell command.
 - `when` (optional): `Condition` - Condition to check before execution
 - `timeout` (optional): `number` - Maximum execution time in seconds. Command will be killed if it exceeds this time.
 - `retry` (optional): `number` - Number of retry attempts if command fails (default: 0, meaning no retry)
+ - `onError.run` (optional): `string` - Fallback command executed when the previous command in the chain (after its retries) fails. If any command in the chain succeeds, the step is treated as successful.
+ - `onError.timeout` (optional): `number` - Timeout for this fallback command.
+ - `onError.retry` (optional): `number` - Retry count for this fallback command.
+ - `onError.continue` (optional): `boolean` - If `true` and the entire onError chain ultimately fails, record the failure but continue to the next step instead of stopping the workflow.
 
 **Examples:**
 ```yaml
@@ -291,11 +301,28 @@ steps:
   - run: npm install
     timeout: 60
     retry: 2
+
+  # Command with fallback on error
+  - run: pnpm lint
+    onError:
+      run: pnpm lint:fix
+
+  # Command with multi-level fallback on error
+  - run: step1
+    onError:
+      run: step2
+      onError:
+        run: step3
+
+  # Command that records failure but continues workflow
+  - run: pnpm typecheck
+    onError:
+      continue: true
 ```
 
 **Behavior:**
 - Command runs in the `baseDir` (if specified) or current working directory
-- Workflow stops if command fails (non-zero exit code) after all retries are exhausted
+- Workflow stops if command fails (non-zero exit code) after all retries and onError chain are exhausted, unless `onError.continue` is `true`
 - Output is displayed in real-time with CLI formatting
 - If `timeout` is specified and command exceeds the time limit, it will be killed and the step will fail
 - If `retry` is specified, the command will be retried up to the retry value until it succeeds

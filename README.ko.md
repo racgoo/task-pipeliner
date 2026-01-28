@@ -245,6 +245,12 @@ steps:                                 # 필수: 실행할 단계 배열
   when?: <condition>  # 선택: 조건이 충족될 때만 실행
   timeout?: <number>  # 선택: 타임아웃 (초 단위)
   retry?: <number>    # 선택: 실패 시 재시도 횟수 (기본값: 0)
+  onError?:            # 선택: 에러 처리 동작
+    run: <command>     # 체인에서 앞선 명령이 실패했을 때 실행할 대체 명령
+    timeout?: <number> # 선택: 이 fallback 명령의 타임아웃
+    retry?: <number>   # 선택: 이 fallback 명령의 재시도 횟수
+    continue?: <bool>  # 선택: 체인 전체가 실패해도 워크플로우를 계속 진행할지 여부
+    onError?: ...      # 선택: 중첩 fallback (재귀 onError 체인)
 ```
 
 **속성:**
@@ -252,6 +258,10 @@ steps:                                 # 필수: 실행할 단계 배열
 - `when` (선택): `Condition` - 실행 전 확인할 조건
 - `timeout` (선택): `number` - 최대 실행 시간 (초 단위). 이 시간을 초과하면 명령이 종료됩니다.
 - `retry` (선택): `number` - 실패 시 재시도 횟수 (기본값: 0, 재시도 없음)
+ - `onError.run` (선택): `string` - 이전 체인 명령이 (자신의 재시도 후에도) 실패했을 때 실행할 대체 명령. 체인 안의 어떤 명령이라도 성공하면 이 `run` 단계는 성공으로 간주됩니다.
+ - `onError.timeout` (선택): `number` - 이 fallback 명령의 타임아웃.
+ - `onError.retry` (선택): `number` - 이 fallback 명령의 재시도 횟수.
+ - `onError.continue` (선택): `boolean` - onError 체인 전체가 결국 실패해도, 이 단계를 실패로 기록만 하고 다음 단계로 계속 진행할지 여부.
 
 **예제:**
 ```yaml
@@ -291,11 +301,28 @@ steps:
   - run: npm install
     timeout: 60
     retry: 2
+
+  # 실패 시 fallback 명령 실행
+  - run: pnpm lint
+    onError:
+      run: pnpm lint:fix
+
+  # 여러 단계로 이어지는 fallback 체인
+  - run: step1
+    onError:
+      run: step2
+      onError:
+        run: step3
+
+  # 실패를 기록만 하고 워크플로우는 계속 진행
+  - run: pnpm typecheck
+    onError:
+      continue: true
 ```
 
 **동작:**
 - 명령은 `baseDir` (지정된 경우) 또는 현재 작업 디렉토리에서 실행됩니다
-- 명령이 실패하면 워크플로우가 중지됩니다 (모든 재시도 후에도 실패한 경우)
+- 명령이 실패하면 onError 체인을 모두 시도한 뒤, 최종적으로 실패인 경우 워크플로우가 중지됩니다 (`onError.continue` 가 `true`인 경우에는 실패로 기록만 하고 계속 진행)
 - 출력은 CLI 포맷팅과 함께 실시간으로 표시됩니다
 - `timeout`이 지정되면 명령이 시간 제한을 초과하면 종료되고 단계가 실패합니다
 - `retry`가 지정되면 성공할때 까지 retry 값 만큼 재시도됩니다
