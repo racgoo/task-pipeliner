@@ -3,7 +3,15 @@ import logUpdate from 'log-update';
 import { ChoicePrompt, TextPrompt } from '../cli/prompts';
 import { createParallelHeaderBox, createParallelFooterMessage, createErrorBox } from '../cli/ui';
 import type { Condition } from '../types/condition';
-import type { Step, Workflow, ChooseStep, PromptStep, StepResult } from '../types/workflow';
+import type {
+  Step,
+  Workflow,
+  ChooseStep,
+  PromptStep,
+  StepResult,
+  RunStep,
+  RunStepOnError,
+} from '../types/workflow';
 import { ConditionEvaluator } from './condition-evaluator';
 import { WorkflowRecorder } from './recorder';
 import { TaskRunner, type TaskRunResult } from './task-runner';
@@ -27,6 +35,8 @@ export interface ExecutionContext {
   lineNumber?: number; // Line number in YAML file (for error reporting)
   fileName?: string; // YAML file name (for error reporting)
 }
+
+type RunChainNode = Pick<RunStepOnError, 'run' | 'timeout' | 'retry' | 'onError'>;
 
 export class Executor {
   // Multiply step index by this to encode branch index in parallel execution
@@ -125,6 +135,13 @@ export class Executor {
   }
 
   /**
+   * Determine if a step is a run step
+   */
+  private isRunStep(step: Step): step is RunStep {
+    return 'run' in step;
+  }
+
+  /**
    * Execute workflow steps sequentially
    *
    * Main entry point for workflow execution:
@@ -159,26 +176,9 @@ export class Executor {
       try {
         // Execute the step (run, choose, prompt, parallel, or fail)
         const stepResult = await this.executeStep(step, context, false, hasWhenCondition);
-        // For run steps, check if command succeeded
-        if (!this.isStepSuccessful(stepResult, step)) {
-          const lineInfo = context.lineNumber ? ` (line ${context.lineNumber})` : '';
-          throw new Error(`Step ${i}${lineInfo} failed`);
-        }
-        // Record the step result
-        recorder.recordEnd(step, context, stepResult, 'success');
+        this.handleStepResult(step, context, i, stepResult, recorder);
       } catch (error) {
-        // Mark step as failed in workspace
-        this.workspace.setStepResult(i, false);
-        // Convert error to TaskRunResult format for recording
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        const errorResult: TaskRunResult = {
-          success: false,
-          stdout: [],
-          stderr: [errorMessage],
-        };
-        // Record the error result(all error contains in stderr)
-        recorder.recordEnd(step, context, errorResult, 'failure');
-        // Re-throw to let CLI handle error display
+        this.handleStepError(step, context, i, error, recorder);
         throw error;
       }
     }
@@ -203,6 +203,60 @@ export class Executor {
       return stepResult.success;
     }
     return false;
+  }
+
+  /**
+   * Handle successful or failed step result (including continue-on-error)
+   */
+  private handleStepResult(
+    step: Step,
+    context: ExecutionContext,
+    stepIndex: number,
+    stepResult: StepResult,
+    recorder: WorkflowRecorder
+  ): void {
+    const isSuccessful = this.isStepSuccessful(stepResult, step);
+
+    // For run steps, allow continue-on-error behavior when configured
+    if (this.isRunStep(step) && !isSuccessful) {
+      const shouldContinueOnError = step.onError?.continue === true;
+
+      if (!shouldContinueOnError) {
+        const lineInfo = context.lineNumber ? ` (line ${context.lineNumber})` : '';
+        throw new Error(`Step ${stepIndex}${lineInfo} failed`);
+      }
+
+      // Record failure but do not stop the workflow
+      recorder.recordEnd(step, context, stepResult, 'failure');
+      return;
+    }
+
+    // Non-run steps or successful run steps
+    const status: 'success' | 'failure' = isSuccessful ? 'success' : 'failure';
+    recorder.recordEnd(step, context, stepResult, status);
+  }
+
+  /**
+   * Handle errors thrown during step execution
+   */
+  private handleStepError(
+    step: Step,
+    context: ExecutionContext,
+    stepIndex: number,
+    error: unknown,
+    recorder: WorkflowRecorder
+  ): void {
+    // Mark step as failed in workspace
+    this.workspace.setStepResult(stepIndex, false);
+    // Convert error to TaskRunResult format for recording
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorResult: TaskRunResult = {
+      success: false,
+      stdout: [],
+      stderr: [errorMessage],
+    };
+    // Record the error result(all error contains in stderr)
+    recorder.recordEnd(step, context, errorResult, 'failure');
   }
 
   /**
@@ -301,16 +355,15 @@ export class Executor {
   }
 
   /**
-   * Execute a run step (shell command)
+   * Execute a single run command (without onError handling)
    *
    * Steps:
    * 1. Calculate base step index (for parallel execution)
    * 2. Substitute variables in command ({{variable}} syntax)
    * 3. Run command via TaskRunner (with retry logic if specified)
-   * 4. Store result in workspace
    */
-  private async executeRunStep(
-    step: { run: string; timeout?: number; retry?: number },
+  private async executeSingleRun(
+    step: Pick<RunStep, 'run' | 'timeout' | 'retry'>,
     context: ExecutionContext,
     bufferOutput: boolean = false,
     hasWhenCondition: boolean = false
@@ -362,11 +415,77 @@ export class Executor {
       }
     }
 
-    // Extract final success status and store in workspace
-    const finalSuccess = typeof lastResult === 'boolean' ? lastResult : lastResult.success;
+    return lastResult;
+  }
+
+  /**
+   * Execute a run step with recursive onError chain
+   *
+   * The onError chain is modeled as a linked list of run-like steps:
+   * main -> onError -> onError -> ...
+   * The final success is determined by the last executed command in the chain.
+   */
+  private async executeRunStep(
+    step: Pick<RunStep, 'run' | 'timeout' | 'retry' | 'onError'>,
+    context: ExecutionContext,
+    bufferOutput: boolean = false,
+    hasWhenCondition: boolean = false
+  ): Promise<boolean | TaskRunResult> {
+    const rootNode: RunChainNode = {
+      run: step.run,
+      timeout: step.timeout,
+      retry: step.retry,
+      onError: step.onError ?? undefined,
+    };
+
+    const finalResult = await this.executeRunChain(
+      rootNode,
+      context,
+      bufferOutput,
+      hasWhenCondition
+    );
+    const finalSuccess = typeof finalResult === 'boolean' ? finalResult : finalResult.success;
+
+    // Store final success status in workspace for this step index
     this.workspace.setStepResult(context.stepIndex, finalSuccess);
 
-    return lastResult;
+    return finalResult;
+  }
+
+  /**
+   * Execute a run-like node and its nested onError chain
+   */
+  private async executeRunChain(
+    node: RunChainNode,
+    context: ExecutionContext,
+    bufferOutput: boolean,
+    hasWhenCondition: boolean
+  ): Promise<boolean | TaskRunResult> {
+    const result = await this.executeSingleRun(
+      {
+        run: node.run,
+        timeout: node.timeout,
+        retry: node.retry,
+      },
+      context,
+      bufferOutput,
+      hasWhenCondition
+    );
+
+    const success = typeof result === 'boolean' ? result : result.success;
+
+    // On success, stop the chain
+    if (success || !node.onError) {
+      return result;
+    }
+
+    // On failure and onError exists, execute the next node in the chain
+    return this.executeRunChain(
+      node.onError as RunChainNode,
+      context,
+      bufferOutput,
+      hasWhenCondition
+    );
   }
 
   /**
@@ -391,7 +510,7 @@ export class Executor {
     }
 
     // Determine variable name: use 'as' field if provided, otherwise use choice id
-    const variableName = step.choose.as || choice.id;
+    const variableName = step.choose.as ?? choice.id;
 
     // Store choice in workspace (for conditions - always uses choice id)
     this.workspace.setChoice(choice.id, choice.id);

@@ -30,11 +30,20 @@ export interface History {
  * Basic execution step
  * Workflow stops on failure
  */
+export interface RunStepOnError {
+  run: string; // fallback command to run on failure
+  timeout?: number; // timeout in seconds (optional)
+  retry?: number; // number of retries on failure (optional, default: 0)
+  continue?: boolean; // if true, continue workflow even if this chain ultimately fails
+  onError?: RunStepOnError; // nested fallback chain
+}
+
 export interface RunStep {
   run: string; // command to run
   when?: Condition; // mainly used for choice conditions
   timeout?: number; // timeout in seconds (optional)
   retry?: number; // number of retries on failure (optional, default: 0)
+  onError?: RunStepOnError;
 }
 
 /**

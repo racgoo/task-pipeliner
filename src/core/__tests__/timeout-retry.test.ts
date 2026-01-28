@@ -277,4 +277,125 @@ describe('Timeout and Retry', () => {
       );
     });
   });
+
+  describe('onError and continue', () => {
+    it('should execute onError fallback when main run fails and proceed on success', async () => {
+      // Step 1: main fails, onError succeeds
+      mockRun.mockResolvedValueOnce(false); // main command
+      mockRun.mockResolvedValueOnce(true); // onError fallback
+      // Step 2: succeeds
+      mockRun.mockResolvedValueOnce(true);
+
+      const workflow: Workflow = {
+        steps: [
+          {
+            run: 'node fail.js',
+            onError: {
+              run: 'echo "error"',
+            },
+          },
+          {
+            run: 'echo "done"',
+          },
+        ],
+      };
+
+      await expect(executor.execute(workflow)).resolves.not.toThrow();
+
+      // main + onError + next step
+      expect(mockRun).toHaveBeenCalledTimes(3);
+      expect(mockRun).toHaveBeenNthCalledWith(
+        1,
+        'node fail.js',
+        expect.any(Number),
+        'node fail.js',
+        undefined,
+        false,
+        false,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      );
+      expect(mockRun).toHaveBeenNthCalledWith(
+        2,
+        'echo "error"',
+        expect.any(Number),
+        'echo "error"',
+        undefined,
+        false,
+        false,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      );
+      expect(mockRun).toHaveBeenNthCalledWith(
+        3,
+        'echo "done"',
+        expect.any(Number),
+        'echo "done"',
+        undefined,
+        false,
+        false,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      );
+    });
+
+    it('should continue workflow when all onError chain fails but continue is true', async () => {
+      // Step 1: main fails, onError fails
+      mockRun.mockResolvedValueOnce(false); // main command
+      mockRun.mockResolvedValueOnce(false); // onError fallback
+      // Step 2: succeeds
+      mockRun.mockResolvedValueOnce(true);
+
+      const workflow: Workflow = {
+        steps: [
+          {
+            run: 'node fail.js',
+            onError: {
+              run: 'echo "error"',
+              continue: true,
+            },
+          },
+          {
+            run: 'echo "done"',
+          },
+        ],
+      };
+
+      // Should not throw because continue: true on onError
+      await expect(executor.execute(workflow)).resolves.not.toThrow();
+
+      // main + onError + next step
+      expect(mockRun).toHaveBeenCalledTimes(3);
+    });
+
+    it('should follow nested onError chain until a success occurs', async () => {
+      // main fails, first onError fails, second onError succeeds
+      mockRun.mockResolvedValueOnce(false); // main
+      mockRun.mockResolvedValueOnce(false); // onError level 1
+      mockRun.mockResolvedValueOnce(true); // onError level 2
+
+      const workflow: Workflow = {
+        steps: [
+          {
+            run: 'step1',
+            onError: {
+              run: 'step2',
+              onError: {
+                run: 'step3',
+              },
+            },
+          },
+        ],
+      };
+
+      await expect(executor.execute(workflow)).resolves.not.toThrow();
+      expect(mockRun).toHaveBeenCalledTimes(3);
+    });
+  });
 });
