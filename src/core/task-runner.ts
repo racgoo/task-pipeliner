@@ -180,6 +180,9 @@ export class TaskRunner {
     const headerBox = createStepHeaderBox(displayName, lineNumber, fileName, { borderColor });
     console.log(headerBox);
 
+    // Record start time for duration calculation
+    const startTime = Date.now();
+
     return new Promise<boolean>((resolve) => {
       const child = spawn(commandName, commandArgs, spawnOptions);
       let incompleteStdoutLine = '';
@@ -193,7 +196,8 @@ export class TaskRunner {
           const timeoutMessage = `Command timed out after ${timeoutSeconds} seconds`;
           const errorBox = createErrorBox(timeoutMessage);
           console.error(errorBox);
-          const footerMessage = createStepFooterMessage(false);
+          const duration = Date.now() - startTime;
+          const footerMessage = createStepFooterMessage(false, false, duration);
           console.log(footerMessage);
           resolve(false);
         }, timeoutSeconds * 1000);
@@ -234,7 +238,8 @@ export class TaskRunner {
         }
 
         const success = exitCode === 0;
-        const footerMessage = createStepFooterMessage(success);
+        const duration = Date.now() - startTime;
+        const footerMessage = createStepFooterMessage(success, false, duration);
         console.log(footerMessage);
         resolve(success);
       });

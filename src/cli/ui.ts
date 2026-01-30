@@ -48,9 +48,20 @@ export function createStepHeaderBox(
 /**
  * Create step completion message (no box, just colored text)
  */
-export function createStepFooterMessage(success: boolean, _isNested: boolean = false): string {
+export function createStepFooterMessage(
+  success: boolean,
+  _isNested: boolean = false,
+  duration?: number
+): string {
   const statusText = success ? '✓ Completed' : '✗ Failed';
-  return success ? chalk.green(statusText) : chalk.red(statusText);
+  const statusColor = success ? chalk.green(statusText) : chalk.red(statusText);
+
+  if (duration !== undefined) {
+    const durationSec = (duration / 1000).toFixed(2);
+    return `${statusColor} ${chalk.gray(`(${durationSec}s)`)}`;
+  }
+
+  return statusColor;
 }
 
 /**

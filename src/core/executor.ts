@@ -1,7 +1,13 @@
 import { resolve, isAbsolute, dirname } from 'path';
+import chalk from 'chalk';
 import logUpdate from 'log-update';
 import { ChoicePrompt, TextPrompt } from '../cli/prompts';
-import { createParallelHeaderBox, createParallelFooterMessage, createErrorBox } from '../cli/ui';
+import {
+  createParallelHeaderBox,
+  createParallelFooterMessage,
+  createErrorBox,
+  createStepFooterMessage,
+} from '../cli/ui';
 import type { Condition } from '../types/condition';
 import type {
   Step,
@@ -156,6 +162,7 @@ export class Executor {
     this.resolveBaseDir(workflow);
 
     const recorder = new WorkflowRecorder();
+    const workflowStartTime = Date.now();
 
     // Execute each step one by one
     for (let i = 0; i < workflow.steps.length; i++) {
@@ -182,6 +189,11 @@ export class Executor {
         throw error;
       }
     }
+
+    // Calculate and display total execution time
+    const totalDuration = Date.now() - workflowStartTime;
+    const totalDurationSec = (totalDuration / 1000).toFixed(2);
+    console.log(chalk.cyan(`\nTotal execution time: ${totalDurationSec}s`));
 
     // Save the recorded results
     await recorder.save();
@@ -226,7 +238,15 @@ export class Executor {
       : this.isStepSuccessful(stepResult, step);
 
     const status: 'success' | 'failure' = isSuccessful ? 'success' : 'failure';
-    recorder.recordEnd(step, context, stepResult, status);
+
+    // Record the step and get duration
+    const duration = recorder.recordEnd(step, context, stepResult, status);
+
+    // Display duration for non-run steps (run steps display duration in task-runner)
+    if (!this.isRunStep(step)) {
+      const footerMessage = createStepFooterMessage(isSuccessful, false, duration);
+      console.log(footerMessage);
+    }
 
     // Check continue flag for run steps
     // continue: false -> stop workflow (regardless of success/failure)

@@ -12,8 +12,9 @@ export interface Recorder {
   recordStart(): void;
   /**
    * Record a step execution with its result and status
+   * Returns the duration of the step execution
    */
-  recordEnd(step: Step, context: ExecutionContext, output: StepResult, status: StepStatus): void;
+  recordEnd(step: Step, context: ExecutionContext, output: StepResult, status: StepStatus): number;
 }
 
 /**
@@ -37,15 +38,17 @@ class WorkflowRecorder implements Recorder {
 
   /**
    * Record a step execution
+   * Returns the duration of the step execution
    */
   public recordEnd(
     step: Step,
     context: ExecutionContext,
     output: StepResult,
     status: StepStatus
-  ): void {
+  ): number {
     const duration = this.getDuration();
     this.records.push({ step, context, output, duration, status });
+    return duration;
   }
 
   /**
@@ -76,7 +79,7 @@ class WorkflowRecorder implements Recorder {
   /**
    * Get the duration since the recorder was initialized or last reset
    */
-  private getDuration(): number {
+  public getDuration(): number {
     return Date.now() - this.recordStartTimestamp;
   }
 }
