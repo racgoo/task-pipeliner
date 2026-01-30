@@ -57,8 +57,8 @@ export function createStepFooterMessage(
   const statusColor = success ? chalk.green(statusText) : chalk.red(statusText);
 
   if (duration !== undefined) {
-    const durationSec = (duration / 1000).toFixed(2);
-    return `${statusColor} ${chalk.gray(`(${durationSec}s)`)}`;
+    const durationStr = formatDuration(duration);
+    return `${statusColor} ${chalk.gray(`(${durationStr})`)}`;
   }
 
   return statusColor;
@@ -112,4 +112,13 @@ export function createDivider(): string {
 export function formatNestedLine(line: string, isNested: boolean = false): string {
   const prefix = isNested ? '| │ ' : '│ ';
   return `${prefix}${line}`;
+}
+
+/**
+ * Format duration in milliseconds to seconds string with 3 decimal places
+ * @param durationMs - Duration in milliseconds
+ * @returns Formatted duration string (e.g., "1.234s")
+ */
+export function formatDuration(durationMs: number): string {
+  return `${(durationMs / 1000).toFixed(3)}s`;
 }

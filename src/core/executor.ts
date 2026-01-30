@@ -7,6 +7,7 @@ import {
   createParallelFooterMessage,
   createErrorBox,
   createStepFooterMessage,
+  formatDuration,
 } from '../cli/ui';
 import type { Condition } from '../types/condition';
 import type {
@@ -192,8 +193,8 @@ export class Executor {
 
     // Calculate and display total execution time
     const totalDuration = Date.now() - workflowStartTime;
-    const totalDurationSec = (totalDuration / 1000).toFixed(2);
-    console.log(chalk.cyan(`\nTotal execution time: ${totalDurationSec}s`));
+    const totalDurationStr = formatDuration(totalDuration);
+    console.log(chalk.cyan(`\nTotal execution time: ${totalDurationStr}`));
 
     // Save the recorded results
     await recorder.save();

@@ -30,6 +30,7 @@ import { WorkflowHistoryManager } from '../core/history';
 import { getParser } from '../core/parser';
 import type { History, Record as WorkflowRecord, Step } from '../types/workflow';
 import { ChoicePrompt } from './prompts';
+import { formatDuration } from './ui';
 
 const execAsync = promisify(exec);
 
@@ -312,7 +313,7 @@ function displayHistory(history: History, filename: string): void {
   // Format execution summary
   const startTime = dayjs(history.initialTimestamp).format('YYYY-MM-DD HH:mm:ss');
   const durationMs = totalDuration;
-  const durationSec = (durationMs / 1000).toFixed(2);
+  const durationSec = formatDuration(durationMs);
 
   // Header box
   const headerContent = [
@@ -320,7 +321,7 @@ function displayHistory(history: History, filename: string): void {
     '',
     `${chalk.cyan('File:')} ${filename}`,
     `${chalk.cyan('Started:')} ${startTime}`,
-    `${chalk.cyan('Total Duration:')} ${durationSec}s`,
+    `${chalk.cyan('Total Duration:')} ${durationSec}`,
     `${chalk.cyan('Total Steps:')} ${history.records.length}`,
     `${chalk.green('✓ Successful:')} ${successCount}`,
     failureCount > 0 ? `${chalk.red('✗ Failed:')} ${failureCount}` : '',
@@ -353,7 +354,7 @@ function displayRecord(record: WorkflowRecord, stepNumber: number, totalSteps: n
   const stepDescription = getStepDescription(record.step);
   const statusIcon = record.status === 'success' ? chalk.green('✓') : chalk.red('✗');
   const statusText = record.status === 'success' ? chalk.green('Success') : chalk.red('Failed');
-  const duration = `${(record.duration / 1000).toFixed(2)}s`;
+  const duration = formatDuration(record.duration);
 
   // Step header
   const stepHeader = [
