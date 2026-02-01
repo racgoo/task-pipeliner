@@ -126,12 +126,9 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config --global --add safe.directory "$(pwd)"
           git add Formula/task-pipeliner.rb
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Update task-pipeliner to ${{ steps.release_info.outputs.version }}"
-            git push origin main || git push origin HEAD:main
-          fi
+          # Always commit to ensure SHA256 is up to date (even for same version)
+          git commit -m "Update task-pipeliner to ${{ steps.release_info.outputs.version }}" || echo "No changes or already up to date"
+          git push origin main || git push origin HEAD:main || echo "Push failed or no changes"
 
   update-scoop:
     name: Update Scoop Manifest
@@ -219,12 +216,9 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config --global --add safe.directory "$(pwd)"
           git add task-pipeliner.json
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Update task-pipeliner to ${{ steps.release_info.outputs.version }}"
-            git push origin main || git push origin HEAD:main
-          fi
+          # Always commit to ensure hash is up to date (even for same version)
+          git commit -m "Update task-pipeliner to ${{ steps.release_info.outputs.version }}" || echo "No changes or already up to date"
+          git push origin main || git push origin HEAD:main || echo "Push failed or no changes"
 
   publish-npm:
     name: Publish to npm
