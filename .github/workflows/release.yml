@@ -77,13 +77,18 @@ jobs:
       - name: Prepare for pkg build
         shell: bash
         run: |
-          # pkg는 스냅샷 루트에 파일을 넣으므로, dist/index.js를 루트로 복사
-          cp dist/index.js index.js
-          # package.json의 main을 임시로 수정
+          # pkg는 CommonJS를 선호하므로, dist/index.cjs를 사용 (없으면 dist/index.js)
+          if [ -f dist/index.cjs ]; then
+            cp dist/index.cjs index.js
+          else
+            cp dist/index.js index.js
+          fi
+          # package.json의 main과 type을 임시로 수정 (CJS로)
           cp package.json package.json.bak
           node -e "
             const fs = require('fs');
             const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            delete pkg.type; // Remove 'module' type for pkg
             pkg.main = './index.js';
             pkg.bin = { 'task-pipeliner': './index.js', 'tp': './index.js' };
             fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
