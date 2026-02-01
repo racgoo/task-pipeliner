@@ -1,0 +1,111 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g., v1.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: node18-macos-arm64
+            output: tp-macos-arm64
+          - os: macos-latest
+            target: node18-macos-x64
+            output: tp-macos-x64
+          - os: ubuntu-latest
+            target: node18-linux-x64
+            output: tp-linux-x64
+          - os: windows-latest
+            target: node18-win-x64
+            output: tp-win-x64.exe
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: pnpm
+
+      - name: Install Rust (for NAPI build)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+
+      - name: Setup Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+
+      - name: Install just
+        uses: extractions/setup-just@v2
+
+      - name: Build project
+        run: just build
+
+      - name: Install pkg
+        run: pnpm add -D pkg
+
+      - name: Build binary with pkg
+        run: |
+          npx pkg dist/index.js --targets ${{ matrix.target }} --output ${{ matrix.output }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.output }}
+          path: ${{ matrix.output }}
+          retention-days: 1
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: 'tp-*'
+          merge-multiple: false
+          path: ./artifacts
+
+      - name: List artifacts for debugging
+        run: |
+          find artifacts -type f -name 'tp-*' || true
+          ls -la artifacts/ || true
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          name: Release ${{ github.event.inputs.tag }}
+          files: |
+            artifacts/tp-macos-arm64/tp-macos-arm64
+            artifacts/tp-macos-x64/tp-macos-x64
+            artifacts/tp-linux-x64/tp-linux-x64
+            artifacts/tp-win-x64.exe/tp-win-x64.exe
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+
