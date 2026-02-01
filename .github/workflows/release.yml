@@ -7,6 +7,11 @@ on:
         description: 'Release tag (e.g., v1.0.0)'
         required: true
         type: string
+      body:
+        description: 'Release notes (markdown supported, optional - commits will be auto-added)'
+        required: false
+        type: textarea
+        default: ''
 
 permissions:
   contents: write
@@ -32,6 +37,9 @@ jobs:
           - os: windows-latest
             target: node18-win-x64
             output: tp-win-x64.exe
+          - os: windows-latest
+            target: node18-win-arm64
+            output: tp-win-arm64.exe
 
     steps:
       - uses: actions/checkout@v4
@@ -88,12 +96,72 @@ jobs:
     if: success()
 
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: 'tp-*'
           merge-multiple: false
           path: ./artifacts
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          TAG="${{ github.event.inputs.tag }}"
+          
+          # Get all tags sorted by version
+          PREV_TAG=$(git tag --sort=-version:refname | grep -E "^v[0-9]" | grep -v "^${TAG}$" | head -n 1 || echo "")
+          
+          if [ -z "$PREV_TAG" ]; then
+            # First release, get all commits
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --reverse)
+            COMPARE_URL="https://github.com/${{ github.repository }}/compare/$(git rev-list --max-parents=0 HEAD)...${TAG}"
+          else
+            # Get commits since previous tag
+            CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --reverse)
+            COMPARE_URL="https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${TAG}"
+          fi
+          
+          # Get user body (trim whitespace)
+          USER_BODY="${{ github.event.inputs.body }}"
+          USER_BODY=$(echo "$USER_BODY" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+          
+          # Build final body
+          if [ -n "$USER_BODY" ] && [ -n "$CHANGELOG" ]; then
+            # User body + commits
+            FULL_BODY="${USER_BODY}
+
+          ## Commits
+
+          ${CHANGELOG}
+
+          **Full Changelog**: ${COMPARE_URL}"
+          elif [ -n "$USER_BODY" ]; then
+            # User body only (no commits)
+            FULL_BODY="${USER_BODY}
+
+          **Full Changelog**: ${COMPARE_URL}"
+          elif [ -n "$CHANGELOG" ]; then
+            # Commits only (no user body)
+            FULL_BODY="## What's Changed
+
+          ${CHANGELOG}
+
+          **Full Changelog**: ${COMPARE_URL}"
+          else
+            # Fallback
+            FULL_BODY="## Release ${TAG}
+
+          **Full Changelog**: ${COMPARE_URL}"
+          fi
+          
+          # Save to output (multiline)
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          echo "$FULL_BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: List artifacts for debugging
         run: |
@@ -105,12 +173,14 @@ jobs:
         with:
           tag_name: ${{ github.event.inputs.tag }}
           name: Release ${{ github.event.inputs.tag }}
+          body: ${{ steps.changelog.outputs.body }}
           files: |
             artifacts/tp-macos-arm64/tp-macos-arm64
             artifacts/tp-macos-x64/tp-macos-x64
             artifacts/tp-linux-x64/tp-linux-x64
             artifacts/tp-win-x64.exe/tp-win-x64.exe
+            artifacts/tp-win-arm64.exe/tp-win-arm64.exe
           draft: false
           prerelease: false
-          generate_release_notes: true
+          generate_release_notes: false
 
