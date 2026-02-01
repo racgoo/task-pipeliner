@@ -93,8 +93,14 @@ jobs:
         run: npx pkg index.js --targets ${{ matrix.target }} --output ${{ matrix.output }} --config package.json
 
       - name: Cleanup
+        shell: bash
         run: |
-          rm -f index.js package.json.bak || true
+          # Restore original package.json if backup exists
+          if [ -f package.json.bak ]; then
+            mv package.json.bak package.json
+          fi
+          # Remove temporary index.js
+          rm -f index.js || true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
