@@ -2,7 +2,7 @@
 
 > A powerful, condition-based task pipeline runner with beautiful CLI output
 
-**Version:** 0.2.5
+**Version:** 0.2.6
 
 ![fox2](https://github.com/user-attachments/assets/fdf8d786-6a91-4d2d-9dc1-72be6f3ccd98)
 
