@@ -29,6 +29,16 @@ jobs:
           repository: racgoo/homebrew-task-pipeliner
           token: ${{ secrets.GITHUB_TOKEN }}
           path: homebrew-tap
+          fetch-depth: 0
+
+      - name: Initialize repository if empty
+        working-directory: homebrew-tap
+        run: |
+          if [ ! -d .git ]; then
+            git init
+            git remote add origin https://github.com/racgoo/homebrew-task-pipeliner.git
+            git checkout -b main || git branch -M main
+          fi
 
       - name: Get version and tag from release
         id: release_info
@@ -124,6 +134,16 @@ jobs:
           repository: racgoo/scoop-task-pipeliner
           token: ${{ secrets.GITHUB_TOKEN }}
           path: scoop-bucket
+          fetch-depth: 0
+
+      - name: Initialize repository if empty
+        working-directory: scoop-bucket
+        run: |
+          if [ ! -d .git ]; then
+            git init
+            git remote add origin https://github.com/racgoo/scoop-task-pipeliner.git
+            git checkout -b main || git branch -M main
+          fi
 
       - name: Get version and tag from release
         id: release_info
@@ -208,6 +228,9 @@ jobs:
           node-version: 18
           registry-url: 'https://registry.npmjs.org'
           cache: pnpm
+
+      - name: Install just
+        uses: extractions/setup-just@v2
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
