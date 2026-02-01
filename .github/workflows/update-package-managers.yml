@@ -34,9 +34,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: racgoo/homebrew-task-pipeliner
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PACKAGE_MANAGER_TOKEN || secrets.GITHUB_TOKEN }}
           path: homebrew-tap
           fetch-depth: 0
+          persist-credentials: true
 
       - name: Initialize repository if empty
         working-directory: homebrew-tap
@@ -124,7 +125,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config --global --add safe.directory "$(pwd)"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/racgoo/homebrew-task-pipeliner.git
           git add Formula/task-pipeliner.rb
           if git diff --staged --quiet; then
             echo "No changes to commit"
@@ -146,9 +146,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: racgoo/scoop-task-pipeliner
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PACKAGE_MANAGER_TOKEN || secrets.GITHUB_TOKEN }}
           path: scoop-bucket
           fetch-depth: 0
+          persist-credentials: true
 
       - name: Initialize repository if empty
         working-directory: scoop-bucket
@@ -217,7 +218,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config --global --add safe.directory "$(pwd)"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/racgoo/scoop-task-pipeliner.git
           git add task-pipeliner.json
           if git diff --staged --quiet; then
             echo "No changes to commit"
