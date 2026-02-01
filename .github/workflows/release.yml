@@ -122,13 +122,13 @@ jobs:
             COMPARE_URL="https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${TAG}"
           fi
           
-          # Get user body (trim whitespace)
+          # Get user body (trim whitespace) - use printf to avoid option parsing issues
           USER_BODY="${{ github.event.inputs.body }}"
-          USER_BODY=$(echo "${USER_BODY}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+          USER_BODY=$(printf '%s' "${USER_BODY}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
           
           # Escape % for printf (replace % with %%)
-          USER_BODY_ESCAPED=$(echo "${USER_BODY}" | sed 's/%/%%/g')
-          CHANGELOG_ESCAPED=$(echo "${CHANGELOG}" | sed 's/%/%%/g')
+          USER_BODY_ESCAPED=$(printf '%s' "${USER_BODY}" | sed 's/%/%%/g')
+          CHANGELOG_ESCAPED=$(printf '%s' "${CHANGELOG}" | sed 's/%/%%/g')
           
           # Build final body - use printf to safely handle special characters
           if [ -n "${USER_BODY}" ] && [ -n "${CHANGELOG}" ]; then
