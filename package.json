@@ -1,6 +1,6 @@
 {
   "name": "task-pipeliner",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A task pipeline runner with condition-based workflow execution",
   "type": "module",
   "main": "./dist/index.js",
