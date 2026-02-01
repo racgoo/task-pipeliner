@@ -31,6 +31,7 @@ import { getParser } from '../core/parser';
 import type { History, Record as WorkflowRecord, Step } from '../types/workflow';
 import { ChoicePrompt } from './prompts';
 import { formatDuration } from './ui';
+import { setSilentMode } from './utils';
 
 const execAsync = promisify(exec);
 
@@ -82,11 +83,17 @@ program
   .command('run')
   .description('Run a workflow from a YAML or JSON file')
   .argument('<file>', 'Path to the workflow file (YAML or JSON, relative or absolute)')
+  .option('-s, --silent', 'Run in silent mode (suppress console output)')
   .addHelpText(
     'after',
-    '\nExamples:\n  $ tp run workflow.yaml\n  $ tp run workflow.json\n  $ tp run ./my-workflow.yaml\n  $ tp run examples/simple-project/workflow.json\n\nWorkflow File Structure:\n  A workflow file must contain a "steps" array with step definitions.\n  Each step can be:\n  • run: Execute a shell command\n  • choose: Prompt user to select from options\n  • prompt: Ask user for text input\n  • parallel: Run multiple steps simultaneously\n  • fail: Stop workflow with error message\n\n  Steps can have "when" conditions to control execution:\n  • file: Check if file/directory exists\n  • var: Check variable value or existence\n  • all/any/not: Combine conditions\n\n  Supported formats: YAML (.yaml, .yml) and JSON (.json)\n  See README.md for complete DSL documentation.'
+    '\nExamples:\n  $ tp run workflow.yaml\n  $ tp run workflow.json\n  $ tp run ./my-workflow.yaml\n  $ tp run examples/simple-project/workflow.json\n  $ tp run workflow.yaml --silent\n  $ tp run workflow.yaml -s\n\nWorkflow File Structure:\n  A workflow file must contain a "steps" array with step definitions.\n  Each step can be:\n  • run: Execute a shell command\n  • choose: Prompt user to select from options\n  • prompt: Ask user for text input\n  • parallel: Run multiple steps simultaneously\n  • fail: Stop workflow with error message\n\n  Steps can have "when" conditions to control execution:\n  • file: Check if file/directory exists\n  • var: Check variable value or existence\n  • all/any/not: Combine conditions\n\n  Supported formats: YAML (.yaml, .yml) and JSON (.json)\n  See README.md for complete DSL documentation.'
   )
-  .action(async (file: string) => {
+  .action(async (file: string, options: { silent?: boolean }) => {
+    // If silent mode, replace console methods with no-op functions
+    if (options.silent) {
+      setSilentMode();
+    }
+
     try {
       // Step 1: Get appropriate parser based on file extension
       const parser = getParser(file);
