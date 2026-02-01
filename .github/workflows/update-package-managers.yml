@@ -1,0 +1,191 @@
+name: update-package-managers
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  update-homebrew:
+    name: Update Homebrew Formula
+    runs-on: ubuntu-latest
+    if: github.event.release.prerelease == false
+
+    steps:
+      - name: Checkout Homebrew tap
+        uses: actions/checkout@v4
+        with:
+          repository: racgoo/homebrew-task-pipeliner
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: homebrew-tap
+
+      - name: Get version from tag
+        id: version
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Calculate SHA256 for binaries
+        id: shas
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          REPO="${{ github.repository }}"
+          
+          MACOS_ARM64_SHA=$(curl -sL "https://github.com/${REPO}/releases/download/${TAG}/tp-macos-arm64" | shasum -a 256 | cut -d' ' -f1)
+          MACOS_X64_SHA=$(curl -sL "https://github.com/${REPO}/releases/download/${TAG}/tp-macos-x64" | shasum -a 256 | cut -d' ' -f1)
+          LINUX_X64_SHA=$(curl -sL "https://github.com/${REPO}/releases/download/${TAG}/tp-linux-x64" | shasum -a 256 | cut -d' ' -f1)
+          
+          echo "macos_arm64_sha=${MACOS_ARM64_SHA}" >> $GITHUB_OUTPUT
+          echo "macos_x64_sha=${MACOS_X64_SHA}" >> $GITHUB_OUTPUT
+          echo "linux_x64_sha=${LINUX_X64_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Generate Homebrew Formula
+        working-directory: homebrew-tap
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ github.event.release.tag_name }}"
+          REPO="${{ github.repository }}"
+          
+          mkdir -p Formula
+          cat > Formula/task-pipeliner.rb <<FORMULA_EOF
+          class TaskPipeliner < Formula
+            desc "A task pipeline runner with condition-based workflow execution"
+            homepage "https://task-pipeliner.racgoo.com"
+            license "MIT"
+            version "${VERSION}"
+            
+            on_macos do
+              if Hardware::CPU.arm?
+                url "https://github.com/${REPO}/releases/download/${TAG}/tp-macos-arm64"
+                sha256 "${{ steps.shas.outputs.macos_arm64_sha }}"
+              else
+                url "https://github.com/${REPO}/releases/download/${TAG}/tp-macos-x64"
+                sha256 "${{ steps.shas.outputs.macos_x64_sha }}"
+              end
+            end
+            
+            on_linux do
+              url "https://github.com/${REPO}/releases/download/${TAG}/tp-linux-x64"
+              sha256 "${{ steps.shas.outputs.linux_x64_sha }}"
+            end
+            
+            def install
+              bin.install Dir["tp-*"].first => "tp"
+              bin.install_symlink "tp" => "task-pipeliner"
+            end
+            
+            test do
+              system "#{bin}/tp", "--version"
+            end
+          end
+          FORMULA_EOF
+
+      - name: Commit and push Formula
+        working-directory: homebrew-tap
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/task-pipeliner.rb || true
+          git commit -m "Update task-pipeliner to ${{ steps.version.outputs.version }}" || exit 0
+          git push || echo "No changes or push failed"
+
+  update-scoop:
+    name: Update Scoop Manifest
+    runs-on: ubuntu-latest
+    if: github.event.release.prerelease == false
+
+    steps:
+      - name: Checkout Scoop bucket
+        uses: actions/checkout@v4
+        with:
+          repository: racgoo/scoop-task-pipeliner
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: scoop-bucket
+
+      - name: Get version from tag
+        id: version
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Calculate SHA256 for Windows binary
+        id: shas
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          REPO="${{ github.repository }}"
+          
+          WIN_X64_SHA=$(curl -sL "https://github.com/${REPO}/releases/download/${TAG}/tp-win-x64.exe" | shasum -a 256 | cut -d' ' -f1)
+          
+          echo "win_x64_sha=${WIN_X64_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Generate Scoop Manifest
+        working-directory: scoop-bucket
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ github.event.release.tag_name }}"
+          REPO="${{ github.repository }}"
+          
+          mkdir -p bucket
+          cat > bucket/task-pipeliner.json <<EOF
+          {
+            "version": "${VERSION}",
+            "description": "A task pipeline runner with condition-based workflow execution",
+            "homepage": "https://task-pipeliner.racgoo.com",
+            "license": "MIT",
+            "url": "https://github.com/${REPO}/releases/download/${TAG}/tp-win-x64.exe",
+            "hash": "${{ steps.shas.outputs.win_x64_sha }}",
+            "bin": [["tp-win-x64.exe", "tp"]],
+            "checkver": {
+              "github": "${REPO}"
+            },
+            "autoupdate": {
+              "url": "https://github.com/${REPO}/releases/download/v\$version/tp-win-x64.exe"
+            }
+          }
+          EOF
+
+      - name: Commit and push Manifest
+        working-directory: scoop-bucket
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add bucket/task-pipeliner.json || true
+          git commit -m "Update task-pipeliner to ${{ steps.version.outputs.version }}" || exit 0
+          git push || echo "No changes or push failed"
+
+  publish-npm:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    if: github.event.release.prerelease == false
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          registry-url: 'https://registry.npmjs.org'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        run: |
+          just build-rs
+          just build-ts
+
+      - name: Publish to npm
+        run: pnpm publish --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

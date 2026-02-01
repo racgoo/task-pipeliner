@@ -37,9 +37,6 @@ jobs:
           - os: windows-latest
             target: node18-win-x64
             output: tp-win-x64.exe
-          - os: windows-latest
-            target: node18-win-arm64
-            output: tp-win-arm64.exe
 
     steps:
       - uses: actions/checkout@v4
@@ -179,7 +176,6 @@ jobs:
             artifacts/tp-macos-x64/tp-macos-x64
             artifacts/tp-linux-x64/tp-linux-x64
             artifacts/tp-win-x64.exe/tp-win-x64.exe
-            artifacts/tp-win-arm64.exe/tp-win-arm64.exe
           draft: false
           prerelease: false
           generate_release_notes: false
