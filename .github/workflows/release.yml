@@ -72,10 +72,10 @@ jobs:
 
       - name: Verify dist files
         run: |
-          ls -la dist/
-          test -f dist/index.js || (echo "dist/index.js not found!" && exit 1)
+          node -e "const fs = require('fs'); const files = fs.readdirSync('dist'); console.log('Files in dist:', files.join(', ')); if (!fs.existsSync('dist/index.js')) { console.error('dist/index.js not found!'); process.exit(1); }"
 
       - name: Prepare for pkg build
+        shell: bash
         run: |
           # pkg는 스냅샷 루트에 파일을 넣으므로, dist/index.js를 루트로 복사
           cp dist/index.js index.js
