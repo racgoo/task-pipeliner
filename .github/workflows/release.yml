@@ -118,47 +118,61 @@ jobs:
             COMPARE_URL="https://github.com/${{ github.repository }}/compare/$(git rev-list --max-parents=0 HEAD)...${TAG}"
           else
             # Get commits since previous tag
-            CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --reverse)
+            CHANGELOG=$(git log "${PREV_TAG}"..HEAD --pretty=format:"- %s (%h)" --reverse)
             COMPARE_URL="https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${TAG}"
           fi
           
-          # Get user body (trim whitespace)
+          # Get user body (trim whitespace) - use here-doc to safely handle special characters
           USER_BODY="${{ github.event.inputs.body }}"
-          USER_BODY=$(echo "$USER_BODY" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+          USER_BODY=$(echo "${USER_BODY}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
           
-          # Build final body
-          if [ -n "$USER_BODY" ] && [ -n "$CHANGELOG" ]; then
+          # Build final body using here-doc to safely handle special characters
+          if [ -n "${USER_BODY}" ] && [ -n "${CHANGELOG}" ]; then
             # User body + commits
-            FULL_BODY="${USER_BODY}
+            FULL_BODY=$(cat <<BODY_EOF
+${USER_BODY}
 
-          ## Commits
+## Commits
 
-          ${CHANGELOG}
+${CHANGELOG}
 
-          **Full Changelog**: ${COMPARE_URL}"
-          elif [ -n "$USER_BODY" ]; then
+**Full Changelog**: ${COMPARE_URL}
+BODY_EOF
+)
+          elif [ -n "${USER_BODY}" ]; then
             # User body only (no commits)
-            FULL_BODY="${USER_BODY}
+            FULL_BODY=$(cat <<BODY_EOF
+${USER_BODY}
 
-          **Full Changelog**: ${COMPARE_URL}"
-          elif [ -n "$CHANGELOG" ]; then
+**Full Changelog**: ${COMPARE_URL}
+BODY_EOF
+)
+          elif [ -n "${CHANGELOG}" ]; then
             # Commits only (no user body)
-            FULL_BODY="## What's Changed
+            FULL_BODY=$(cat <<BODY_EOF
+## What's Changed
 
-          ${CHANGELOG}
+${CHANGELOG}
 
-          **Full Changelog**: ${COMPARE_URL}"
+**Full Changelog**: ${COMPARE_URL}
+BODY_EOF
+)
           else
             # Fallback
-            FULL_BODY="## Release ${TAG}
+            FULL_BODY=$(cat <<BODY_EOF
+## Release ${TAG}
 
-          **Full Changelog**: ${COMPARE_URL}"
+**Full Changelog**: ${COMPARE_URL}
+BODY_EOF
+)
           fi
           
           # Save to output (multiline)
-          echo "body<<EOF" >> $GITHUB_OUTPUT
-          echo "$FULL_BODY" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          {
+            echo "body<<EOF"
+            echo "${FULL_BODY}"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: List artifacts for debugging
         run: |
