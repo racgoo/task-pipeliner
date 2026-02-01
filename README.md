@@ -35,6 +35,9 @@
 - 📦 **[npm](https://www.npmjs.com/package/task-pipeliner)** - Package on npm registry
 - 💻 **CLI Commands**:
   ```bash
+  tp run workflow.yaml        # Run a workflow
+  tp run workflow.yaml --silent  # Run in silent mode (suppress all console output)
+  tp run workflow.yaml -s     # Short form for silent mode
   tp open generator  # Open visual generator
   tp open docs       # Open documentation
   tp history         # View workflow execution history
@@ -167,7 +170,20 @@ task-pipeliner run workflow.json
 # or use the short alias
 tp run workflow.yaml
 tp run workflow.json
+
+# Run in silent mode (suppress all console output)
+tp run workflow.yaml --silent
+# or use the short form
+tp run workflow.yaml -s
 ```
+
+**Silent Mode:**
+The `--silent` (or `-s`) flag suppresses all console output during workflow execution. This is useful for:
+- CI/CD pipelines where you only need exit codes
+- Automated scripts that don't need verbose output
+- Reducing noise in logs
+
+Note: Silent mode suppresses all output including command output, step headers, and error messages. The workflow still executes normally and returns appropriate exit codes.
 
 ## 📖 DSL Syntax
 

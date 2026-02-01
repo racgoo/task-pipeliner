@@ -35,6 +35,9 @@
 - 📦 **[npm](https://www.npmjs.com/package/task-pipeliner)** - npm 레지스트리 패키지
 > **CLI 명령어**:
   ```bash
+  tp run workflow.yaml        # 워크플로우 실행
+  tp run workflow.yaml --silent  # 사일런트 모드로 실행 (모든 콘솔 출력 억제)
+  tp run workflow.yaml -s     # 사일런트 모드 짧은 형식
   tp open generator  # 시각적 생성기 열기
   tp open docs       # 문서 열기
   tp history         # 워크플로우 실행 히스토리 보기
@@ -167,7 +170,20 @@ task-pipeliner run workflow.json
 # 또는 짧은 별칭 사용
 tp run workflow.yaml
 tp run workflow.json
+
+# 사일런트 모드로 실행 (모든 콘솔 출력 억제)
+tp run workflow.yaml --silent
+# 또는 짧은 형식 사용
+tp run workflow.yaml -s
 ```
+
+**사일런트 모드:**
+`--silent` (또는 `-s`) 플래그는 워크플로우 실행 중 모든 콘솔 출력을 억제합니다. 다음 경우에 유용합니다:
+- 종료 코드만 필요한 CI/CD 파이프라인
+- 상세한 출력이 필요 없는 자동화 스크립트
+- 로그의 노이즈 감소
+
+참고: 사일런트 모드는 명령 출력, 단계 헤더, 에러 메시지를 포함한 모든 출력을 억제합니다. 워크플로우는 정상적으로 실행되며 적절한 종료 코드를 반환합니다.
 
 ## DSL 문법
 
