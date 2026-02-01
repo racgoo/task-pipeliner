@@ -70,9 +70,35 @@ jobs:
       - name: Install pkg
         run: pnpm add -D pkg
 
+      - name: Verify dist files
+        run: |
+          ls -la dist/
+          test -f dist/index.js || (echo "dist/index.js not found!" && exit 1)
+
+      - name: Prepare for pkg build
+        run: |
+          # pkg는 스냅샷 루트에 파일을 넣으므로, dist/index.js를 루트로 복사
+          cp dist/index.js index.js
+          # package.json의 main을 임시로 수정
+          cp package.json package.json.bak
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.main = './index.js';
+            pkg.bin = { 'task-pipeliner': './index.js', 'tp': './index.js' };
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+          "
+
       - name: Build binary with pkg
         run: |
-          npx pkg dist/index.js --targets ${{ matrix.target }} --output ${{ matrix.output }}
+          npx pkg index.js \
+            --targets ${{ matrix.target }} \
+            --output ${{ matrix.output }} \
+            --config package.json
+
+      - name: Cleanup
+        run: |
+          rm -f index.js package.json.bak || true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

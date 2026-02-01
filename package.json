@@ -85,10 +85,17 @@
   "pkg": {
     "assets": [
       "dist/**/*.node",
-      "dist/**/*"
+      "dist/**/*.js",
+      "dist/**/*.json"
     ],
     "scripts": [
       "dist/**/*.js"
+    ],
+    "targets": [
+      "node18-macos-arm64",
+      "node18-macos-x64",
+      "node18-linux-x64",
+      "node18-win-x64"
     ]
   },
   "packageManager": "pnpm@10.26.1"
