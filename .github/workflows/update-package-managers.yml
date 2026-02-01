@@ -3,6 +3,12 @@ name: update-package-managers
 on:
   release:
     types: [published]
+  workflow_run:
+    workflows: ["Release Build and Publish"]
+    types:
+      - completed
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -12,7 +18,9 @@ jobs:
   update-homebrew:
     name: Update Homebrew Formula
     runs-on: ubuntu-latest
-    if: github.event.release.prerelease == false
+    if: |
+      (github.event_name == 'release' && github.event.release.prerelease == false) ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
 
     steps:
       - name: Checkout Homebrew tap
@@ -22,16 +30,26 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           path: homebrew-tap
 
-      - name: Get version from tag
-        id: version
+      - name: Get version and tag from release
+        id: release_info
         run: |
-          VERSION="${GITHUB_REF#refs/tags/v}"
+          if [ "${{ github.event_name }}" == "release" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+            VERSION="${TAG#v}"
+          else
+            # Get latest release tag from workflow_run using GitHub API
+            TAG=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/latest" | \
+              grep -o '"tag_name": "[^"]*' | cut -d'"' -f4)
+            VERSION="${TAG#v}"
+          fi
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Calculate SHA256 for binaries
         id: shas
         run: |
-          TAG="${{ github.event.release.tag_name }}"
+          TAG="${{ steps.release_info.outputs.tag }}"
           REPO="${{ github.repository }}"
           
           MACOS_ARM64_SHA=$(curl -sL "https://github.com/${REPO}/releases/download/${TAG}/tp-macos-arm64" | shasum -a 256 | cut -d' ' -f1)
@@ -45,8 +63,8 @@ jobs:
       - name: Generate Homebrew Formula
         working-directory: homebrew-tap
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          TAG="${{ github.event.release.tag_name }}"
+          VERSION="${{ steps.release_info.outputs.version }}"
+          TAG="${{ steps.release_info.outputs.tag }}"
           REPO="${{ github.repository }}"
           
           mkdir -p Formula
@@ -89,13 +107,15 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Formula/task-pipeliner.rb || true
-          git commit -m "Update task-pipeliner to ${{ steps.version.outputs.version }}" || exit 0
+          git commit -m "Update task-pipeliner to ${{ steps.release_info.outputs.version }}" || exit 0
           git push || echo "No changes or push failed"
 
   update-scoop:
     name: Update Scoop Manifest
     runs-on: ubuntu-latest
-    if: github.event.release.prerelease == false
+    if: |
+      (github.event_name == 'release' && github.event.release.prerelease == false) ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
 
     steps:
       - name: Checkout Scoop bucket
@@ -105,16 +125,26 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           path: scoop-bucket
 
-      - name: Get version from tag
-        id: version
+      - name: Get version and tag from release
+        id: release_info
         run: |
-          VERSION="${GITHUB_REF#refs/tags/v}"
+          if [ "${{ github.event_name }}" == "release" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+            VERSION="${TAG#v}"
+          else
+            # Get latest release tag from workflow_run using GitHub API
+            TAG=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/latest" | \
+              grep -o '"tag_name": "[^"]*' | cut -d'"' -f4)
+            VERSION="${TAG#v}"
+          fi
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Calculate SHA256 for Windows binary
         id: shas
         run: |
-          TAG="${{ github.event.release.tag_name }}"
+          TAG="${{ steps.release_info.outputs.tag }}"
           REPO="${{ github.repository }}"
           
           WIN_X64_SHA=$(curl -sL "https://github.com/${REPO}/releases/download/${TAG}/tp-win-x64.exe" | shasum -a 256 | cut -d' ' -f1)
@@ -124,8 +154,8 @@ jobs:
       - name: Generate Scoop Manifest
         working-directory: scoop-bucket
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          TAG="${{ github.event.release.tag_name }}"
+          VERSION="${{ steps.release_info.outputs.version }}"
+          TAG="${{ steps.release_info.outputs.tag }}"
           REPO="${{ github.repository }}"
           
           mkdir -p bucket
@@ -153,13 +183,15 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add bucket/task-pipeliner.json || true
-          git commit -m "Update task-pipeliner to ${{ steps.version.outputs.version }}" || exit 0
+          git commit -m "Update task-pipeliner to ${{ steps.release_info.outputs.version }}" || exit 0
           git push || echo "No changes or push failed"
 
   publish-npm:
     name: Publish to npm
     runs-on: ubuntu-latest
-    if: github.event.release.prerelease == false
+    if: |
+      (github.event_name == 'release' && github.event.release.prerelease == false) ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
     permissions:
       contents: read
       id-token: write
