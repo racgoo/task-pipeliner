@@ -90,11 +90,7 @@ jobs:
           "
 
       - name: Build binary with pkg
-        run: |
-          npx pkg index.js \
-            --targets ${{ matrix.target }} \
-            --output ${{ matrix.output }} \
-            --config package.json
+        run: npx pkg index.js --targets ${{ matrix.target }} --output ${{ matrix.output }} --config package.json
 
       - name: Cleanup
         run: |
