@@ -59,8 +59,13 @@ jobs:
       - name: Install just
         uses: extractions/setup-just@v2
 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Build project
-        run: just build
+        run: |
+          just build-rs
+          just build-ts
 
       - name: Install pkg
         run: pnpm add -D pkg
