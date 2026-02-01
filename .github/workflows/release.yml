@@ -7,11 +7,6 @@ on:
         description: 'Release tag (e.g., v1.0.0)'
         required: true
         type: string
-      body:
-        description: 'Release notes (markdown supported, optional - commits will be auto-added)'
-        required: false
-        type: textarea
-        default: ''
 
 permissions:
   contents: write
@@ -110,7 +105,7 @@ jobs:
           TAG="${{ github.event.inputs.tag }}"
           
           # Get all tags sorted by version
-          PREV_TAG=$(git tag --sort=-version:refname | grep -E "^v[0-9]" | grep -v "^${TAG}$" | head -n 1 || echo "")
+          PREV_TAG=$(git tag --sort=-version:refname | grep -E "^v[0-9]" | grep -v "^${TAG}$" | head -n 1 || printf '')
           
           if [ -z "$PREV_TAG" ]; then
             # First release, get all commits
@@ -122,35 +117,21 @@ jobs:
             COMPARE_URL="https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${TAG}"
           fi
           
-          # Get user body (trim whitespace) - use printf to avoid option parsing issues
-          USER_BODY="${{ github.event.inputs.body }}"
-          USER_BODY=$(printf '%s' "${USER_BODY}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-          
-          # Escape % for printf (replace % with %%)
-          USER_BODY_ESCAPED=$(printf '%s' "${USER_BODY}" | sed 's/%/%%/g')
-          CHANGELOG_ESCAPED=$(printf '%s' "${CHANGELOG}" | sed 's/%/%%/g')
-          
-          # Build final body - use printf to safely handle special characters
-          if [ -n "${USER_BODY}" ] && [ -n "${CHANGELOG}" ]; then
-            # User body + commits
-            FULL_BODY=$(printf '%s\n\n## Commits\n\n%s\n\n**Full Changelog**: %s' "${USER_BODY_ESCAPED}" "${CHANGELOG_ESCAPED}" "${COMPARE_URL}")
-          elif [ -n "${USER_BODY}" ]; then
-            # User body only (no commits)
-            FULL_BODY=$(printf '%s\n\n**Full Changelog**: %s' "${USER_BODY_ESCAPED}" "${COMPARE_URL}")
-          elif [ -n "${CHANGELOG}" ]; then
-            # Commits only (no user body)
-            FULL_BODY=$(printf '## What'\''s Changed\n\n%s\n\n**Full Changelog**: %s' "${CHANGELOG_ESCAPED}" "${COMPARE_URL}")
+          # Build final body with commits only
+          TEMP_OUTPUT=$(mktemp)
+          if [ -n "${CHANGELOG}" ]; then
+            printf '## What'\''s Changed\n\n%s\n\n**Full Changelog**: %s' "${CHANGELOG}" "${COMPARE_URL}" > "${TEMP_OUTPUT}"
           else
-            # Fallback
-            FULL_BODY=$(printf '## Release %s\n\n**Full Changelog**: %s' "${TAG}" "${COMPARE_URL}")
+            printf '## Release %s\n\n**Full Changelog**: %s' "${TAG}" "${COMPARE_URL}" > "${TEMP_OUTPUT}"
           fi
           
           # Save to output (multiline)
           {
-            echo "body<<EOF"
-            printf '%s\n' "${FULL_BODY}"
-            echo "EOF"
+            printf 'body<<EOF\n'
+            cat "${TEMP_OUTPUT}"
+            printf '\nEOF\n'
           } >> $GITHUB_OUTPUT
+          rm -f "${TEMP_OUTPUT}"
 
       - name: List artifacts for debugging
         run: |
