@@ -17,7 +17,7 @@ jiti@2.6.1: MIT
 log-update@7.0.2: MIT
 ora@9.1.0: MIT
 prettier@3.8.1: MIT
-task-pipeliner@0.2.7: MIT
+task-pipeliner@0.2.8: MIT
 tsup@8.5.1: MIT
 typescript-eslint@8.53.1: MIT
 typescript@5.9.3: Apache-2.0

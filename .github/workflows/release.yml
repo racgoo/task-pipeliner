@@ -72,7 +72,7 @@ jobs:
 
       - name: Verify dist files
         run: |
-          node -e "const fs = require('fs'); const files = fs.readdirSync('dist'); console.log('Files in dist:', files.join(', ')); if (!fs.existsSync('dist/index.js')) { console.error('dist/index.js not found!'); process.exit(1); }"
+          node -e "const fs = require('fs'); const files = fs.readdirSync('dist'); console.log('Files in dist:', files.join(', ')); if (!fs.existsSync('dist/index.cjs')) { console.error('dist/index.cjs not found!'); process.exit(1); }"
 
       - name: Prepare for pkg build
         shell: bash
