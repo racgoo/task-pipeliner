@@ -2,7 +2,7 @@
 
 > A powerful, condition-based task pipeline runner with beautiful CLI output
 
-**Version:** 0.2.10
+**Version:** 0.2.11
 
 ![fox2](https://github.com/user-attachments/assets/fdf8d786-6a91-4d2d-9dc1-72be6f3ccd98)
 
@@ -33,6 +33,8 @@
 - 🎨 **[Visual Generator](https://task-pipeliner-generator.racgoo.com/)** - Create workflows visually in your browser
 - 💻 **[GitHub](https://github.com/racgoo/task-pipeliner)** - Source code and issue tracking
 - 📦 **[npm](https://www.npmjs.com/package/task-pipeliner)** - Package on npm registry
+- 🍺 **[Homebrew](https://github.com/racgoo/homebrew-task-pipeliner)** - Homebrew tap for macOS/Linux
+- 🪟 **[Scoop](https://github.com/racgoo/scoop-task-pipeliner)** - Scoop bucket for Windows
 - 💻 **CLI Commands**:
   ```bash
   tp run workflow.yaml        # Run a workflow
@@ -50,9 +52,61 @@
 
 ### Installation
 
-#### Global Installation
+#### Homebrew (macOS/Linux)
 
-Install globally to use `task-pipeliner` or `tp` commands directly:
+Install using Homebrew for the easiest setup on macOS and Linux:
+
+```bash
+# Add the tap (repository)
+brew tap racgoo/task-pipeliner
+
+# Install task-pipeliner
+brew install task-pipeliner
+```
+
+After installation, you can run:
+```bash
+task-pipeliner run workflow.yaml
+# or use the short alias
+tp run workflow.yaml
+```
+
+**Updating:**
+```bash
+# Update Homebrew's package registry first
+brew update
+
+# Then upgrade task-pipeliner
+brew upgrade task-pipeliner
+```
+
+#### Scoop (Windows)
+
+Install using Scoop on Windows:
+
+```bash
+# Add the bucket (repository)
+scoop bucket add task-pipeliner https://github.com/racgoo/scoop-task-pipeliner
+
+# Install task-pipeliner
+scoop install task-pipeliner
+```
+
+After installation, you can run:
+```bash
+task-pipeliner run workflow.yaml
+# or use the short alias
+tp run workflow.yaml
+```
+
+**Updating:**
+```bash
+scoop update task-pipeliner
+```
+
+#### Global Installation (npm)
+
+Install globally using npm to use `task-pipeliner` or `tp` commands directly:
 
 ```bash
 npm install -g task-pipeliner

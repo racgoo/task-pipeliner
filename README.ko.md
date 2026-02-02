@@ -2,7 +2,7 @@
 
 > 조건 기반 작업 파이프라인 실행기로 아름다운 CLI 출력을 제공합니다
 
-**버전:** 0.2.10
+**버전:** 0.2.11
 
 ![fox2](https://github.com/user-attachments/assets/fdf8d786-6a91-4d2d-9dc1-72be6f3ccd98)
 
@@ -33,6 +33,8 @@
 - 🎨 **[시각적 생성기](https://task-pipeliner-generator.racgoo.com/)** - 브라우저에서 시각적으로 워크플로우 생성
 - 💻 **[GitHub](https://github.com/racgoo/task-pipeliner)** - 소스 코드 및 이슈 추적
 - 📦 **[npm](https://www.npmjs.com/package/task-pipeliner)** - npm 레지스트리 패키지
+- 🍺 **[Homebrew](https://github.com/racgoo/homebrew-task-pipeliner)** - macOS/Linux용 Homebrew 탭
+- 🪟 **[Scoop](https://github.com/racgoo/scoop-task-pipeliner)** - Windows용 Scoop 버킷
 > **CLI 명령어**:
   ```bash
   tp run workflow.yaml        # 워크플로우 실행
@@ -50,9 +52,61 @@
 
 ### 설치
 
-#### 전역 설치
+#### Homebrew (macOS/Linux)
 
-전역으로 설치하면 `task-pipeliner` 또는 `tp` 명령을 직접 사용할 수 있습니다:
+macOS와 Linux에서 가장 쉬운 설치 방법은 Homebrew를 사용하는 것입니다:
+
+```bash
+# 탭(저장소) 추가
+brew tap racgoo/task-pipeliner
+
+# task-pipeliner 설치
+brew install task-pipeliner
+```
+
+설치 후 다음 명령으로 실행할 수 있습니다:
+```bash
+task-pipeliner run workflow.yaml
+# 또는 짧은 별칭 사용
+tp run workflow.yaml
+```
+
+**업데이트:**
+```bash
+# 먼저 Homebrew의 패키지 레지스트리를 업데이트합니다
+brew update
+
+# 그 다음 task-pipeliner를 업그레이드합니다
+brew upgrade task-pipeliner
+```
+
+#### Scoop (Windows)
+
+Windows에서 Scoop을 사용하여 설치:
+
+```bash
+# 버킷(저장소) 추가
+scoop bucket add task-pipeliner https://github.com/racgoo/scoop-task-pipeliner
+
+# task-pipeliner 설치
+scoop install task-pipeliner
+```
+
+설치 후 다음 명령으로 실행할 수 있습니다:
+```bash
+task-pipeliner run workflow.yaml
+# 또는 짧은 별칭 사용
+tp run workflow.yaml
+```
+
+**업데이트:**
+```bash
+scoop update task-pipeliner
+```
+
+#### 전역 설치 (npm)
+
+npm을 사용하여 전역으로 설치하면 `task-pipeliner` 또는 `tp` 명령을 직접 사용할 수 있습니다:
 
 ```bash
 npm install -g task-pipeliner
