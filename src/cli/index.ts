@@ -19,7 +19,8 @@
 
 import { exec } from 'child_process';
 import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { readdir } from 'fs/promises';
+import { resolve, join, extname } from 'path';
 import { promisify } from 'util';
 import boxen from 'boxen';
 import chalk from 'chalk';
@@ -31,7 +32,7 @@ import { getParser } from '../core/parser';
 import type { History, Record as WorkflowRecord, Step } from '../types/workflow';
 import { ChoicePrompt } from './prompts';
 import { formatDuration } from './ui';
-import { getVersion, setSilentMode } from './utils';
+import { findNearestTpDirectory, getVersion, setSilentMode } from './utils';
 
 const execAsync = promisify(exec);
 
@@ -82,25 +83,37 @@ program
 program
   .command('run')
   .description('Run a workflow from a YAML or JSON file')
-  .argument('<file>', 'Path to the workflow file (YAML or JSON, relative or absolute)')
+  .argument(
+    '[file]',
+    'Path to the workflow file (YAML or JSON, relative or absolute). If omitted, will search for workflows in the nearest tp directory.'
+  )
   .option('-s, --silent', 'Run in silent mode (suppress console output)')
   .addHelpText(
     'after',
-    '\nExamples:\n  $ tp run workflow.yaml\n  $ tp run workflow.json\n  $ tp run ./my-workflow.yaml\n  $ tp run examples/simple-project/workflow.json\n  $ tp run workflow.yaml --silent\n  $ tp run workflow.yaml -s\n\nWorkflow File Structure:\n  A workflow file must contain a "steps" array with step definitions.\n  Each step can be:\n  • run: Execute a shell command\n  • choose: Prompt user to select from options\n  • prompt: Ask user for text input\n  • parallel: Run multiple steps simultaneously\n  • fail: Stop workflow with error message\n\n  Steps can have "when" conditions to control execution:\n  • file: Check if file/directory exists\n  • var: Check variable value or existence\n  • all/any/not: Combine conditions\n\n  Supported formats: YAML (.yaml, .yml) and JSON (.json)\n  See README.md for complete DSL documentation.'
+    '\nExamples:\n  $ tp run workflow.yaml\n  $ tp run workflow.json\n  $ tp run ./my-workflow.yaml\n  $ tp run examples/simple-project/workflow.json\n  $ tp run                    # Select from workflows in nearest tp directory\n  $ tp run workflow.yaml --silent\n  $ tp run workflow.yaml -s\n\nWorkflow File Structure:\n  A workflow file must contain a "steps" array with step definitions.\n  Each step can be:\n  • run: Execute a shell command\n  • choose: Prompt user to select from options\n  • prompt: Ask user for text input\n  • parallel: Run multiple steps simultaneously\n  • fail: Stop workflow with error message\n\n  Steps can have "when" conditions to control execution:\n  • file: Check if file/directory exists\n  • var: Check variable value or existence\n  • all/any/not: Combine conditions\n\n  Supported formats: YAML (.yaml, .yml) and JSON (.json)\n  See README.md for complete DSL documentation.'
   )
-  .action(async (file: string, options: { silent?: boolean }) => {
-    // If silent mode, replace console methods with no-op functions
-    if (options.silent) {
-      setSilentMode();
-    }
-
+  .action(async (file: string | undefined, options: { silent?: boolean }) => {
     try {
+      // If no file provided, find and select from tp directory
+      // Note: File selection prompt should be visible even in silent mode
+      const selectedFile: string = file ?? (await selectWorkflowFromTpDirectory()) ?? '';
+      if (!selectedFile) {
+        console.error(chalk.red('\n✗ No workflow file found'));
+        process.exit(1);
+      }
+
+      // Activate silent mode AFTER file selection (if needed)
+      // This ensures the selection prompt is visible
+      if (options.silent) {
+        setSilentMode();
+      }
+
       // Step 1: Get appropriate parser based on file extension
-      const parser = getParser(file);
+      const parser = getParser(selectedFile);
 
       // Step 2: Load and parse workflow file
-      console.log(chalk.blue(`Loading workflow from ${file}...`));
-      const content = readFileSync(file, 'utf-8');
+      console.log(chalk.blue(`Loading workflow from ${selectedFile}...`));
+      const content = readFileSync(selectedFile, 'utf-8');
       const workflow = parser.parse(content);
 
       // Step 3: Validate workflow structure
@@ -110,10 +123,10 @@ program
 
       // Step 4: Extract metadata for error reporting
       workflow._lineNumbers = parser.extractStepLineNumbers(content); // Map step index -> line number
-      workflow._fileName = extractFileName(file); // Just the filename, not full path
+      workflow._fileName = extractFileName(selectedFile); // Just the filename, not full path
 
       // Step 5: Store absolute file path (needed for resolving relative baseDir)
-      workflow._filePath = resolve(file);
+      workflow._filePath = resolve(selectedFile);
 
       // Step 6: Execute workflow
       console.log(chalk.green('Starting workflow execution...\n'));
@@ -298,6 +311,66 @@ historyCommand.action(async () => {
       process.exit(1);
   }
 });
+
+/**
+ * Select workflow file from nearest tp directory
+ */
+async function selectWorkflowFromTpDirectory(): Promise<string | null> {
+  const tpDir = findNearestTpDirectory();
+  if (!tpDir) {
+    console.error(chalk.red('\n✗ No tp directory found'));
+    return null;
+  }
+
+  try {
+    // Read all files in tp directory
+    const files = await readdir(tpDir);
+
+    // Filter for workflow files (yaml, yml, json)
+    const workflowFiles = files.filter((file) => {
+      const ext = extname(file).toLowerCase();
+      return ['.yaml', '.yml', '.json'].includes(ext);
+    });
+
+    if (workflowFiles.length === 0) {
+      console.error(chalk.red(`\n✗ No workflow files found in ${tpDir}`));
+      return null;
+    }
+
+    // Parse each file to extract name
+    const choices = await Promise.all(
+      workflowFiles.map(async (file) => {
+        const filePath = join(tpDir, file);
+        try {
+          const parser = getParser(filePath);
+          const content = readFileSync(filePath, 'utf-8');
+          const workflow = parser.parse(content);
+          const workflowName = workflow.name ?? 'Untitled';
+          return {
+            id: filePath,
+            label: `${file} - ${workflowName}`,
+          };
+        } catch {
+          // If parsing fails, just show filename
+          return {
+            id: filePath,
+            label: file,
+          };
+        }
+      })
+    );
+
+    // Show selection prompt
+    const choicePrompt = new ChoicePrompt();
+    const selected = await choicePrompt.prompt('Select a workflow to run', choices);
+
+    return selected.id;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(chalk.red(`\n✗ Failed to read tp directory: ${errorMessage}`));
+    return null;
+  }
+}
 
 /**
  * Extract filename from file path

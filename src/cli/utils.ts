@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, statSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -97,4 +97,47 @@ export function getVersion(): string {
   }
 
   return '0.0.0';
+}
+
+/**
+ * Find the nearest "tp" directory starting from the current working directory
+ * and traversing up the directory tree
+ * @param startDir Optional starting directory (defaults to process.cwd())
+ * @returns The path to the nearest "tp" directory, or null if not found
+ */
+export function findNearestTpDirectory(startDir?: string): string | null {
+  let currentDir = startDir ? resolve(startDir) : process.cwd();
+
+  // Prevent infinite loop by limiting traversal depth
+  const maxDepth = 50;
+  let depth = 0;
+
+  while (depth < maxDepth) {
+    const tpDirPath = resolve(currentDir, 'tp');
+
+    try {
+      // Check if "tp" exists and is a directory
+      if (existsSync(tpDirPath)) {
+        const stats = statSync(tpDirPath);
+        if (stats.isDirectory()) {
+          return tpDirPath;
+        }
+      }
+    } catch {
+      // Ignore errors (permission denied, etc.)
+    }
+
+    // Move to parent directory
+    const parentDir = dirname(currentDir);
+
+    // Stop if we've reached the filesystem root
+    if (parentDir === currentDir) {
+      break;
+    }
+
+    currentDir = parentDir;
+    depth++;
+  }
+
+  return null;
 }
