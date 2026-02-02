@@ -77,13 +77,9 @@ jobs:
       - name: Prepare for pkg build
         shell: bash
         run: |
-          # pkg는 CommonJS를 선호하므로, dist/index.cjs를 사용 (없으면 dist/index.js)
-          if [ -f dist/index.cjs ]; then
-            cp dist/index.cjs index.js
-          else
-            cp dist/index.js index.js
-          fi
-          # package.json의 main과 type을 임시로 수정 (CJS로)
+          # Use dist/index.cjs because pkg only supports CommonJS
+          cp dist/index.cjs index.js
+          # Temporarily modify main and type in package.json (set to CJS for pkg)
           cp package.json package.json.bak
           node -e "
             const fs = require('fs');

@@ -40,7 +40,7 @@ export function createStepHeaderBox(
     title: title,
     borderStyle: 'round',
     padding: { top: 0, bottom: 0, left: 1, right: 1 },
-    margin: { top: 0, bottom: 0 },
+    margin: { top: 0, bottom: 0, left: 0, right: 0 },
     borderColor: borderColor,
   });
 }
@@ -71,7 +71,7 @@ export function createErrorBox(error: string): string {
   return boxen(`✗ ${error}`, {
     borderStyle: 'round',
     padding: { top: 0, bottom: 0, left: 1, right: 1 },
-    margin: { top: 0, bottom: 0 },
+    margin: { top: 0, bottom: 0, left: 0, right: 0 },
     borderColor: 'red',
   });
 }
@@ -83,7 +83,7 @@ export function createParallelHeaderBox(branchCount: number): string {
   return boxen(`> Starting parallel execution (${branchCount} branches)`, {
     borderStyle: 'round',
     padding: { top: 0, bottom: 0, left: 1, right: 1 },
-    margin: { top: 0, bottom: 0 },
+    margin: { top: 0, bottom: 0, left: 0, right: 0 },
     borderColor: 'yellow',
   });
 }

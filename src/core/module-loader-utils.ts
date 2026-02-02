@@ -68,35 +68,22 @@ interface ModuleWithRunTask {
 type NodeRequire = (id: string) => unknown;
 
 /**
- * Get Node.js require function based on environment
- * In pkg environment, use global require directly
- * In ESM environment, use createRequire
+ * Get Node.js require function
+ * Always use CJS-style require since build output is CJS
  */
 function getRequireFunction(): NodeRequire {
-  const processWithPkg = process as ProcessWithPkg;
-  const isPkg = typeof process !== 'undefined' && processWithPkg.pkg !== undefined;
-
-  if (isPkg) {
-    // In pkg environment, CommonJS require is available globally
-    return (
-      (globalThis as { require?: NodeRequire }).require ??
-      (() => {
-        throw new Error('require is not available in pkg environment');
-      })
-    );
+  // Try global require first (available in pkg and CommonJS contexts)
+  const globalRequire = (globalThis as { require?: NodeRequire }).require;
+  if (globalRequire) {
+    return globalRequire;
   }
 
-  // In normal ESM environment, use createRequire
+  // Fallback to createRequire for ESM source context (development)
+  // Even though build output is CJS, source code may run in ESM during development
   try {
     return createRequire(import.meta.url);
   } catch {
-    // Fallback to global require if createRequire fails
-    return (
-      (globalThis as { require?: NodeRequire }).require ??
-      (() => {
-        throw new Error('require is not available');
-      })
-    );
+    throw new Error('require is not available');
   }
 }
 

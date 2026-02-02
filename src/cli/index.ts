@@ -340,7 +340,7 @@ function displayHistory(history: History, filename: string): void {
     boxen(headerContent, {
       borderStyle: 'round',
       padding: { top: 1, bottom: 1, left: 2, right: 2 },
-      margin: { top: 0, bottom: 1 },
+      margin: { top: 0, bottom: 1, left: 0, right: 0 },
       borderColor: 'cyan',
     })
   );
@@ -375,7 +375,7 @@ function displayRecord(record: WorkflowRecord, stepNumber: number, totalSteps: n
     boxen(stepHeader, {
       borderStyle: 'round',
       padding: { top: 1, bottom: 1, left: 2, right: 2 },
-      margin: { top: 0, bottom: 1 },
+      margin: { top: 0, bottom: 1, left: 0, right: 0 },
       borderColor: record.status === 'success' ? 'green' : 'red',
     })
   );

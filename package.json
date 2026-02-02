@@ -3,16 +3,16 @@
   "version": "0.2.7",
   "description": "A task pipeline runner with condition-based workflow execution",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "bin": {
-    "task-pipeliner": "./dist/index.js",
-    "tp": "./dist/index.js"
+    "task-pipeliner": "./dist/index.cjs",
+    "tp": "./dist/index.cjs"
   },
   "scripts": {
     "build": "pnpm build:napi && pnpm build:ts && pnpm build:cleanup",
     "build:napi": "napi build dist --cargo-cwd rust --release",
-    "build:ts": "tsup src/cli/index.ts --format cjs,esm --dts --minify",
+    "build:ts": "tsup",
     "build:cleanup": "rm -f ./task-pipeliner*.node ./index.d.ts",
     "dev": "tsc --watch",
     "lint": "eslint .",
@@ -43,11 +43,11 @@
   },
   "dependencies": {
     "@eslint/js": "^9.39.2",
-    "boxen": "^8.0.1",
-    "chalk": "^5.3.0",
+    "boxen": "^5.1.2",
+    "chalk": "^4.1.2",
     "commander": "^11.1.0",
     "dayjs": "^1.11.19",
-    "inquirer": "^10.2.2",
+    "inquirer": "^8.2.6",
     "log-update": "^7.0.2",
     "ora": "^9.1.0",
     "yaml": "^2.3.4",
@@ -86,12 +86,11 @@
     "noBytecode": true,
     "assets": [
       "dist/**/*.node",
-      "dist/**/*.js",
-      "dist/**/*.json",
-      "package.json"
+      "package.json",
+      "node_modules/**/*"
     ],
     "scripts": [
-      "dist/**/*.js"
+      "node_modules/**/*.js"
     ],
     "targets": [
       "node18-macos-arm64",
