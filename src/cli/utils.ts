@@ -1,5 +1,4 @@
-import { readFileSync } from 'fs';
-import { createRequire } from 'module';
+import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -15,6 +14,7 @@ export function setSilentMode() {
 /**
  * Get version from package.json
  * Compatible with both normal Node.js and pkg bundled executables
+ * Avoids using createRequire in pkg environment to prevent ESM module errors
  */
 export function getVersion(): string {
   // Check if running in pkg environment
@@ -23,33 +23,47 @@ export function getVersion(): string {
 
   try {
     if (isPkg) {
-      // In pkg environment, try to read package.json from executable directory
-      try {
-        const packageJsonPath = resolve(dirname(process.execPath), 'package.json');
-        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-        return packageJson.version ?? '0.0.0';
-      } catch {
-        // Fallback: try to read from snapshot
-        const require = createRequire(import.meta.url);
-        const packageJson = require('./package.json');
-        return packageJson.version ?? '0.0.0';
+      // In pkg environment, package.json should be in the snapshot
+      // Try multiple possible paths
+      const possiblePaths = [
+        // Try from executable directory (if package.json is copied there)
+        resolve(dirname(process.execPath), 'package.json'),
+        // Try from snapshot root
+        '/snapshot/task-pipeliner/package.json',
+        // Try from pkg entrypoint directory
+        processWithPkg.pkg?.entrypoint
+          ? resolve(dirname(processWithPkg.pkg.entrypoint), 'package.json')
+          : null,
+      ].filter((path): path is string => path !== null);
+
+      for (const packageJsonPath of possiblePaths) {
+        try {
+          if (existsSync(packageJsonPath)) {
+            const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+            return packageJson.version ?? '0.0.0';
+          }
+        } catch {
+          continue;
+        }
       }
     } else {
-      // Normal Node.js environment
+      // Normal Node.js environment - use file system directly
       try {
-        const require = createRequire(import.meta.url);
-        const packageJson = require('../package.json');
-        return packageJson.version ?? '0.0.0';
-      } catch {
-        // Fallback: try to read package.json from project root
         const __filename = fileURLToPath(import.meta.url);
         const __dirname = dirname(__filename);
+        // Try relative to current file (dist/cli/utils.js -> package.json)
         const packageJsonPath = resolve(__dirname, '../../package.json');
-        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-        return packageJson.version ?? '0.0.0';
+        if (existsSync(packageJsonPath)) {
+          const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+          return packageJson.version ?? '0.0.0';
+        }
+      } catch {
+        // Ignore
       }
     }
   } catch {
-    return '0.0.0';
+    // Ignore all errors
   }
+
+  return '0.0.0';
 }

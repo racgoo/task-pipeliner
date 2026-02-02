@@ -63,17 +63,56 @@ interface ModuleWithRunTask {
 }
 
 /**
+ * Type for Node.js require function
+ */
+type NodeRequire = (id: string) => unknown;
+
+/**
+ * Get Node.js require function based on environment
+ * In pkg environment, use global require directly
+ * In ESM environment, use createRequire
+ */
+function getRequireFunction(): NodeRequire {
+  const processWithPkg = process as ProcessWithPkg;
+  const isPkg = typeof process !== 'undefined' && processWithPkg.pkg !== undefined;
+
+  if (isPkg) {
+    // In pkg environment, CommonJS require is available globally
+    return (
+      (globalThis as { require?: NodeRequire }).require ??
+      (() => {
+        throw new Error('require is not available in pkg environment');
+      })
+    );
+  }
+
+  // In normal ESM environment, use createRequire
+  try {
+    return createRequire(import.meta.url);
+  } catch {
+    // Fallback to global require if createRequire fails
+    return (
+      (globalThis as { require?: NodeRequire }).require ??
+      (() => {
+        throw new Error('require is not available');
+      })
+    );
+  }
+}
+
+/**
  * Try to load a module from multiple paths
  * @param paths - Array of paths to try
  * @returns Loaded module or null if not found
  */
 export function tryLoadModule(paths: string[]): ModuleWithRunTask | null {
-  const require = createRequire(import.meta.url);
+  const requireFn = getRequireFunction();
 
   for (const nodePath of paths) {
     try {
       if (existsSync(nodePath)) {
-        return require(nodePath);
+        const module = requireFn(nodePath);
+        return module as ModuleWithRunTask;
       }
     } catch {
       continue;
