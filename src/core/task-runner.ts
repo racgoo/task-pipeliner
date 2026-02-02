@@ -13,6 +13,7 @@
  * - Error handling
  * - Working directory support (baseDir)
  */
+import { spawn } from 'child_process';
 import {
   createStepHeaderBox,
   createStepFooterMessage,
@@ -86,12 +87,12 @@ export class TaskRunner {
     workingDirectory?: string,
     timeoutSeconds?: number
   ): Promise<TaskRunResult> {
-    const { spawn } = await import('child_process');
-    const [commandName, ...commandArgs] = this.parseCommand(command);
     const spawnOptions = this.createSpawnOptions(workingDirectory);
 
     return new Promise<TaskRunResult>((resolve, _reject) => {
-      const child = spawn(commandName, commandArgs, spawnOptions);
+      // Pass entire command as single string with shell: true
+      // This ensures proper PATH resolution (fixes pkg embedded node issue)
+      const child = spawn(command, [], spawnOptions);
       const allStdoutLines: string[] = [];
       const allStderrLines: string[] = [];
       let incompleteStdoutLine = '';
@@ -171,8 +172,6 @@ export class TaskRunner {
     workingDirectory?: string,
     timeoutSeconds?: number
   ): Promise<boolean> {
-    const { spawn } = await import('child_process');
-    const [commandName, ...commandArgs] = this.parseCommand(command);
     const spawnOptions = this.createSpawnOptions(workingDirectory);
 
     // Green border if step has condition, cyan otherwise
@@ -184,7 +183,9 @@ export class TaskRunner {
     const startTime = Date.now();
 
     return new Promise<boolean>((resolve) => {
-      const child = spawn(commandName, commandArgs, spawnOptions);
+      // Pass entire command as single string with shell: true
+      // This ensures proper PATH resolution (fixes pkg embedded node issue)
+      const child = spawn(command, [], spawnOptions);
       let incompleteStdoutLine = '';
       let incompleteStderrLine = '';
       let timeoutId: NodeJS.Timeout | null = null;
@@ -253,14 +254,6 @@ export class TaskRunner {
         resolve(false);
       });
     });
-  }
-
-  /**
-   * Parse command string into command and arguments
-   */
-  private parseCommand(command: string): [string, ...string[]] {
-    const parts = command.split(' ');
-    return [parts[0], ...parts.slice(1)];
   }
 
   /**
