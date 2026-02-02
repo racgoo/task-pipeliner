@@ -29,24 +29,41 @@
 
 ## 🔗 Resources
 
+### Documentation & Tools
+
 - 📚 **[Documentation](https://task-pipeliner.racgoo.com/)** - Complete DSL reference and guides
 - 🎨 **[Visual Generator](https://task-pipeliner-generator.racgoo.com/)** - Create workflows visually in your browser
+
+### Repositories & Package Managers
+
 - 💻 **[GitHub](https://github.com/racgoo/task-pipeliner)** - Source code and issue tracking
 - 📦 **[npm](https://www.npmjs.com/package/task-pipeliner)** - Package on npm registry
 - 🍺 **[Homebrew](https://github.com/racgoo/homebrew-task-pipeliner)** - Homebrew tap for macOS/Linux
 - 🪟 **[Scoop](https://github.com/racgoo/scoop-task-pipeliner)** - Scoop bucket for Windows
-- **CLI Commands**:
-  ```bash
-  tp run workflow.yaml        # Run a workflow
-  tp run workflow.yaml --silent  # Run in silent mode (suppress all console output)
-  tp run workflow.yaml -s     # Short form for silent mode
-  tp open generator  # Open visual generator
-  tp open docs       # Open documentation
-  tp history         # View workflow execution history
-  tp history show    # Select and view a specific history
-  tp history remove   # Remove a specific history
-  tp history remove-all # Remove all histories
-  ```
+
+### CLI Commands
+
+**Run Workflows:**
+```bash
+tp run workflow.yaml        # Run a workflow
+tp run                      # Select and run a workflow from nearest tp directory
+tp run workflow.yaml --silent  # Run in silent mode (suppress all console output)
+tp run workflow.yaml -s     # Short form for silent mode
+```
+
+**Open Resources:**
+```bash
+tp open generator  # Open visual generator
+tp open docs       # Open documentation
+```
+
+**History Management:**
+```bash
+tp history         # View workflow execution history
+tp history show    # Select and view a specific history
+tp history remove   # Remove a specific history
+tp history remove-all # Remove all histories
+```
 
 ## 🚀 Quick Start
 
@@ -231,6 +248,29 @@ tp run workflow.yaml --silent
 tp run workflow.yaml -s
 ```
 
+**Using the `tp` Directory (Recommended):**
+
+For better organization, you can create a `tp` directory in your project and place all workflow files there. When you run `tp run` without specifying a file, task-pipeliner will automatically search for the nearest `tp` directory (starting from the current directory and traversing up) and let you select a workflow interactively.
+
+```bash
+# Create a tp directory and add workflow files
+mkdir tp
+mv workflow.yaml tp/
+
+# Run without specifying a file - interactive selection
+tp run
+```
+
+This will:
+1. Find the nearest `tp` directory (current directory or any parent directory)
+2. List all workflow files (`.yaml`, `.yml`, `.json`) in that directory
+3. Show an interactive, searchable menu where you can:
+   - Type to filter workflows in real-time
+   - Use arrow keys (↑↓) to navigate
+   - Press Enter to select and run
+
+The interactive menu displays both the filename and the workflow's `name` (from the YAML/JSON content) for easy identification.
+
 **Silent Mode:**
 The `--silent` (or `-s`) flag suppresses all console output during workflow execution. This is useful for:
 - CI/CD pipelines where you only need exit codes
@@ -409,7 +449,7 @@ steps:
 
 #### 2. `choose` - User Choice
 
-Prompt user to select from a list of options.
+Prompt user to select from a list of options. The choice menu includes a **real-time search feature** that allows you to filter options by typing.
 
 **Syntax:**
 ```yaml
@@ -434,6 +474,13 @@ steps:
   - If omitted: choice is stored by its `id` (for backward compatibility)
   - If provided: selected `id` is stored in this variable name
 - `when` (optional): `Condition` - Show choice prompt only if condition is met
+
+**Interactive Features:**
+- **Real-time search**: Type to filter options instantly - only matching options are shown
+- **Arrow key navigation**: Use ↑↓ keys to navigate through options
+- **Enter to select**: Press Enter to confirm your choice
+- **Backspace**: Remove characters from search term
+- **Escape**: Clear search term and show all options
 
 **Examples:**
 ```yaml

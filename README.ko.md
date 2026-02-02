@@ -29,24 +29,41 @@
 
 ## 리소스
 
+### 문서 및 도구
+
 - 📚 **[문서](https://task-pipeliner.racgoo.com/)** - 완전한 DSL 참조 및 가이드
-- 🎨 **[시각적 생성기](https://task-pipeliner-generator.racgoo.com/)** - 브라우저에서 시각적으로 워크플로우 생성
+- 🎨 **[워크플로우 생성기](https://task-pipeliner-generator.racgoo.com/)** - 브라우저에서 시각적으로 워크플로우 생성
+
+### 저장소 및 패키지 관리자
+
 - 💻 **[GitHub](https://github.com/racgoo/task-pipeliner)** - 소스 코드 및 이슈 추적
 - 📦 **[npm](https://www.npmjs.com/package/task-pipeliner)** - npm 레지스트리 패키지
 - 🍺 **[Homebrew](https://github.com/racgoo/homebrew-task-pipeliner)** - macOS/Linux용 Homebrew 탭
 - 🪟 **[Scoop](https://github.com/racgoo/scoop-task-pipeliner)** - Windows용 Scoop 버킷
-> **CLI 명령어**:
-  ```bash
-  tp run workflow.yaml        # 워크플로우 실행
-  tp run workflow.yaml --silent  # 사일런트 모드로 실행 (모든 콘솔 출력 억제)
-  tp run workflow.yaml -s     # 사일런트 모드 짧은 형식
-  tp open generator  # 시각적 생성기 열기
-  tp open docs       # 문서 열기
-  tp history         # 워크플로우 실행 히스토리 보기
-  tp history show    # 특정 히스토리 선택하여 보기
-  tp history remove   # 특정 히스토리 삭제
-  tp history remove-all # 모든 히스토리 삭제
-  ```
+
+### CLI 명령어
+
+**워크플로우 실행:**
+```bash
+tp run workflow.yaml        # 워크플로우 실행
+tp run                      # 가장 가까운 tp 디렉토리에서 워크플로우 선택하여 실행
+tp run workflow.yaml --silent  # 사일런트 모드로 실행 (모든 콘솔 출력 억제)
+tp run workflow.yaml -s     # 사일런트 모드 짧은 형식
+```
+
+**리소스 열기:**
+```bash
+tp open generator  # 시각적 생성기 열기
+tp open docs       # 문서 열기
+```
+
+**히스토리 관리:**
+```bash
+tp history         # 워크플로우 실행 히스토리 보기
+tp history show    # 특정 히스토리 선택하여 보기
+tp history remove   # 특정 히스토리 삭제
+tp history remove-all # 모든 히스토리 삭제
+```
 
 ## 🚀 빠른 시작
 
@@ -231,6 +248,29 @@ tp run workflow.yaml --silent
 tp run workflow.yaml -s
 ```
 
+**`tp` 디렉토리 사용하기 (권장):**
+
+더 나은 조직화를 위해 프로젝트에 `tp` 디렉토리를 만들고 모든 워크플로우 파일을 그곳에 배치할 수 있습니다. 파일을 지정하지 않고 `tp run`을 실행하면 task-pipeliner가 자동으로 가장 가까운 `tp` 디렉토리(현재 디렉토리부터 시작하여 상위로 탐색)를 찾아 대화형으로 워크플로우를 선택할 수 있게 해줍니다.
+
+```bash
+# tp 디렉토리를 만들고 워크플로우 파일 추가
+mkdir tp
+mv workflow.yaml tp/
+
+# 파일을 지정하지 않고 실행 - 대화형 선택
+tp run
+```
+
+이 기능은:
+1. 가장 가까운 `tp` 디렉토리를 찾습니다 (현재 디렉토리 또는 상위 디렉토리)
+2. 해당 디렉토리의 모든 워크플로우 파일 (`.yaml`, `.yml`, `.json`)을 나열합니다
+3. 다음 기능을 제공하는 대화형 검색 가능한 메뉴를 표시합니다:
+   - 타이핑하여 실시간으로 워크플로우 필터링
+   - 화살표 키 (↑↓)로 탐색
+   - Enter를 눌러 선택하고 실행
+
+대화형 메뉴는 파일 이름과 워크플로우의 `name` (YAML/JSON 내용에서)을 모두 표시하여 쉽게 식별할 수 있습니다.
+
 **사일런트 모드:**
 `--silent` (또는 `-s`) 플래그는 워크플로우 실행 중 모든 콘솔 출력을 억제합니다. 다음 경우에 유용합니다:
 - 종료 코드만 필요한 CI/CD 파이프라인
@@ -409,7 +449,7 @@ steps:
 
 #### 2. `choose` - 사용자 선택
 
-옵션 목록에서 사용자가 선택하도록 프롬프트를 표시합니다.
+옵션 목록에서 사용자가 선택하도록 프롬프트를 표시합니다. 선택 메뉴에는 **실시간 검색 기능**이 포함되어 있어 타이핑으로 옵션을 필터링할 수 있습니다.
 
 **문법:**
 ```yaml
@@ -434,6 +474,13 @@ steps:
   - 생략 시: choice는 `id`로 저장됩니다 (하위 호환성을 위해)
   - 제공 시: 선택된 `id`가 이 변수 이름으로 저장됩니다
 - `when` (선택): `Condition` - 조건이 충족될 때만 선택 프롬프트 표시
+
+**대화형 기능:**
+- **실시간 검색**: 타이핑하여 옵션을 즉시 필터링 - 매칭되는 옵션만 표시됩니다
+- **화살표 키 탐색**: ↑↓ 키를 사용하여 옵션 간 탐색
+- **Enter로 선택**: Enter를 눌러 선택 확인
+- **Backspace**: 검색어에서 문자 제거
+- **Escape**: 검색어를 지우고 모든 옵션 표시
 
 **예제:**
 ```yaml
