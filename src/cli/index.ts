@@ -31,7 +31,7 @@ import { getParser } from '../core/parser';
 import type { History, Record as WorkflowRecord, Step } from '../types/workflow';
 import { ChoicePrompt } from './prompts';
 import { formatDuration } from './ui';
-import { setSilentMode } from './utils';
+import { getVersion, setSilentMode } from './utils';
 
 const execAsync = promisify(exec);
 
@@ -73,7 +73,7 @@ program
       '     tp history remove    # Remove a specific history\n' +
       '     tp history remove-all # Remove all histories\n\n'
   )
-  .version('0.1.0')
+  .version(getVersion())
   .addHelpText(
     'after',
     '\nExamples:\n  $ tp run workflow.yaml\n  $ tp run examples/simple-project/workflow.yaml\n  $ tp open docs       # Open documentation\n  $ tp open generator  # Open visual generator\n  $ tp history         # View workflow execution history\n  $ tp history show    # Select and view a specific history\n\nResources:\n  📚 Documentation: https://task-pipeliner.racgoo.com/\n  🎨 Visual Generator: https://task-pipeliner-generator.racgoo.com/\n\nSee README.md for complete DSL reference.'

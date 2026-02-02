@@ -86,7 +86,8 @@
     "assets": [
       "dist/**/*.node",
       "dist/**/*.js",
-      "dist/**/*.json"
+      "dist/**/*.json",
+      "package.json"
     ],
     "scripts": [
       "dist/**/*.js"
