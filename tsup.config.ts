@@ -18,8 +18,8 @@ export default defineConfig({
   },
   // Exclude ESM-only modules from bundling - they will be included in pkg assets
   // These modules support CJS but have issues when bundled by tsup
-  // inquirer v9 supports CJS, so we can bundle it
-  external: ['chalk', 'boxen', 'log-update', 'ora', 'yaml'],
+  // inquirer v8, log-update v6, ora v5 support CJS, so we can bundle them
+  external: ['chalk', 'boxen', 'yaml'],
   // Bundle all other dependencies including ESM modules
   // tsup uses esbuild which can convert ESM to CJS
 });

@@ -1,6 +1,6 @@
 {
   "name": "task-pipeliner",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "A task pipeline runner with condition-based workflow execution",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -48,8 +48,8 @@
     "commander": "^11.1.0",
     "dayjs": "^1.11.19",
     "inquirer": "^8.2.6",
-    "log-update": "^7.0.2",
-    "ora": "^9.1.0",
+    "log-update": "^6.0.1",
+    "ora": "^5.4.1",
     "yaml": "^2.3.4",
     "zod": "^4.3.5"
   },
@@ -87,10 +87,14 @@
     "assets": [
       "dist/**/*.node",
       "package.json",
-      "node_modules/**/*"
+      "node_modules/chalk/**/*",
+      "node_modules/boxen/**/*",
+      "node_modules/yaml/**/*"
     ],
     "scripts": [
-      "node_modules/**/*.js"
+      "node_modules/chalk/**/*.js",
+      "node_modules/boxen/**/*.js",
+      "node_modules/yaml/**/*.js"
     ],
     "targets": [
       "node18-macos-arm64",
