@@ -70,7 +70,7 @@ export class ChoicePrompt {
       const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout,
-        terminal: true,
+        terminal: false,
       });
 
       // Enable raw mode to capture key presses
