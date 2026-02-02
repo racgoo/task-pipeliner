@@ -1,6 +1,6 @@
 {
   "name": "task-pipeliner",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "A task pipeline runner with condition-based workflow execution",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -48,7 +48,7 @@
     "commander": "^11.1.0",
     "dayjs": "^1.11.19",
     "inquirer": "^8.2.6",
-    "log-update": "^6.0.1",
+    "log-update": "^4.0.0",
     "ora": "^5.4.1",
     "yaml": "^2.3.4",
     "zod": "^4.3.5"
