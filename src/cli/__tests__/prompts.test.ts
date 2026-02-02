@@ -126,7 +126,7 @@ describe('ChoicePrompt', () => {
       expect(readline.createInterface).toHaveBeenCalledWith({
         input: mockStdin,
         output: mockStdout,
-        terminal: true,
+        terminal: false,
       });
 
       // Verify raw mode was set

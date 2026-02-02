@@ -16,6 +16,10 @@ inject-force:
     npm i -g task-pipeliner.tgz
     just clean-package
 
+build-binary: 
+    just build
+    npx pkg dist/index.cjs --targets node18-macos-arm64 --output tp-test --config package.json
+
 
 install:
     pnpm install
