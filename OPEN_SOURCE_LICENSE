@@ -14,10 +14,10 @@ eslint-plugin-prettier@5.5.5: MIT
 eslint@9.39.2: MIT
 inquirer@8.2.7: MIT
 jiti@2.6.1: MIT
-log-update@6.1.0: MIT
+log-update@4.0.0: MIT
 ora@5.4.1: MIT
 prettier@3.8.1: MIT
-task-pipeliner@0.2.8: MIT
+task-pipeliner@0.2.11: MIT
 tsup@8.5.1: MIT
 typescript-eslint@8.53.1: MIT
 typescript@5.9.3: Apache-2.0
