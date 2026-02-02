@@ -96,7 +96,8 @@ program
     try {
       // If no file provided, find and select from tp directory
       // Note: File selection prompt should be visible even in silent mode
-      const selectedFile: string = file ?? (await selectWorkflowFromTpDirectory()) ?? '';
+      const selectedFile: string | null = file ?? (await selectWorkflowFromTpDirectory()) ?? null;
+
       if (!selectedFile) {
         console.error(chalk.red('\n✗ No workflow file found'));
         process.exit(1);
@@ -360,8 +361,8 @@ async function selectWorkflowFromTpDirectory(): Promise<string | null> {
       })
     );
 
-    // Show selection prompt
-    const choicePrompt = new ChoicePrompt();
+    // Show selection prompt with search enabled
+    const choicePrompt = new ChoicePrompt(true);
     const selected = await choicePrompt.prompt('Select a workflow to run', choices);
 
     return selected.id;

@@ -35,7 +35,7 @@
 - 📦 **[npm](https://www.npmjs.com/package/task-pipeliner)** - Package on npm registry
 - 🍺 **[Homebrew](https://github.com/racgoo/homebrew-task-pipeliner)** - Homebrew tap for macOS/Linux
 - 🪟 **[Scoop](https://github.com/racgoo/scoop-task-pipeliner)** - Scoop bucket for Windows
-- 💻 **CLI Commands**:
+- **CLI Commands**:
   ```bash
   tp run workflow.yaml        # Run a workflow
   tp run workflow.yaml --silent  # Run in silent mode (suppress all console output)

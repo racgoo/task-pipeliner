@@ -4,6 +4,19 @@ inject:
     npm i -g task-pipeliner.tgz
     just clean-package
 
+inject-force:
+    just install
+    just clean-record
+    just lint
+    just build-rs
+    just build-ts
+    just update-license
+    just clean-up
+    pnpm pack --out task-pipeliner.tgz
+    npm i -g task-pipeliner.tgz
+    just clean-package
+
+
 install:
     pnpm install
     cd ./docs && pnpm install
@@ -11,6 +24,7 @@ install:
 
 test:
     pnpm run test
+
 
 build:
     just install
