@@ -152,22 +152,7 @@ export class ChoicePrompt {
         }
       };
 
-      const cleanup = () => {
-        if (process.stdin.isTTY) {
-          process.stdin.setRawMode(false);
-        }
-        rl.close();
-        // Show cursor
-        process.stdout.write('\x1B[?25h');
-        // Return to normal screen buffer (restores terminal history)
-        process.stdout.write('\x1B[?1049l');
-      };
-
-      // Initial render
-      render();
-
-      // Handle key presses
-      process.stdin.on('data', (key: Buffer) => {
+      const onData = (key: Buffer) => {
         const keyStr = key.toString();
 
         // Ctrl+C - exit
@@ -229,7 +214,24 @@ export class ChoicePrompt {
           updateFilter();
           render();
         }
-      });
+      };
+
+      const cleanup = () => {
+        process.stdin.removeListener('data', onData);
+        if (process.stdin.isTTY) {
+          process.stdin.setRawMode(false);
+        }
+        rl.close();
+        // Show cursor
+        process.stdout.write('\x1B[?25h');
+        // Return to normal screen buffer (restores terminal history)
+        process.stdout.write('\x1B[?1049l');
+      };
+
+      // Initial render
+      render();
+
+      process.stdin.on('data', onData);
     });
   }
 }
