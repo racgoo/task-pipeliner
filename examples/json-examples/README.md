@@ -22,7 +22,7 @@ task-pipeliner run basic.json
 
 ### Feature Examples
 
-- **parallel.json** - Parallel execution example
+- **parallel.json** - Parallel execution example (only `run` / `parallel` / `fail` allowed inside parallel; `choose` and `prompt` are not allowed)
 - **conditions.json** - All condition types (var, file, all, any, not)
 - **prompt.json** - User input prompts with defaults
 - **variables.json** - Variable usage and substitution examples
@@ -39,7 +39,7 @@ task-pipeliner run basic.json
 
 ### Advanced Examples
 
-- **advanced.json** - Advanced workflow patterns with complex logic
+- **advanced.json** - Advanced workflow patterns with complex logic (nested parallel uses only run/parallel/fail)
 - **cicd.json** - CI/CD pipeline example
 - **react.json** - React-specific build and deployment workflow
 - **base-dir-example.json** - baseDir configuration example

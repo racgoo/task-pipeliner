@@ -99,6 +99,7 @@ tp run  # Shows interactive menu with all workflows in tp/ directory
   - Commands run in current directory
   - Good for learning workflow syntax
   - Quick to test
+  - **Parallel restriction:** Inside `parallel` blocks only `run`, nested `parallel`, and `fail` steps are allowed; `choose` and `prompt` cannot be used inside `parallel`.
 
 ## Execution History
 

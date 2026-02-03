@@ -32,6 +32,7 @@ These are workflow definitions only - no project files included.
 - **`parallel.yaml`** - Parallel execution examples
   - Running multiple steps simultaneously
   - Parallel build examples
+  - **Note:** Only `run`, nested `parallel`, and `fail` steps are allowed inside `parallel`. `choose` and `prompt` (user input) cannot be used inside `parallel`.
 
 - **`conditions.yaml`** - Condition evaluation examples
   - `when` clauses
@@ -68,7 +69,7 @@ These are workflow definitions only - no project files included.
 
 - **`advanced.yaml`** - Advanced workflow patterns
   - Complex condition logic
-  - Nested parallel execution
+  - Nested parallel execution (only `run` / `parallel` / `fail` inside parallel)
   - Multiple sequential choices
 
 - **`cicd.yaml`** - CI/CD workflow example

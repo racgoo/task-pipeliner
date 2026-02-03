@@ -66,6 +66,39 @@ steps:
       const workflow = parser.parse(yaml);
       expect(workflow.steps).toHaveLength(5);
     });
+
+    it('should reject workflow with choose inside parallel', () => {
+      const parser = new YAMLParser();
+      const yaml = `
+name: test
+steps:
+  - parallel:
+      - run: echo "hi"
+      - choose:
+          message: "Select"
+          options:
+            - id: a
+              label: "A"
+          as: x
+`;
+      expect(() => parser.parse(yaml)).toThrow('Invalid workflow structure');
+      expect(() => parser.parse(yaml)).toThrow(/not allowed inside 'parallel' block/);
+    });
+
+    it('should reject workflow with prompt inside parallel', () => {
+      const parser = new YAMLParser();
+      const yaml = `
+name: test
+steps:
+  - parallel:
+      - run: echo "hi"
+      - prompt:
+          message: "Enter value"
+          as: val
+`;
+      expect(() => parser.parse(yaml)).toThrow('Invalid workflow structure');
+      expect(() => parser.parse(yaml)).toThrow(/not allowed inside 'parallel' block/);
+    });
   });
 
   describe('JSONParser', () => {
@@ -120,6 +153,43 @@ steps:
       const workflow = parser.parse(json);
       expect(workflow.steps).toHaveLength(1);
       expect(workflow.steps[0]).toHaveProperty('when');
+    });
+
+    it('should reject workflow with choose inside parallel', () => {
+      const parser = new JSONParser();
+      const json = JSON.stringify({
+        name: 'test',
+        steps: [
+          {
+            parallel: [
+              { run: 'echo "hi"' },
+              {
+                choose: {
+                  message: 'Select',
+                  options: [{ id: 'a', label: 'A' }],
+                  as: 'x',
+                },
+              },
+            ],
+          },
+        ],
+      });
+      expect(() => parser.parse(json)).toThrow('Invalid workflow structure');
+      expect(() => parser.parse(json)).toThrow(/not allowed inside 'parallel' block/);
+    });
+
+    it('should reject workflow with prompt inside parallel', () => {
+      const parser = new JSONParser();
+      const json = JSON.stringify({
+        name: 'test',
+        steps: [
+          {
+            parallel: [{ run: 'echo "hi"' }, { prompt: { message: 'Enter value', as: 'val' } }],
+          },
+        ],
+      });
+      expect(() => parser.parse(json)).toThrow('Invalid workflow structure');
+      expect(() => parser.parse(json)).toThrow(/not allowed inside 'parallel' block/);
     });
   });
 });
