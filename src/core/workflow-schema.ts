@@ -108,22 +108,55 @@ const PromptStepSchema = z.object({
   when: ConditionSchema.optional(),
 });
 
+/**
+ * Check if a step contains choose or prompt (forbidden in parallel)
+ */
+function containsInteractiveStep(step: unknown): { found: boolean; type?: string } {
+  if (!step || typeof step !== 'object') return { found: false };
+
+  const stepObj = step as Record<string, unknown>;
+
+  if ('choose' in stepObj) {
+    return { found: true, type: 'choose' };
+  }
+  if ('prompt' in stepObj) {
+    return { found: true, type: 'prompt' };
+  }
+  if ('parallel' in stepObj && Array.isArray(stepObj.parallel)) {
+    for (const subStep of stepObj.parallel) {
+      const result = containsInteractiveStep(subStep);
+      if (result.found) return result;
+    }
+  }
+  return { found: false };
+}
+
 // Steps allowed inside parallel blocks (no user input steps like choose/prompt)
 // This prevents confusing UX where multiple prompts would compete for input
 const ParallelAllowedStepSchema: z.ZodTypeAny = z.lazy(() =>
-  z.union([
-    RunStepSchema,
-    z.object({
-      parallel: z.array(ParallelAllowedStepSchema), // Nested parallel also restricted
-      when: ConditionSchema.optional(),
-    }),
-    z.object({
-      fail: z.object({
-        message: z.string(),
+  z
+    .union([
+      RunStepSchema,
+      z.object({
+        parallel: z.array(z.lazy(() => ParallelAllowedStepSchema)), // Nested parallel also restricted
+        when: ConditionSchema.optional(),
       }),
-      when: ConditionSchema.optional(),
-    }),
-  ])
+      z.object({
+        fail: z.object({
+          message: z.string(),
+        }),
+        when: ConditionSchema.optional(),
+      }),
+    ])
+    .superRefine((val, ctx) => {
+      const result = containsInteractiveStep(val);
+      if (result.found) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `'${result.type}' step is not allowed inside 'parallel' block (user input cannot run in parallel)`,
+        });
+      }
+    })
 );
 
 // Full step schema (all step types allowed at top level)
