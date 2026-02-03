@@ -177,6 +177,33 @@ function RunStepEditor({
         </div>
       </div>
       <div className="form-group">
+        <label>Shell (optional)</label>
+        <input
+          type="text"
+          value={step.shell?.join(' ') || ''}
+          onChange={(e) => {
+            const value = e.target.value;
+            const trimmed = value.trim();
+            if (trimmed) {
+              const shellArray = trimmed.split(/\s+/).filter((s) => s !== '');
+              onUpdate({
+                ...step,
+                shell: shellArray.length > 0 ? shellArray : undefined,
+              });
+            } else {
+              onUpdate({
+                ...step,
+                shell: undefined,
+              });
+            }
+          }}
+          placeholder="bash -lc"
+        />
+        <div className="field-hint">
+          Shell for this step (space-separated). Overrides workflow shell. If omitted, uses workflow shell or your current shell. Example: <code>zsh -c</code>
+        </div>
+      </div>
+      <div className="form-group">
         <label>Error Handling (onError, optional)</label>
         <input
           type="text"

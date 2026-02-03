@@ -23,6 +23,7 @@
   when?: <condition>  # 선택: 조건이 충족될 때만 실행
   timeout?: <number>  # 선택: 타임아웃 (초 단위)
   retry?: <number>    # 선택: 실패 시 재시도 횟수 (기본값: 0)
+  shell?: <array>     # 선택: 쉘 설정 (workflow.shell 오버라이드)
   continue?: <bool>   # 선택: 이 스텝 이후 다음 스텝으로 진행할지 여부 (성공/실패 무관)
   onError?:            # 선택: 에러 처리 동작
     run: <command>     # 메인 run 명령이 실패했을 때 실행할 대체 명령 (사이드 이펙트)
@@ -36,7 +37,8 @@
   "run": "<command>",
   "when": { /* condition */ },  // 선택
   "timeout": <number>,          // 선택
-  "retry": <number>             // 선택
+  "retry": <number>,            // 선택
+  "shell": ["bash", "-lc"]      // 선택
 }
 ```
 
@@ -46,6 +48,7 @@
 - `when` (선택): `Condition` - 실행 전 확인할 조건
 - `timeout` (선택): `number` - 최대 실행 시간 (초 단위). 이 시간을 초과하면 명령이 종료됩니다.
 - `retry` (선택): `number` - 실패 시 재시도 횟수 (기본값: 0, 재시도 없음)
+- `shell` (선택): `string`의 `array` - 이 스텝의 쉘 설정. 워크플로우의 전역 `shell`을 오버라이드합니다. 형식: `[프로그램, ...인자]`. 예: `[bash, -lc]`.
 - `continue` (선택): `boolean` - 이 스텝 완료 후 다음 스텝으로 진행할지 여부를 제어합니다 (성공/실패와 무관).
   - `continue: true` - 항상 다음 스텝으로 진행 (이 스텝이 실패해도)
   - `continue: false` - 항상 워크플로우 중단 (이 스텝이 성공해도)
@@ -99,6 +102,24 @@ steps:
   continue: true
   onError:
     run: echo "Type check failed, but continuing..."
+
+# 쉘 설정 예제
+# Unix/Linux/macOS
+- run: echo "bash로 실행"
+  shell: [bash, -lc]
+
+- run: echo "zsh로 실행"
+  shell: [zsh, -c]
+
+# Windows
+- run: echo Windows 명령 프롬프트로 실행
+  shell: [cmd, /c]
+
+- run: Write-Host "PowerShell로 실행"
+  shell: [powershell, -Command]
+
+- run: Write-Host "PowerShell Core로 실행"
+  shell: [pwsh, -Command]
 ```
 
 ### 동작

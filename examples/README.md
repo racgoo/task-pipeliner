@@ -49,7 +49,14 @@ This example shows how to:
 
 ## YAML Examples
 
-Simple YAML workflow files (no project structure) are in the `yaml-examples/` directory.
+Simple YAML workflow files (no project structure) are in the `yaml-examples/` directory:
+- **`basic.yaml`** - Basic workflow with choices and conditions
+- **`parallel.yaml`** - Parallel execution (only `run`/`parallel`/`fail` allowed inside)
+- **`prompt.yaml`** - User input prompts
+- **`variables.yaml`** - Variable substitution
+- **`conditions.yaml`** - Condition evaluation
+- **`shell-example.yaml`** - Shell configuration (global and step-level)
+- And more...
 
 See [yaml-examples/README.md](yaml-examples/README.md) for details.
 

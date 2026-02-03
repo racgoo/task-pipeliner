@@ -21,6 +21,12 @@ baseDir: ./                            # Optional: Base directory for command ex
                                       #   - Relative path: resolved from workflow file location
                                       #   - Absolute path: used as-is
                                       #   - If omitted: uses current working directory
+shell:                                 # Optional: Global shell configuration
+  - bash                               #   - First element: shell program (bash, zsh, cmd, powershell, etc.)
+  - -lc                                #   - Rest: shell arguments (-c, -lc, /c, -Command, etc.)
+                                      #   - If omitted: uses user's current shell ($SHELL or %COMSPEC%)
+                                      #   - Unix: [bash, -c], [zsh, -c]
+                                      #   - Windows: [cmd, /c], [powershell, -Command]
 
 steps:                                 # Required: Array of steps to execute
   - some-step-1
@@ -37,6 +43,10 @@ steps:                                 # Required: Array of steps to execute
                                        //   - Relative path: resolved from workflow file location
                                        //   - Absolute path: used as-is
                                        //   - If omitted: uses current working directory
+  "shell": ["bash", "-lc"],           // Optional: Global shell configuration
+                                       //   - First element: shell program
+                                       //   - Rest: shell arguments
+                                       //   - If omitted: uses platform default shell
   "steps": [                           // Required: Array of steps to execute
     { /* some-step-1 */ },
     { /* some-step-2 */ }

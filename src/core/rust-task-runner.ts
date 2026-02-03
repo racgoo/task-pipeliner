@@ -7,8 +7,8 @@ import { getModulePaths, tryLoadModule } from './module-loader-utils';
 
 // Type definitions
 interface RustTaskRunnerModule {
-  runTask(command: string): Promise<boolean>;
-  runTaskSync(command: string): boolean;
+  runTask(command: string, shell?: string[]): Promise<boolean>;
+  runTaskSync(command: string, shell?: string[]): boolean;
 }
 
 // Type guard to check if module is RustTaskRunnerModule

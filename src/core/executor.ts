@@ -55,6 +55,7 @@ export class Executor {
   private choicePrompt: ChoicePrompt;
   private textPrompt: TextPrompt;
   private baseDir?: string; // Base directory for command execution
+  private globalShell?: string[]; // Global shell configuration from workflow
 
   constructor() {
     this.workspace = new Workspace();
@@ -161,6 +162,9 @@ export class Executor {
   async execute(workflow: Workflow): Promise<void> {
     // Set up working directory for all commands
     this.resolveBaseDir(workflow);
+
+    // Set up global shell configuration
+    this.globalShell = workflow.shell;
 
     const recorder = new WorkflowRecorder();
     const workflowStartTime = Date.now();
@@ -397,10 +401,11 @@ export class Executor {
    * Steps:
    * 1. Calculate base step index (for parallel execution)
    * 2. Substitute variables in command ({{variable}} syntax)
-   * 3. Run command via TaskRunner (with retry logic if specified)
+   * 3. Resolve shell configuration (step.shell || workflow.shell)
+   * 4. Run command via TaskRunner (with retry logic if specified)
    */
   private async executeSingleRun(
-    step: Pick<RunStep, 'run' | 'timeout' | 'retry'>,
+    step: Pick<RunStep, 'run' | 'timeout' | 'retry' | 'shell'>,
     context: ExecutionContext,
     bufferOutput: boolean = false,
     hasWhenCondition: boolean = false
@@ -410,6 +415,9 @@ export class Executor {
 
     // Replace {{variable}} with actual values from workspace
     const command = substituteVariables(step.run, this.workspace);
+
+    // Resolve shell configuration: step.shell > workflow.shell > platform default
+    const shellConfig = step.shell || this.globalShell;
 
     // Get retry count (default: 0, meaning no retry)
     const retryCount = step.retry ?? 0;
@@ -431,7 +439,8 @@ export class Executor {
         context.lineNumber,
         context.fileName,
         this.baseDir,
-        timeoutSeconds
+        timeoutSeconds,
+        shellConfig
       );
 
       // Extract success status
@@ -463,7 +472,7 @@ export class Executor {
    * The final success is determined by the last executed command in the chain.
    */
   private async executeRunStep(
-    step: Pick<RunStep, 'run' | 'timeout' | 'retry' | 'onError'>,
+    step: Pick<RunStep, 'run' | 'timeout' | 'retry' | 'onError' | 'shell'>,
     context: ExecutionContext,
     bufferOutput: boolean = false,
     hasWhenCondition: boolean = false
@@ -474,6 +483,7 @@ export class Executor {
         run: step.run,
         timeout: step.timeout,
         retry: step.retry,
+        shell: step.shell,
       },
       context,
       bufferOutput,
@@ -526,6 +536,7 @@ export class Executor {
         run: node.run,
         timeout: node.timeout,
         retry: node.retry,
+        shell: undefined, // onError chain doesn't inherit shell from main step
       },
       context,
       bufferOutput,

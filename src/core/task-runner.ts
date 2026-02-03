@@ -29,7 +29,7 @@ export interface TaskRunResult {
 
 interface SpawnOptions {
   stdio: ['inherit', 'pipe', 'pipe'];
-  shell: true;
+  shell?: boolean | string;
   cwd?: string;
 }
 
@@ -47,6 +47,7 @@ export class TaskRunner {
    * @param fileName - YAML file name (for error reporting)
    * @param cwd - Working directory for command execution
    * @param timeout - Timeout in seconds (optional)
+   * @param shell - Shell configuration (e.g., ["bash", "-lc"])
    */
   async run(
     command: string,
@@ -58,12 +59,13 @@ export class TaskRunner {
     lineNumber?: number,
     fileName?: string,
     cwd?: string,
-    timeout?: number
+    timeout?: number,
+    shell?: string[]
   ): Promise<boolean | TaskRunResult> {
     // Choose mode based on bufferOutput flag
     if (bufferOutput) {
       // Collect output for later display (parallel execution)
-      return this.runBuffered(command, cwd, timeout);
+      return this.runBuffered(command, cwd, timeout, shell);
     } else {
       // Display output immediately (normal execution)
       return this.runRealtime(
@@ -73,7 +75,8 @@ export class TaskRunner {
         lineNumber,
         fileName,
         cwd,
-        timeout
+        timeout,
+        shell
       );
     }
   }
@@ -85,14 +88,12 @@ export class TaskRunner {
   private async runBuffered(
     command: string,
     workingDirectory?: string,
-    timeoutSeconds?: number
+    timeoutSeconds?: number,
+    shell?: string[]
   ): Promise<TaskRunResult> {
-    const spawnOptions = this.createSpawnOptions(workingDirectory);
-
     return new Promise<TaskRunResult>((resolve, _reject) => {
-      // Pass entire command as single string with shell: true
-      // This ensures proper PATH resolution (fixes pkg embedded node issue)
-      const child = spawn(command, [], spawnOptions);
+      // Spawn child process with shell configuration
+      const child = this.spawnWithShell(command, workingDirectory, shell);
       const allStdoutLines: string[] = [];
       const allStderrLines: string[] = [];
       let incompleteStdoutLine = '';
@@ -170,10 +171,9 @@ export class TaskRunner {
     lineNumber?: number,
     fileName?: string,
     workingDirectory?: string,
-    timeoutSeconds?: number
+    timeoutSeconds?: number,
+    shell?: string[]
   ): Promise<boolean> {
-    const spawnOptions = this.createSpawnOptions(workingDirectory);
-
     // Green border if step has condition, cyan otherwise
     const borderColor = hasWhenCondition ? 'green' : 'cyan';
     const headerBox = createStepHeaderBox(displayName, lineNumber, fileName, { borderColor });
@@ -183,9 +183,8 @@ export class TaskRunner {
     const startTime = Date.now();
 
     return new Promise<boolean>((resolve) => {
-      // Pass entire command as single string with shell: true
-      // This ensures proper PATH resolution (fixes pkg embedded node issue)
-      const child = spawn(command, [], spawnOptions);
+      // Spawn child process with shell configuration
+      const child = this.spawnWithShell(command, workingDirectory, shell);
       let incompleteStdoutLine = '';
       let incompleteStderrLine = '';
       let timeoutId: NodeJS.Timeout | null = null;
@@ -268,6 +267,45 @@ export class TaskRunner {
       options.cwd = workingDirectory;
     }
     return options;
+  }
+
+  /**
+   * Spawn child process with shell configuration
+   *
+   * @param command - Command to execute
+   * @param workingDirectory - Working directory
+   * @param shell - Shell configuration (e.g., ["bash", "-lc"])
+   * @returns ChildProcess
+   */
+  private spawnWithShell(
+    command: string,
+    workingDirectory?: string,
+    shell?: string[]
+  ): ReturnType<typeof spawn> {
+    if (shell && shell.length > 0) {
+      // Use custom shell: shell[0] is program, shell[1..] are args, command is final arg
+      const program = shell[0];
+      const args = [...shell.slice(1), command];
+      const options: SpawnOptions = {
+        stdio: ['inherit', 'pipe', 'pipe'],
+      };
+      if (workingDirectory) {
+        options.cwd = workingDirectory;
+      }
+      return spawn(program, args, options);
+    } else {
+      // Use user's current shell (from $SHELL or platform default)
+      // This ensures commands run in the same shell environment as the user
+      const userShell = process.env.SHELL || (process.platform === 'win32' ? 'cmd.exe' : '/bin/sh');
+      const shellArg = process.platform === 'win32' ? '/c' : '-c';
+      const options: SpawnOptions = {
+        stdio: ['inherit', 'pipe', 'pipe'],
+      };
+      if (workingDirectory) {
+        options.cwd = workingDirectory;
+      }
+      return spawn(userShell, [shellArg, command], options);
+    }
   }
 
   /**

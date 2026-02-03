@@ -8,6 +8,7 @@ export default function WorkflowBuilder() {
   const [workflow, setWorkflow] = useState<Workflow>({
     name: '',
     baseDir: '',
+    shell: undefined,
     steps: [],
   });
   const [outputFormat, setOutputFormat] = useState<'yaml' | 'json'>('yaml');
@@ -58,6 +59,7 @@ export default function WorkflowBuilder() {
       ...workflow,
       name: workflow.name || undefined,
       baseDir: workflow.baseDir || undefined,
+      shell: workflow.shell && workflow.shell.length > 0 ? workflow.shell : undefined,
     };
     setPreview(outputFormat === 'yaml' ? generateYAML(cleanWorkflow) : generateJSON(cleanWorkflow));
     setPreviewError(null);
@@ -74,6 +76,7 @@ export default function WorkflowBuilder() {
       setWorkflow({
         name: parsed.name || '',
         baseDir: parsed.baseDir || '',
+        shell: parsed.shell || undefined,
         steps: parsed.steps || [],
       });
       setPreviewError(null);
@@ -95,6 +98,7 @@ export default function WorkflowBuilder() {
       ...workflow,
       name: workflow.name || undefined,
       baseDir: workflow.baseDir || undefined,
+      shell: workflow.shell && workflow.shell.length > 0 ? workflow.shell : undefined,
     };
     if (outputFormat === 'yaml') {
       downloadYAML(cleanWorkflow);
@@ -142,6 +146,27 @@ export default function WorkflowBuilder() {
                 onChange={(e) => updateWorkflow({ baseDir: e.target.value })}
                 placeholder="./"
               />
+            </div>
+            <div className="form-group">
+              <label>Shell (optional)</label>
+              <input
+                type="text"
+                value={workflow.shell?.join(' ') || ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const trimmed = value.trim();
+                  if (trimmed) {
+                    const shellArray = trimmed.split(/\s+/).filter((s) => s !== '');
+                    updateWorkflow({ shell: shellArray.length > 0 ? shellArray : undefined });
+                  } else {
+                    updateWorkflow({ shell: undefined });
+                  }
+                }}
+                placeholder="bash -lc"
+              />
+              <div className="field-hint">
+                Global shell for all steps (space-separated). If omitted, uses your current shell ($SHELL). Example: <code>bash -lc</code> or <code>zsh -c</code>
+              </div>
             </div>
           </div>
 

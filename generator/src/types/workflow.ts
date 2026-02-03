@@ -23,6 +23,7 @@ export interface RunStep {
   when?: Condition;
   timeout?: number;
   retry?: number;
+  shell?: string[];
   continue?: boolean;
   onError?: RunStepOnError;
 }
@@ -131,6 +132,7 @@ export interface NotCondition {
 export interface Workflow {
   name?: string;
   baseDir?: string;
+  shell?: string[];
   steps: Step[];
 }
 

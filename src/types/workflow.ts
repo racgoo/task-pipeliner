@@ -42,6 +42,7 @@ export interface RunStep {
   when?: Condition; // mainly used for choice conditions
   timeout?: number; // timeout in seconds (optional)
   retry?: number; // number of retries on failure (optional, default: 0)
+  shell?: string[]; // shell configuration (e.g., ["bash", "-lc"]) - overrides workflow.shell
   /**
    * If true, continue workflow even if this run step ultimately fails.
    *
@@ -109,6 +110,7 @@ export interface FailStep {
 export interface Workflow {
   name?: string;
   baseDir?: string; // Base directory for command execution (relative or absolute path)
+  shell?: string[]; // Global shell configuration (e.g., ["bash", "-lc"])
   steps: Step[];
   _lineNumbers?: Map<number, number>; // step index -> line number
   _fileName?: string; // YAML file name (for display)

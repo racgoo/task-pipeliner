@@ -47,7 +47,8 @@ describe('Timeout and Retry', () => {
         undefined,
         undefined,
         undefined,
-        30 // timeout should be passed
+        30, // timeout should be passed
+        undefined // shell
       );
     });
 
@@ -77,7 +78,8 @@ describe('Timeout and Retry', () => {
         undefined,
         undefined,
         undefined,
-        1
+        1, // timeout
+        undefined // shell
       );
     });
 
@@ -105,7 +107,8 @@ describe('Timeout and Retry', () => {
         undefined,
         undefined,
         undefined,
-        undefined // timeout should be undefined
+        undefined, // timeout should be undefined
+        undefined // shell
       );
     });
   });
@@ -260,7 +263,8 @@ describe('Timeout and Retry', () => {
         undefined,
         undefined,
         undefined,
-        30 // timeout
+        30, // timeout
+        undefined // shell
       );
       expect(mockRun).toHaveBeenNthCalledWith(
         2,
@@ -273,7 +277,8 @@ describe('Timeout and Retry', () => {
         undefined,
         undefined,
         undefined,
-        30 // timeout (same for retry)
+        30, // timeout (same for retry)
+        undefined // shell
       );
     });
   });

@@ -293,6 +293,10 @@ baseDir: ./                            # Optional: Base directory for command ex
                                       #   - Relative path: resolved from YAML file location
                                       #   - Absolute path: used as-is
                                       #   - If omitted: uses current working directory
+shell:                                 # Optional: Global shell configuration for all run commands
+  - bash                               #   - First element: shell program (bash, zsh, sh, etc.)
+  - -lc                                #   - Rest: shell arguments (-c, -lc, etc.)
+                                      #   - If omitted: uses platform default shell
 
 steps:                                 # Required: Array of steps to execute
   - some-step-1
@@ -309,6 +313,10 @@ steps:                                 # Required: Array of steps to execute
                                        //   - Relative path: resolved from JSON file location
                                        //   - Absolute path: used as-is
                                        //   - If omitted: uses current working directory
+  "shell": ["bash", "-lc"],           // Optional: Global shell configuration for all run commands
+                                       //   - First element: shell program
+                                       //   - Rest: shell arguments
+                                       //   - If omitted: uses platform default shell
   "steps": [                           // Required: Array of steps to execute
     { /* some-step-1 */ },
     { /* some-step-2 */ }
@@ -334,6 +342,33 @@ steps:                                 # Required: Array of steps to execute
   baseDir: /app/frontend     # Absolute path
   ```
 
+#### `shell` (optional)
+- **Type**: `array` of `string`
+- **Description**: Global shell configuration for all `run` commands in the workflow
+- **Format**: `[program, ...args]` - First element is the shell program, rest are arguments
+- **Priority**: Step-level `shell` > Workflow-level `shell` > User's current shell
+- **User's current shell** (when omitted):
+  - **Linux/macOS**: Uses `$SHELL` environment variable (e.g., `/bin/zsh`, `/bin/bash`)
+  - **Windows**: Uses `%COMSPEC%` (typically `cmd.exe`)
+  - **Behavior**: Commands run in the same shell environment as where you execute `tp run`
+- **Example**:
+  ```yaml
+  # Unix/Linux/macOS
+  shell: [bash, -lc]         # Use bash login shell
+  shell: [zsh, -c]           # Use zsh
+  shell: [sh, -c]            # Use sh (POSIX)
+  
+  # Windows
+  shell: [cmd, /c]           # Command Prompt
+  shell: [powershell, -Command]  # Windows PowerShell
+  shell: [pwsh, -Command]    # PowerShell Core
+  ```
+- **Cross-platform examples**:
+  - **Linux/macOS**: `[bash, -lc]`, `[zsh, -c]`, `[/bin/bash, -c]`
+  - **Windows**: `[cmd, /c]`, `[powershell, -Command]`, `[pwsh, -Command]`
+  - **Git Bash (Windows)**: `[bash, -c]`
+  - **WSL**: `[wsl, bash, -c]` or use `wsl` command directly
+
 #### `steps` (required)
 - **Type**: `array` of `Step` objects
 - **Description**: List of steps to execute sequentially
@@ -355,6 +390,7 @@ Execute a shell command.
   when?: <condition>  # Optional: Execute only if condition is met
   timeout?: <number>  # Optional: Timeout in seconds
   retry?: <number>    # Optional: Number of retries on failure (default: 0)
+  shell?: <array>     # Optional: Shell configuration (overrides workflow.shell)
   continue?: <bool>   # Optional: Continue to next step after this step completes (regardless of success/failure)
   onError?:            # Optional: Error handling behavior
     run: <command>     # Fallback command when main run command fails (side effect)
@@ -368,6 +404,7 @@ Execute a shell command.
 - `when` (optional): `Condition` - Condition to check before execution
 - `timeout` (optional): `number` - Maximum execution time in seconds. Command will be killed if it exceeds this time.
 - `retry` (optional): `number` - Number of retry attempts if command fails (default: 0, meaning no retry)
+- `shell` (optional): `array` of `string` - Shell configuration for this step. Overrides workflow's global `shell`. Format: `[program, ...args]`. Example: `[bash, -lc]`, `[zsh, -c]`.
 - `continue` (optional): `boolean` - Controls whether to proceed to the next step after this step completes, regardless of success or failure.
   - `continue: true` - Always proceed to the next step (even if this step fails)
   - `continue: false` - Always stop the workflow after this step (even if this step succeeds)
@@ -432,6 +469,18 @@ steps:
     continue: true
     onError:
       run: echo "Type check failed, but continuing..."
+
+  # Command with custom shell (step-level)
+  - run: echo $SHELL
+    shell:
+      - zsh
+      - -c
+
+  # Command with bash login shell
+  - run: source ~/.bashrc && echo "Loaded profile"
+    shell:
+      - bash
+      - -lc
 ```
 
 **Behavior:**
@@ -1026,6 +1075,7 @@ A complete example demonstrating all features:
 ```yaml
 name: Complete Workflow Example
 baseDir: ./
+shell: [bash, -c]  # Optional: Use bash for all steps (default: user's current shell)
 
 steps:
   # 1. Simple command
@@ -1076,6 +1126,10 @@ steps:
       - run: npm run test:unit
       - run: npm run test:integration
       - run: npm run lint
+
+  # 6.5. Step-level shell override
+  - run: echo "Running with zsh"
+    shell: [zsh, -c]  # Override workflow shell for this step only
 
   # 7. File existence check
   - when:

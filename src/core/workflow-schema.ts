@@ -80,6 +80,7 @@ const RunStepSchema = z.object({
   when: ConditionSchema.optional(),
   timeout: z.number().optional(),
   retry: z.number().optional(),
+  shell: z.array(z.string()).min(1, 'shell must have at least one element').optional(),
   continue: z.boolean().optional(),
   onError: RunStepOnErrorSchema.optional(),
 });
@@ -186,6 +187,7 @@ const StepSchema: z.ZodTypeAny = z.lazy(() =>
 export const WorkflowSchema = z.object({
   name: z.string().optional(),
   baseDir: z.string().optional(),
+  shell: z.array(z.string()).min(1, 'shell must have at least one element').optional(),
   steps: z.array(StepSchema).min(1, 'Workflow must have at least one step'),
 });
 

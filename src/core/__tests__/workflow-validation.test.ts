@@ -99,6 +99,59 @@ steps:
       expect(() => parser.parse(yaml)).toThrow('Invalid workflow structure');
       expect(() => parser.parse(yaml)).toThrow(/not allowed inside 'parallel' block/);
     });
+
+    it('should accept workflow with global shell configuration', () => {
+      const parser = new YAMLParser();
+      const yaml = `
+name: test
+shell:
+  - bash
+  - -lc
+steps:
+  - run: echo "hello"
+`;
+      const workflow = parser.parse(yaml);
+      expect(workflow.shell).toEqual(['bash', '-lc']);
+    });
+
+    it('should accept step with shell configuration', () => {
+      const parser = new YAMLParser();
+      const yaml = `
+name: test
+steps:
+  - run: echo "hello"
+    shell:
+      - zsh
+      - -c
+`;
+      const workflow = parser.parse(yaml);
+      expect(workflow.steps).toHaveLength(1);
+      expect('shell' in workflow.steps[0] && workflow.steps[0].shell).toEqual(['zsh', '-c']);
+    });
+
+    it('should reject workflow with empty shell array', () => {
+      const parser = new YAMLParser();
+      const yaml = `
+name: test
+shell: []
+steps:
+  - run: echo "hello"
+`;
+      expect(() => parser.parse(yaml)).toThrow('Invalid workflow structure');
+      expect(() => parser.parse(yaml)).toThrow(/shell.*cannot be empty/i);
+    });
+
+    it('should reject step with empty shell array', () => {
+      const parser = new YAMLParser();
+      const yaml = `
+name: test
+steps:
+  - run: echo "hello"
+    shell: []
+`;
+      expect(() => parser.parse(yaml)).toThrow('Invalid workflow structure');
+      expect(() => parser.parse(yaml)).toThrow(/shell.*cannot be empty/i);
+    });
   });
 
   describe('JSONParser', () => {
@@ -190,6 +243,44 @@ steps:
       });
       expect(() => parser.parse(json)).toThrow('Invalid workflow structure');
       expect(() => parser.parse(json)).toThrow(/not allowed inside 'parallel' block/);
+    });
+
+    it('should accept workflow with global shell configuration', () => {
+      const parser = new JSONParser();
+      const json = JSON.stringify({
+        name: 'test',
+        shell: ['bash', '-lc'],
+        steps: [{ run: 'echo "hello"' }],
+      });
+      const workflow = parser.parse(json);
+      expect(workflow.shell).toEqual(['bash', '-lc']);
+    });
+
+    it('should accept step with shell configuration', () => {
+      const parser = new JSONParser();
+      const json = JSON.stringify({
+        name: 'test',
+        steps: [
+          {
+            run: 'echo "hello"',
+            shell: ['zsh', '-c'],
+          },
+        ],
+      });
+      const workflow = parser.parse(json);
+      expect(workflow.steps).toHaveLength(1);
+      expect('shell' in workflow.steps[0] && workflow.steps[0].shell).toEqual(['zsh', '-c']);
+    });
+
+    it('should reject workflow with empty shell array', () => {
+      const parser = new JSONParser();
+      const json = JSON.stringify({
+        name: 'test',
+        shell: [],
+        steps: [{ run: 'echo "hello"' }],
+      });
+      expect(() => parser.parse(json)).toThrow('Invalid workflow structure');
+      expect(() => parser.parse(json)).toThrow(/shell.*cannot be empty/i);
     });
   });
 });

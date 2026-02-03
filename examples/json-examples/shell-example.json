@@ -1,0 +1,33 @@
+{
+  "name": "Shell Configuration Example",
+  "shell": ["bash", "-c"],
+  "steps": [
+    {
+      "run": "echo \"=== Running with global shell (bash) ===\" && echo \"Shell: $SHELL\" && echo \"Bash version: $BASH_VERSION\""
+    },
+    {
+      "run": "echo \"=== Running with zsh (step-level override) ===\" && echo \"Shell: $SHELL\" && echo \"Zsh version: $ZSH_VERSION\"",
+      "shell": ["zsh", "-c"]
+    },
+    {
+      "run": "echo \"=== Back to global shell (bash) ===\" && echo \"Shell: $SHELL\" && echo \"Bash version: $BASH_VERSION\""
+    },
+    {
+      "run": "echo \"=== Running with bash login shell ===\" && echo \"This loads your bash profile and RC files\" && echo \"Shell: $SHELL\"",
+      "shell": ["bash", "-lc"]
+    }
+  ],
+  "_comment": "Windows examples (uncomment on Windows):",
+  "_windows_cmd_example": {
+    "run": "echo === Running with Windows Command Prompt === && echo ComSpec: %COMSPEC% && ver",
+    "shell": ["cmd", "/c"]
+  },
+  "_windows_powershell_example": {
+    "run": "Write-Host '=== Running with PowerShell ===' ; Write-Host \"PSVersion: $($PSVersionTable.PSVersion)\"",
+    "shell": ["powershell", "-Command"]
+  },
+  "_windows_pwsh_example": {
+    "run": "Write-Host '=== Running with PowerShell Core ===' ; Write-Host \"PSVersion: $($PSVersionTable.PSVersion)\"",
+    "shell": ["pwsh", "-Command"]
+  }
+}

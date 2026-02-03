@@ -65,6 +65,19 @@ These are workflow definitions only - no project files included.
   - Arrow key navigation
   - Useful for long lists (countries, languages, frameworks, etc.)
 
+- **`shell-example.yaml`** - Shell configuration examples
+  - Global shell configuration for all steps
+  - Step-level shell override
+  - Login shell usage
+  - Default: uses your current shell (`$SHELL`)
+
+- **`shell-windows-example.yaml`** - Windows shell configuration examples
+  - Windows Command Prompt (cmd.exe)
+  - PowerShell and PowerShell Core (pwsh)
+  - Git Bash on Windows
+  - WSL (Windows Subsystem for Linux)
+  - Cross-platform shell tips
+
 ### Advanced Examples
 
 - **`advanced.yaml`** - Advanced workflow patterns

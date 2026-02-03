@@ -1,0 +1,28 @@
+{
+  "name": "Windows Shell Configuration Example",
+  "shell": ["cmd", "/c"],
+  "steps": [
+    {
+      "run": "echo === Running with Windows Command Prompt === && echo ComSpec: %COMSPEC% && echo User: %USERNAME% && ver"
+    },
+    {
+      "run": "Write-Host '=== Running with PowerShell ===' ; Write-Host \"PSVersion: $($PSVersionTable.PSVersion)\" ; Write-Host \"User: $env:USERNAME\"",
+      "shell": ["powershell", "-Command"]
+    },
+    {
+      "run": "Write-Host '=== Running with PowerShell Core ===' ; Write-Host \"PSVersion: $($PSVersionTable.PSVersion)\" ; Write-Host \"OS: $($PSVersionTable.OS)\"",
+      "shell": ["pwsh", "-Command"]
+    },
+    {
+      "run": "echo === Back to Command Prompt === && echo Current directory: %CD% && dir /b"
+    },
+    {
+      "run": "echo '=== Running with Git Bash ===' && echo \"Shell: $SHELL\" && uname -a",
+      "shell": ["bash", "-c"]
+    },
+    {
+      "run": "echo === Running with WSL === && wsl uname -a && wsl echo 'Hello from WSL!'",
+      "shell": ["cmd", "/c"]
+    }
+  ]
+}

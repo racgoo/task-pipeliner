@@ -293,6 +293,10 @@ baseDir: ./                            # 선택사항: 명령 실행 기본 디�
                                       #   - 상대 경로: YAML 파일 위치 기준으로 해석
                                       #   - 절대 경로: 그대로 사용
                                       #   - 생략 시: 현재 작업 디렉토리 사용
+shell:                                 # 선택사항: 모든 run 명령의 전역 쉘 설정
+  - bash                               #   - 첫 번째 요소: 쉘 프로그램 (bash, zsh, sh 등)
+  - -lc                                #   - 나머지: 쉘 인자 (-c, -lc 등)
+                                      #   - 생략 시: 플랫폼 기본 쉘 사용
 
 steps:                                 # 필수: 실행할 단계 배열
   - some-step-1
@@ -309,6 +313,10 @@ steps:                                 # 필수: 실행할 단계 배열
                                        //   - 상대 경로: JSON 파일 위치 기준으로 해석
                                        //   - 절대 경로: 그대로 사용
                                        //   - 생략 시: 현재 작업 디렉토리 사용
+  "shell": ["bash", "-lc"],           // 선택사항: 모든 run 명령의 전역 쉘 설정
+                                       //   - 첫 번째 요소: 쉘 프로그램
+                                       //   - 나머지: 쉘 인자
+                                       //   - 생략 시: 플랫폼 기본 쉘 사용
   "steps": [                           // 필수: 실행할 단계 배열
     { /* some-step-1 */ },
     { /* some-step-2 */ }
@@ -334,6 +342,33 @@ steps:                                 # 필수: 실행할 단계 배열
   baseDir: /app/frontend     # 절대 경로
   ```
 
+#### `shell` (선택)
+- **타입**: `string`의 `array`
+- **설명**: 워크플로우 내 모든 `run` 명령에 대한 전역 쉘 설정
+- **형식**: `[프로그램, ...인자]` - 첫 번째 요소는 쉘 프로그램, 나머지는 인자
+- **우선순위**: 스텝별 `shell` > 워크플로우 `shell` > 사용자의 현재 쉘
+- **사용자의 현재 쉘** (생략 시):
+  - **Linux/macOS**: `$SHELL` 환경변수 사용 (예: `/bin/zsh`, `/bin/bash`)
+  - **Windows**: `%COMSPEC%` 사용 (일반적으로 `cmd.exe`)
+  - **동작**: `tp run`을 실행한 쉘 환경과 동일한 환경에서 명령 실행
+- **예제**:
+  ```yaml
+  # Unix/Linux/macOS
+  shell: [bash, -lc]         # bash 로그인 쉘 사용
+  shell: [zsh, -c]           # zsh 사용
+  shell: [sh, -c]            # sh 사용 (POSIX)
+  
+  # Windows
+  shell: [cmd, /c]           # 명령 프롬프트
+  shell: [powershell, -Command]  # Windows PowerShell
+  shell: [pwsh, -Command]    # PowerShell Core
+  ```
+- **크로스 플랫폼 예시**:
+  - **Linux/macOS**: `[bash, -lc]`, `[zsh, -c]`, `[/bin/bash, -c]`
+  - **Windows**: `[cmd, /c]`, `[powershell, -Command]`, `[pwsh, -Command]`
+  - **Git Bash (Windows)**: `[bash, -c]`
+  - **WSL**: `[wsl, bash, -c]` 또는 `wsl` 명령 직접 사용
+
 #### `steps` (필수)
 - **타입**: `Step` 객체의 `array`
 - **설명**: 순차적으로 실행할 단계 목록
@@ -355,6 +390,7 @@ steps:                                 # 필수: 실행할 단계 배열
   when?: <condition>  # 선택: 조건이 충족될 때만 실행
   timeout?: <number>  # 선택: 타임아웃 (초 단위)
   retry?: <number>    # 선택: 실패 시 재시도 횟수 (기본값: 0)
+  shell?: <array>     # 선택: 쉘 설정 (workflow.shell 오버라이드)
   continue?: <bool>   # 선택: 이 스텝 이후 다음 스텝으로 진행할지 여부 (성공/실패 무관)
   onError?:            # 선택: 에러 처리 동작
     run: <command>     # 메인 run 명령이 실패했을 때 실행할 대체 명령 (사이드 이펙트)
@@ -368,6 +404,7 @@ steps:                                 # 필수: 실행할 단계 배열
 - `when` (선택): `Condition` - 실행 전 확인할 조건
 - `timeout` (선택): `number` - 최대 실행 시간 (초 단위). 이 시간을 초과하면 명령이 종료됩니다.
 - `retry` (선택): `number` - 실패 시 재시도 횟수 (기본값: 0, 재시도 없음)
+- `shell` (선택): `string`의 `array` - 이 스텝의 쉘 설정. 워크플로우의 전역 `shell`을 오버라이드합니다. 형식: `[프로그램, ...인자]`. 예: `[bash, -lc]`, `[zsh, -c]`.
 - `continue` (선택): `boolean` - 이 스텝 완료 후 다음 스텝으로 진행할지 여부를 제어합니다 (성공/실패와 무관).
   - `continue: true` - 항상 다음 스텝으로 진행 (이 스텝이 실패해도)
   - `continue: false` - 항상 워크플로우 중단 (이 스텝이 성공해도)
@@ -432,6 +469,18 @@ steps:
     continue: true
     onError:
       run: echo "Type check failed, but continuing..."
+
+  # 커스텀 쉘 사용 (스텝별)
+  - run: echo $SHELL
+    shell:
+      - zsh
+      - -c
+
+  # bash 로그인 쉘 사용
+  - run: source ~/.bashrc && echo "프로필 로드됨"
+    shell:
+      - bash
+      - -lc
 ```
 
 **동작:**
@@ -1076,6 +1125,10 @@ steps:
       - run: npm run test:unit
       - run: npm run test:integration
       - run: npm run lint
+
+  # 6.5. 스텝별 쉘 오버라이드
+  - run: echo "zsh로 실행"
+    shell: [zsh, -c]  # 이 스텝만 워크플로우 쉘 오버라이드
 
   # 7. 파일 존재 확인
   - when:

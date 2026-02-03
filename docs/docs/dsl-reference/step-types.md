@@ -23,6 +23,7 @@ Execute a shell command.
   when?: <condition>   # Optional: Execute only if condition is met
   timeout?: <number>   # Optional: Timeout in seconds
   retry?: <number>     # Optional: Number of retries on failure (default: 0)
+  shell?: <array>      # Optional: Shell configuration (overrides workflow.shell)
   continue?: <bool>    # Optional: Continue workflow even if this step fails
   onError?:            # Optional: Error handling behavior
     run: <command>     # Fallback command to run when the main run command fails (side effect)
@@ -37,6 +38,7 @@ Execute a shell command.
 - `when` (optional): `Condition` - Condition to check before execution
 - `timeout` (optional): `number` - Maximum execution time in seconds. Command will be killed if it exceeds this time.
 - `retry` (optional): `number` - Number of retry attempts if command fails (default: 0, meaning no retry)
+- `shell` (optional): `array` of `string` - Shell configuration for this step. Overrides workflow's global `shell`. Format: `[program, ...args]`. Example: `[bash, -lc]`.
 - `continue` (optional): `boolean` - Controls whether to proceed to the next step after this step completes, regardless of success or failure.
   - `continue: true` - Always proceed to the next step (even if this step fails)
   - `continue: false` - Always stop the workflow after this step (even if this step succeeds)
@@ -84,6 +86,24 @@ Execute a shell command.
   continue: true
   onError:
     run: echo "Type check failed, but continuing..."
+
+# Shell configuration examples
+# Unix/Linux/macOS
+- run: echo "Running with bash"
+  shell: [bash, -lc]
+
+- run: echo "Running with zsh"
+  shell: [zsh, -c]
+
+# Windows
+- run: echo Running with Command Prompt
+  shell: [cmd, /c]
+
+- run: Write-Host "Running with PowerShell"
+  shell: [powershell, -Command]
+
+- run: Write-Host "Running with PowerShell Core"
+  shell: [pwsh, -Command]
 ```
 
 ---

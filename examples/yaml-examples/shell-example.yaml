@@ -1,0 +1,76 @@
+name: Shell Configuration Example
+
+# Global shell configuration (optional)
+# If omitted, uses your current shell (e.g., zsh, bash from $SHELL on Unix, cmd.exe on Windows)
+# 
+# Platform examples:
+# - Linux/macOS: [bash, -c] or [zsh, -c]
+# - Windows: [cmd, /c] or [powershell, -Command]
+shell:
+  - bash
+  - -c
+
+steps:
+  # Step 1: Uses global shell (bash on Unix, cmd on Windows)
+  - run: |
+      echo "=== Running with global shell (bash) ==="
+      echo "Shell: $SHELL"
+      echo "Bash version: $BASH_VERSION"
+
+  # Step 2: Override with zsh for this step only (Unix)
+  - run: |
+      echo "=== Running with zsh (step-level override) ==="
+      echo "Shell: $SHELL"
+      echo "Zsh version: $ZSH_VERSION"
+    shell:
+      - zsh
+      - -c
+
+  # Step 3: Back to global shell (bash)
+  - run: |
+      echo "=== Back to global shell (bash) ==="
+      echo "Shell: $SHELL"
+      echo "Bash version: $BASH_VERSION"
+
+  # Step 4: Login shell example (loads ~/.bashrc, ~/.bash_profile)
+  - run: |
+      echo "=== Running with bash login shell ==="
+      echo "This loads your bash profile and RC files"
+      echo "Shell: $SHELL"
+    shell:
+      - bash
+      - -lc
+
+  # === Windows Examples ===
+  # Uncomment these on Windows systems
+
+  # Step 5: Windows Command Prompt (cmd.exe)
+  # - run: |
+  #     echo === Running with Windows Command Prompt ===
+  #     echo ComSpec: %COMSPEC%
+  #     ver
+  #   shell:
+  #     - cmd
+  #     - /c
+
+  # Step 6: Windows PowerShell
+  # - run: |
+  #     Write-Host "=== Running with PowerShell ==="
+  #     Write-Host "PSVersion: $($PSVersionTable.PSVersion)"
+  #     Write-Host "Shell: $env:COMSPEC"
+  #   shell:
+  #     - powershell
+  #     - -Command
+
+  # Step 7: PowerShell Core (pwsh)
+  # - run: |
+  #     Write-Host "=== Running with PowerShell Core ==="
+  #     Write-Host "PSVersion: $($PSVersionTable.PSVersion)"
+  #   shell:
+  #     - pwsh
+  #     - -Command
+
+  # === Cross-platform tip ===
+  # No shell config - uses user's current shell
+  # - Unix: Uses $SHELL (zsh, bash, etc.)
+  # - Windows: Uses %COMSPEC% (cmd.exe by default)

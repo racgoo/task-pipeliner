@@ -104,6 +104,26 @@ function validateStep(
     if (runValue === '') {
       validationError(stepIndex, "'run' command cannot be empty");
     }
+
+    // Validate shell configuration if provided
+    if ('shell' in step && step.shell !== undefined) {
+      if (!Array.isArray(step.shell)) {
+        validationError(stepIndex, "'shell' must be an array");
+      }
+      const shellArray = step.shell as unknown[];
+      if (shellArray.length === 0) {
+        validationError(
+          stepIndex,
+          "'shell' cannot be empty",
+          'Shell configuration must have at least one element (program name)'
+        );
+      }
+      for (let i = 0; i < shellArray.length; i++) {
+        if (typeof shellArray[i] !== 'string') {
+          validationError(stepIndex, `'shell[${i}]' must be a string`);
+        }
+      }
+    }
   }
 
   // Choose step validations
@@ -229,6 +249,23 @@ function preValidateWorkflow(parsed: unknown): void {
   // Check name if provided
   if ('name' in workflow && workflow.name !== undefined && typeof workflow.name !== 'string') {
     throw new Error("Invalid workflow structure:\n  - 'name' must be a string");
+  }
+
+  // Check shell if provided
+  if ('shell' in workflow && workflow.shell !== undefined) {
+    if (!Array.isArray(workflow.shell)) {
+      throw new Error("Invalid workflow structure:\n  - 'shell' must be an array");
+    }
+    if (workflow.shell.length === 0) {
+      throw new Error(
+        "Invalid workflow structure:\n  - 'shell' cannot be empty\n    Reason: Shell configuration must have at least one element (program name)"
+      );
+    }
+    for (let i = 0; i < workflow.shell.length; i++) {
+      if (typeof workflow.shell[i] !== 'string') {
+        throw new Error(`Invalid workflow structure:\n  - 'shell[${i}]' must be a string`);
+      }
+    }
   }
 
   // Check steps

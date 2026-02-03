@@ -36,6 +36,11 @@ task-pipeliner run basic.json
   - Type to filter options instantly
   - Arrow key navigation
   - Useful for long lists (countries, languages, frameworks, etc.)
+- **shell-example.json** - Shell configuration examples
+  - Global and step-level shell configuration
+  - Default: uses your current shell (`$SHELL`)
+- **shell-windows-example.json** - Windows shell configuration
+  - cmd.exe, PowerShell, pwsh, Git Bash, WSL examples
 
 ### Advanced Examples
 
