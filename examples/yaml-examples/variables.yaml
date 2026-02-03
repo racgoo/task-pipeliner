@@ -1,5 +1,11 @@
 name: Variables Example
 
+# ⚠️ YAML Syntax Important Note:
+# When using {{variable}} in commands:
+# ✅ SAFE: - run: echo "Building {{version}}..."
+# ✅ SAFE: - run: 'echo "mode: {{mode}}"'  (wrapped in single quotes)
+# ❌ ERROR: - run: echo "mode: {{mode}}"   (quotes + colon before variable)
+
 steps:
   # 1. Enter project name
   - prompt:

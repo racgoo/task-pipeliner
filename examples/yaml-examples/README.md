@@ -28,6 +28,7 @@ These are workflow definitions only - no project files included.
 - **`variables.yaml`** - Variable substitution examples
   - Using `{{variable}}` syntax
   - Variables from prompts and choices
+  - **⚠️ YAML Syntax:** When using `{{variable}}` with quotes and colons, wrap command in single quotes: `'echo "mode: {{var}}"'`
 
 - **`parallel.yaml`** - Parallel execution examples
   - Running multiple steps simultaneously

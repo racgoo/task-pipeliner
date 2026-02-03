@@ -264,7 +264,9 @@ export default function WorkflowBuilder() {
             />
           </div>
           <div className="variable-hint">
-            <strong>💡 Variable Usage:</strong> Use <code>{'{{variableName}}'}</code> in commands to reference variables from <code>prompt</code> or <code>choose</code> steps. Variables are highlighted in <span className="variable-highlight">green</span>.
+            <strong>💡 Variable Usage:</strong> Use <code>{'{{variableName}}'}</code> or <code>{'{{ variableName }}'}</code> (with spaces) in commands to reference variables from <code>prompt</code> or <code>choose</code> steps. Variables are highlighted in <span className="variable-highlight">green</span>.
+            <br />
+            <strong>⚠️ YAML Syntax:</strong> If command contains quotes and colons before variables, wrap entire command in single quotes: <code>{'\'echo "mode: {{var}}\"\''}</code>
           </div>
         </div>
       </div>

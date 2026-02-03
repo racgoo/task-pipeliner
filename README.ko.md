@@ -1033,11 +1033,36 @@ when:
 
 ### 변수 치환
 
-변수는 `{{variable}}` 문법을 사용하여 명령에서 사용할 수 있습니다.
+변수는 `{{variable}}` 문법을 사용하여 명령에서 사용할 수 있습니다. 선택적으로 공백을 사용할 수 있습니다: `{{var}}`, `{{ var }}`, `{{  var  }}` 모두 작동합니다.
 
 **문법:**
 ```yaml
 run: echo "{{variableName}}"
+# 또는 선택적으로 공백 사용
+run: echo "{{ variableName }}"
+```
+
+**⚠️ 중요: YAML 문법 규칙**
+
+명령어에서 `{{variable}}`을 사용할 때, 파싱 오류를 방지하기 위해 다음 규칙을 따르세요:
+
+✅ **안전한 패턴:**
+```yaml
+# 단어로 시작 (따옴표 불필요)
+- run: echo "Building {{version}}..."
+- run: npm run build --version={{version}}
+
+# 전체 명령어를 작은따옴표로 감싸기
+- run: 'echo "Selected: {{mode}}"'
+```
+
+❌ **문제가 되는 패턴:**
+```yaml
+# 금지: 따옴표 + 변수 앞 콜론
+- run: echo "mode: {{mode}}"        # ❌ YAML 파싱 에러!
+
+# 해결: 전체 명령어를 작은따옴표로 감싸기
+- run: 'echo "mode: {{mode}}"'      # ✅ 정상 작동
 ```
 
 **예제:**

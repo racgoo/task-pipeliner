@@ -16,7 +16,9 @@ function findVariableValue(
 ): string {
   // First, check variables
   if (workspace.hasVariable(variableName)) {
-    return workspace.getVariable(variableName) || defaultValue;
+    const value = workspace.getVariable(variableName);
+    // Return empty string if value is explicitly set to empty, otherwise use default
+    return value !== null && value !== undefined ? value : defaultValue;
   }
 
   // Second, check facts
@@ -27,7 +29,9 @@ function findVariableValue(
 
   // Third, check choices
   if (workspace.hasChoice(variableName)) {
-    return workspace.getChoice(variableName) || defaultValue;
+    const value = workspace.getChoice(variableName);
+    // Return empty string if value is explicitly set to empty, otherwise use default
+    return value !== null && value !== undefined ? value : defaultValue;
   }
 
   // If not found, return the original template text
@@ -37,9 +41,11 @@ function findVariableValue(
 /**
  * Substitute {{variable}} template variables in string with actual values
  * Example: "Hello {{name}}" becomes "Hello John" if name variable is "John"
+ * Supports optional whitespace: {{var}}, {{ var }}, {{  var  }} all work
  */
 export function substituteVariables(template: string, workspace: Workspace): string {
-  const variablePattern = /\{\{(\w+)\}\}/g;
+  // Allow optional whitespace around variable name: {{var}}, {{ var }}, etc.
+  const variablePattern = /\{\{\s*(\w+)\s*\}\}/g;
 
   return template.replace(variablePattern, (originalMatch, variableName) => {
     return findVariableValue(variableName, workspace, originalMatch);

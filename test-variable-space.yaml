@@ -1,0 +1,10 @@
+name: 변수 공백 테스트
+steps:
+  - prompt:
+      message: "Enter mode:"
+      as: mode
+      default: "dev"
+  
+  - run: 'echo "No space: {{mode}}"'
+  - run: 'echo "With space: {{ mode }}"'
+  - run: 'echo "Extra spaces: {{  mode  }}"'

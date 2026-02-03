@@ -1033,11 +1033,36 @@ Nest conditions to create complex logic.
 
 ### Variable Substitution
 
-Variables can be used in commands using the `{{variable}}` syntax.
+Variables can be used in commands using the `{{variable}}` syntax. Optional whitespace is supported: `{{var}}`, `{{ var }}`, `{{  var  }}` all work.
 
 **Syntax:**
 ```yaml
 run: echo "{{variableName}}"
+# or with optional spaces
+run: echo "{{ variableName }}"
+```
+
+**⚠️ Important YAML Syntax Rules:**
+
+When using `{{variable}}` in commands, follow these rules to avoid parsing errors:
+
+✅ **Safe patterns:**
+```yaml
+# Start with a word (no quotes needed)
+- run: echo "Building {{version}}..."
+- run: npm run build --version={{version}}
+
+# Wrap entire command in single quotes
+- run: 'echo "Selected: {{mode}}"'
+```
+
+❌ **Problematic patterns:**
+```yaml
+# DO NOT: quotes + colons before variables
+- run: echo "mode: {{mode}}"        # ❌ YAML parsing error!
+
+# FIX: Wrap entire command in single quotes
+- run: 'echo "mode: {{mode}}"'      # ✅ Works correctly
 ```
 
 **Examples:**

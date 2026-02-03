@@ -37,13 +37,43 @@ If the `as` field is provided, a variable is created with that name. If omitted,
 
 ## Variable Substitution
 
-Variables can be used in commands using the `{{variableName}}` syntax.
+Variables can be used in commands using the `{{variableName}}` syntax. Optional whitespace is supported: `{{var}}`, `{{ var }}`, and `{{  var  }}` all work.
 
 ### Syntax
 
 ```yaml
 run: echo "{{variableName}}"
+# or with optional spaces
+run: echo "{{ variableName }}"
 ```
+
+### ⚠️ Important YAML Syntax Rules
+
+When using `{{variable}}` in commands, follow these YAML quoting rules to avoid parsing errors:
+
+#### ✅ Safe Patterns
+```yaml
+# Start with a word (no quotes needed)
+- run: echo "Building {{version}}..."
+- run: npm run build --version={{version}}
+
+# Wrap entire command in single quotes
+- run: 'echo "Selected: {{mode}}"'
+- run: 'echo "{{project}} v{{version}}"'
+```
+
+#### ❌ Problematic Patterns
+```yaml
+# DO NOT start with quotes then use colons before variables
+- run: echo "mode: {{mode}}"        # ❌ YAML parsing error!
+
+# Fix: Wrap entire command in single quotes
+- run: 'echo "mode: {{mode}}"'      # ✅ Works correctly
+```
+
+**Why?** YAML interprets `key: value` as a mapping. When you write `run: echo "mode: {{mode}}"`, the parser sees `mode:` as a key and causes a "Nested mappings" error.
+
+**Rule of thumb:** If your command contains both quotes and colons before `{{variable}}`, wrap the entire command in single quotes (`'...'`).
 
 ### Examples
 

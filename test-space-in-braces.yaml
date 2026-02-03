@@ -1,0 +1,8 @@
+name: 공백 테스트
+steps:
+  - prompt:
+      message: "Enter mode:"
+      as: mode
+      default: "dev"
+  
+  - run: echo "selected mode: {{ mode }}"

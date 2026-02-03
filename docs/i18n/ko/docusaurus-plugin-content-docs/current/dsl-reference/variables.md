@@ -37,13 +37,43 @@
 
 ## 변수 치환
 
-변수는 `{{variableName}}` 문법을 사용하여 명령에서 사용할 수 있습니다.
+변수는 `{{variableName}}` 문법을 사용하여 명령에서 사용할 수 있습니다. 선택적으로 공백을 사용할 수 있습니다: `{{var}}`, `{{ var }}`, `{{  var  }}` 모두 작동합니다.
 
 ### 문법
 
 ```yaml
 run: echo "{{variableName}}"
+# 또는 선택적으로 공백 사용
+run: echo "{{ variableName }}"
 ```
+
+### ⚠️ 중요: YAML 문법 규칙
+
+명령어에서 `{{variable}}`을 사용할 때, YAML 파싱 오류를 방지하기 위해 다음 규칙을 따르세요:
+
+#### ✅ 안전한 패턴
+```yaml
+# 단어로 시작 (따옴표 불필요)
+- run: echo "Building {{version}}..."
+- run: npm run build --version={{version}}
+
+# 전체 명령어를 작은따옴표로 감싸기
+- run: 'echo "Selected: {{mode}}"'
+- run: 'echo "{{project}} v{{version}}"'
+```
+
+#### ❌ 문제가 되는 패턴
+```yaml
+# 따옴표로 시작한 후 변수 앞에 콜론 사용 금지
+- run: echo "mode: {{mode}}"        # ❌ YAML 파싱 에러!
+
+# 해결: 전체 명령어를 작은따옴표로 감싸기
+- run: 'echo "mode: {{mode}}"'      # ✅ 정상 작동
+```
+
+**이유:** YAML은 `key: value`를 매핑(mapping)으로 해석합니다. `run: echo "mode: {{mode}}"`를 작성하면, 파서가 `mode:`를 키로 인식하여 "Nested mappings" 에러가 발생합니다.
+
+**간단한 규칙:** 명령어에 따옴표와 콜론이 `{{variable}}` 앞에 함께 있으면, 전체 명령어를 작은따옴표(`'...'`)로 감싸세요.
 
 ### 예제
 
