@@ -609,8 +609,10 @@ Execute multiple steps simultaneously. Like `steps`, `parallel` contains an arra
 ```
 
 **Properties:**
-- `parallel` (required): `array` of `Step` objects - Steps to execute in parallel (same format as `steps`, each step starts with `-`)
+- `parallel` (required): `array` of steps - Steps to execute in parallel. **Only `run`, nested `parallel`, and `fail` steps are allowed.** `choose` and `prompt` (user input steps) are **not allowed** inside `parallel`—user input cannot run in parallel.
 - `when` (optional): `Condition` - Execute parallel block only if condition is met
+
+**Restriction:** Steps inside `parallel` may only be `run`, nested `parallel`, or `fail`. Do **not** use `choose` or `prompt` inside `parallel`; the workflow validator will reject it and report an error (e.g. `'choose' step is not allowed inside 'parallel' block`).
 
 **Examples:**
 ```yaml
@@ -640,20 +642,12 @@ Execute multiple steps simultaneously. Like `steps`, `parallel` contains an arra
     - run: npm run test
     - run: npm run lint
 
-# parallel can contain any step type (run, choose, prompt, etc.)
+# Nested parallel (allowed); only run / parallel / fail inside parallel
 - parallel:
     - run: npm run test
-    - choose:
-        message: "Run lint?"
-        options:
-          - id: yes
-            label: "Yes"
-          - id: no
-            label: "No"
-        as: runLint
-    - prompt:
-        message: "Enter version:"
-        as: version
+    - parallel:
+        - run: npm run lint
+        - run: npm run typecheck
 ```
 
 **Behavior:**
@@ -661,6 +655,7 @@ Execute multiple steps simultaneously. Like `steps`, `parallel` contains an arra
 - Workflow waits for all parallel steps to complete before continuing
 - If any step fails, the workflow stops
 - Each parallel branch has its own isolated workspace state (cloned)
+- **`choose` and `prompt` are not allowed inside `parallel`** (user input cannot run in parallel; use them in sequential steps before or after a `parallel` block)
 
 ---
 

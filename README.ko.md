@@ -609,8 +609,10 @@ steps:
 ```
 
 **속성:**
-- `parallel` (필수): `Step` 객체의 `array` - 병렬로 실행할 단계 (`steps`와 동일한 형식, 각 step은 `-`로 시작)
+- `parallel` (필수): 단계들의 `array` - 병렬로 실행할 단계. **`run`, 중첩 `parallel`, `fail` 스텝만 허용됩니다.** `choose`와 `prompt`(사용자 입력 스텝)는 `parallel` **안에서 사용할 수 없습니다**—사용자 입력은 병렬로 실행되지 않습니다.
 - `when` (선택): `Condition` - 조건이 충족될 때만 병렬 블록 실행
+
+**제한:** `parallel` 내부의 스텝은 `run`, 중첩 `parallel`, `fail`만 사용할 수 있습니다. `parallel` 안에서 `choose`나 `prompt`를 사용하면 안 되며, 워크플로우 검증 시 에러가 발생합니다 (예: `'choose' step is not allowed inside 'parallel' block`).
 
 **예제:**
 ```yaml
@@ -640,20 +642,12 @@ steps:
     - run: npm run test
     - run: npm run lint
 
-# parallel은 모든 step 타입을 포함할 수 있습니다 (run, choose, prompt 등)
+# 중첩 parallel (허용); parallel 내부에는 run / parallel / fail만 사용
 - parallel:
     - run: npm run test
-    - choose:
-        message: "린트를 실행하시겠습니까?"
-        options:
-          - id: yes
-            label: "예"
-          - id: no
-            label: "아니오"
-        as: runLint
-    - prompt:
-        message: "버전을 입력하세요:"
-        as: version
+    - parallel:
+        - run: npm run lint
+        - run: npm run typecheck
 ```
 
 **동작:**
@@ -661,6 +655,7 @@ steps:
 - 워크플로우는 모든 병렬 단계가 완료될 때까지 기다립니다
 - 어떤 단계라도 실패하면 워크플로우가 중지됩니다
 - 각 병렬 브랜치는 자체 격리된 워크스페이스 상태를 가집니다 (복제됨)
+- **`choose`와 `prompt`는 `parallel` 안에서 사용할 수 없습니다** (사용자 입력은 병렬로 실행되지 않음; `parallel` 블록 앞뒤의 순차 스텝에서만 사용하세요)
 
 ---
 

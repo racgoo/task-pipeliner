@@ -206,8 +206,10 @@ Execute multiple steps simultaneously.
 
 ### Properties
 
-- `parallel` (required): `array` of `Step` objects - Steps to execute in parallel
+- `parallel` (required): `array` of steps - Steps to execute in parallel. **Only `run`, nested `parallel`, and `fail` steps are allowed.** `choose` and `prompt` are **not allowed** inside `parallel` (user input cannot run in parallel).
 - `when` (optional): `Condition` - Execute parallel block only if condition is met
+
+**Restriction:** Do not use `choose` or `prompt` inside `parallel`; the workflow validator will reject it.
 
 ### Examples
 
@@ -217,6 +219,13 @@ Execute multiple steps simultaneously.
     - run: npm run test:unit
     - run: npm run test:integration
     - run: npm run lint
+
+# Nested parallel (allowed); only run / parallel / fail inside parallel
+- parallel:
+    - run: npm run test
+    - parallel:
+        - run: npm run lint
+        - run: npm run typecheck
 ```
 
 ---
