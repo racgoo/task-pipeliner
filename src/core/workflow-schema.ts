@@ -108,14 +108,32 @@ const PromptStepSchema = z.object({
   when: ConditionSchema.optional(),
 });
 
-// Recursive step schema for parallel steps
+// Steps allowed inside parallel blocks (no user input steps like choose/prompt)
+// This prevents confusing UX where multiple prompts would compete for input
+const ParallelAllowedStepSchema: z.ZodTypeAny = z.lazy(() =>
+  z.union([
+    RunStepSchema,
+    z.object({
+      parallel: z.array(ParallelAllowedStepSchema), // Nested parallel also restricted
+      when: ConditionSchema.optional(),
+    }),
+    z.object({
+      fail: z.object({
+        message: z.string(),
+      }),
+      when: ConditionSchema.optional(),
+    }),
+  ])
+);
+
+// Full step schema (all step types allowed at top level)
 const StepSchema: z.ZodTypeAny = z.lazy(() =>
   z.union([
     RunStepSchema,
     ChooseStepSchema,
     PromptStepSchema,
     z.object({
-      parallel: z.array(StepSchema),
+      parallel: z.array(ParallelAllowedStepSchema), // Parallel uses restricted schema
       when: ConditionSchema.optional(),
     }),
     z.object({

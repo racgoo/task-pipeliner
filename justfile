@@ -18,7 +18,7 @@ inject-force:
 
 build-binary: 
     just build
-    npx pkg -y dist/index.cjs --targets node18-macos-arm64 --output ./binary-result/tp-test --config package.json
+    npx -y pkg dist/index.cjs --targets node18-macos-arm64 --output ./binary-result/tp-test --config package.json
 
 
 install:
@@ -107,5 +107,5 @@ lint:
     just lint-rs
 
 update-license:
-    npx license-checker --json --onlyDirectDependencies --excludePrivatePackages | jq -r 'to_entries | .[] | "\(.key): \(.value.licenses // .value.license // "Unknown")"' | sort > OPEN_SOURCE_LICENSE
+    npx -y license-checker --json --onlyDirectDependencies --excludePrivatePackages | jq -r 'to_entries | .[] | "\(.key): \(.value.licenses // .value.license // "Unknown")"' | sort > OPEN_SOURCE_LICENSE
     echo "License information saved to OPEN_SOURCE_LICENSE"
