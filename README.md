@@ -27,6 +27,8 @@
 
 - **Execution history** - Track and review past workflow executions with detailed step-by-step records
 
+- **Workflow scheduling** - Schedule workflows to run automatically at specified times using cron expressions
+
 ## 🔗 Resources
 
 ### Documentation & Tools
@@ -63,6 +65,16 @@ tp history         # View workflow execution history
 tp history show    # Select and view a specific history
 tp history remove   # Remove a specific history
 tp history remove-all # Remove all histories
+```
+
+**Workflow Scheduling:**
+```bash
+tp schedule        # View all schedules
+tp schedule add    # Add a new workflow schedule
+tp schedule add workflow.yaml  # Add schedule for specific workflow
+tp schedule remove # Remove a schedule
+tp schedule toggle # Enable/disable a schedule
+tp schedule start  # Start scheduler daemon
 ```
 
 ## 🚀 Quick Start
@@ -1284,6 +1296,83 @@ Each record contains:
 - **output**: Command output (stdout/stderr) and success status
 - **duration**: Execution time in milliseconds
 - **status**: `"success"` or `"failure"`
+
+---
+
+## ⏰ Workflow Scheduling
+
+Schedule workflows to run automatically at specified times using cron expressions.
+
+### Adding a Schedule
+
+Add a new workflow schedule:
+
+```bash
+tp schedule add workflow.yaml
+```
+
+You'll be prompted for:
+- **Schedule name** (optional): A friendly name for the schedule
+- **Cron expression**: When to run the workflow (e.g., `0 9 * * *` for daily at 9 AM)
+- **Enable status**: Whether to enable the schedule immediately
+
+**Cron Expression Format:**
+```
+* * * * *
+│ │ │ │ │
+│ │ │ │ └─── Day of week (0-7, Sunday=0 or 7)
+│ │ │ └───── Month (1-12)
+│ │ └─────── Day of month (1-31)
+│ └───────── Hour (0-23)
+└─────────── Minute (0-59)
+```
+
+**Common Examples:**
+- `0 9 * * *` - Daily at 9:00 AM
+- `0 0 * * 1` - Weekly on Monday at midnight
+- `*/15 * * * *` - Every 15 minutes
+- `0 */2 * * *` - Every 2 hours
+- `0 9 * * 1-5` - Weekdays at 9:00 AM
+
+### Managing Schedules
+
+```bash
+# List all schedules
+tp schedule list
+
+# Remove a schedule
+tp schedule remove
+
+# Enable/disable a schedule
+tp schedule toggle
+```
+
+### Running the Scheduler
+
+Start the scheduler daemon to run workflows at their scheduled times:
+
+```bash
+tp schedule start
+```
+
+The scheduler will:
+- Run as a daemon process (stays running in the background)
+- Execute workflows at their scheduled times
+- Log all executions to `~/.pipeliner/workflow-history/`
+- Display real-time execution status
+
+**Press `Ctrl+C` to stop the scheduler**
+
+### Schedule Storage
+
+Schedules are stored in `~/.pipeliner/schedules/schedules.json`. Each schedule includes:
+- Unique ID
+- Workflow path
+- Cron expression
+- Enabled/disabled status
+- Last execution time
+
+All scheduled workflow executions are logged to the same history directory as manual runs (`~/.pipeliner/workflow-history/`), so you can review them using `tp history`.
 
 ---
 

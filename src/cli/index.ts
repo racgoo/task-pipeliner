@@ -31,6 +31,7 @@ import { WorkflowHistoryManager } from '../core/history';
 import { getParser } from '../core/parser';
 import type { History, Record as WorkflowRecord, Step } from '../types/workflow';
 import { ChoicePrompt } from './prompts';
+import { createScheduleCommand } from './schedule';
 import { formatDuration } from './ui';
 import { findNearestTpDirectory, getVersion, setSilentMode } from './utils';
 
@@ -193,6 +194,12 @@ program
       process.exit(1);
     }
   });
+
+/**
+ * Schedule command group
+ * Manages workflow schedules
+ */
+program.addCommand(createScheduleCommand());
 
 /**
  * History command group
