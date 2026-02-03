@@ -6,7 +6,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config = {
   title: 'task-pipeliner',
-  tagline: '조건 기반 작업 파이프라인 실행기',
+  tagline: 'Condition-based Task Pipeline Runner',
   favicon: 'img/favicon.webp',
 
   // Search engine verification meta tags
@@ -33,7 +33,7 @@ const config = {
   },
 
   // Set the production url of your site here
-  url: 'https://your-docusaurus-site.example.com',
+  url: 'https://task-pipeliner.racgoo.com',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
@@ -90,6 +90,16 @@ const config = {
   ],
 
   themeConfig: {
+    metadata: [
+      {
+        name: 'description',
+        content: 'A modern workflow automation tool that lets you define complex task pipelines using simple YAML or JSON files. Supports conditional execution, parallel processing, and interactive prompts.',
+      },
+      {
+        property: 'og:description',
+        content: 'A modern workflow automation tool that lets you define complex task pipelines using simple YAML or JSON files.',
+      },
+    ],
     colorMode: {
       respectPrefersColorScheme: true,
     },
