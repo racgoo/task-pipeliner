@@ -1,0 +1,47 @@
+{
+  "name": "Simple Example",
+  "steps": [
+    {
+      "run": "echo \"Hello, World!\""
+    },
+    {
+      "choose": {
+        "message": "What would you like to do?",
+        "options": [
+          {
+            "id": "greet",
+            "label": "Say hello"
+          },
+          {
+            "id": "build",
+            "label": "Build project"
+          }
+        ],
+        "as": "action"
+      }
+    },
+    {
+      "when": {
+        "var": {
+          "action": "greet"
+        }
+      },
+      "run": "echo \"Greetings!\""
+    },
+    {
+      "when": {
+        "var": {
+          "action": "build"
+        }
+      },
+      "run": "echo \"Building...\""
+    },
+    {
+      "when": {
+        "file": "./package.json"
+      },
+      "run": "echo \"package.json found\""
+    }
+  ]
+}
+

@@ -1,0 +1,139 @@
+{
+  "name": "File Checks Example",
+  "steps": [
+    {
+      "run": "echo \"Building project...\""
+    },
+    {
+      "when": {
+        "file": "./dist"
+      },
+      "run": "echo \"Build output found\""
+    },
+    {
+      "when": {
+        "not": {
+          "file": "./dist"
+        }
+      },
+      "fail": {
+        "message": "Build failed: dist directory not found"
+      }
+    },
+    {
+      "run": "echo \"Running tests...\""
+    },
+    {
+      "when": {
+        "file": "./test-results"
+      },
+      "run": "echo \"Test results found\""
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "file": "./dist"
+          },
+          {
+            "file": "./package.json"
+          }
+        ]
+      },
+      "run": "echo \"All required files present\""
+    },
+    {
+      "when": {
+        "not": {
+          "file": "./.env"
+        }
+      },
+      "run": "echo \"Warning: .env file not found\""
+    },
+    {
+      "choose": {
+        "message": "Select environment:",
+        "options": [
+          {
+            "id": "dev",
+            "label": "Development"
+          },
+          {
+            "id": "prod",
+            "label": "Production"
+          }
+        ],
+        "as": "env"
+      }
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "env": "dev"
+            }
+          },
+          {
+            "file": "./.env.development"
+          }
+        ]
+      },
+      "run": "echo \"Development config found\""
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "env": "prod"
+            }
+          },
+          {
+            "file": "./.env.production"
+          }
+        ]
+      },
+      "run": "echo \"Production config found\""
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "env": "prod"
+            }
+          },
+          {
+            "not": {
+              "file": "./.env.production"
+            }
+          }
+        ]
+      },
+      "fail": {
+        "message": "Production config file (.env.production) not found"
+      }
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "env": "dev"
+            }
+          },
+          {
+            "not": {
+              "file": "./.env.development"
+            }
+          }
+        ]
+      },
+      "fail": {
+        "message": "Development config file (.env.development) not found"
+      }
+    }
+  ]
+}
+

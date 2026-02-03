@@ -1,0 +1,7 @@
+name: Run Tests
+
+steps:
+  - run: echo "Running tests..."
+  - run: npm test
+  - run: echo "✓ Tests completed"
+

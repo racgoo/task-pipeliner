@@ -1,0 +1,56 @@
+{
+  "name": "Basic Workflow Example",
+  "steps": [
+    {
+      "run": "echo \"Building...\""
+    },
+    {
+      "choose": {
+        "message": "Deploy to which environment?",
+        "options": [
+          {
+            "id": "staging",
+            "label": "Staging"
+          },
+          {
+            "id": "prod",
+            "label": "Production"
+          }
+        ],
+        "as": "env"
+      }
+    },
+    {
+      "when": {
+        "var": {
+          "env": "staging"
+        }
+      },
+      "run": "echo \"Deploying to staging...\""
+    },
+    {
+      "when": {
+        "var": {
+          "env": "prod"
+        }
+      },
+      "run": "echo \"Deploying to production...\""
+    },
+    {
+      "when": {
+        "file": "./dist"
+      },
+      "run": "echo \"Build output exists\""
+    },
+    {
+      "prompt": {
+        "message": "Enter version:",
+        "as": "version"
+      }
+    },
+    {
+      "run": "echo \"Building version {{version}}\""
+    }
+  ]
+}
+

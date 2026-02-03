@@ -1,0 +1,360 @@
+{
+  "name": "Advanced Workflow Example",
+  "steps": [
+    {
+      "parallel": [
+        {
+          "run": "echo \"Building frontend...\"",
+          "timeout": 300
+        },
+        {
+          "run": "echo \"Building backend...\"",
+          "timeout": 300
+        },
+        {
+          "run": "echo \"Running unit tests...\"",
+          "timeout": 180
+        }
+      ]
+    },
+    {
+      "when": {
+        "file": "./dist/frontend"
+      },
+      "run": "echo \"Frontend build completed\""
+    },
+    {
+      "when": {
+        "file": "./dist/backend"
+      },
+      "run": "echo \"Backend build completed\""
+    },
+    {
+      "choose": {
+        "message": "Select deployment environment:",
+        "options": [
+          {
+            "id": "dev",
+            "label": "Development"
+          },
+          {
+            "id": "staging",
+            "label": "Staging"
+          },
+          {
+            "id": "prod",
+            "label": "Production"
+          }
+        ],
+        "as": "env"
+      }
+    },
+    {
+      "when": {
+        "var": {
+          "env": "prod"
+        }
+      },
+      "choose": {
+        "message": "Production requires approval. Continue?",
+        "options": [
+          {
+            "id": "approve_prod",
+            "label": "Yes, deploy to production"
+          },
+          {
+            "id": "cancel_prod",
+            "label": "Cancel"
+          }
+        ],
+        "as": "prodApproval"
+      }
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "env": "prod"
+            }
+          },
+          {
+            "var": {
+              "prodApproval": "approve_prod"
+            }
+          }
+        ]
+      },
+      "run": "echo \"Production deployment approved\""
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "env": "prod"
+            }
+          },
+          {
+            "var": {
+              "prodApproval": "cancel_prod"
+            }
+          }
+        ]
+      },
+      "fail": {
+        "message": "Production deployment cancelled by user"
+      }
+    },
+    {
+      "when": {
+        "any": [
+          {
+            "var": {
+              "env": "staging"
+            }
+          },
+          {
+            "var": {
+              "prodApproval": "approve_prod"
+            }
+          }
+        ]
+      },
+      "choose": {
+        "message": "Select deployment strategy:",
+        "options": [
+          {
+            "id": "blue_green",
+            "label": "Blue-Green Deployment"
+          },
+          {
+            "id": "rolling",
+            "label": "Rolling Update"
+          },
+          {
+            "id": "canary",
+            "label": "Canary Release"
+          }
+        ],
+        "as": "strategy"
+      }
+    },
+    {
+      "when": {
+        "any": [
+          {
+            "var": {
+              "env": "staging"
+            }
+          },
+          {
+            "var": {
+              "prodApproval": "approve_prod"
+            }
+          }
+        ]
+      },
+      "parallel": [
+        {
+          "when": {
+            "any": [
+              {
+                "var": {
+                  "strategy": "blue_green"
+                }
+              },
+              {
+                "var": {
+                  "strategy": "canary"
+                }
+              }
+            ]
+          },
+          "run": "echo \"Deploying web service...\""
+        },
+        {
+          "when": {
+            "any": [
+              {
+                "var": {
+                  "strategy": "blue_green"
+                }
+              },
+              {
+                "var": {
+                  "strategy": "rolling"
+                }
+              }
+            ]
+          },
+          "run": "echo \"Deploying API service...\""
+        },
+        {
+          "when": {
+            "var": {
+              "strategy": "canary"
+            }
+          },
+          "run": "echo \"Deploying canary version...\""
+        },
+        {
+          "when": {
+            "var": {
+              "strategy": "rolling"
+            }
+          },
+          "run": "echo \"Rolling update in progress...\""
+        }
+      ]
+    },
+    {
+      "when": {
+        "any": [
+          {
+            "var": {
+              "strategy": "blue_green"
+            }
+          },
+          {
+            "var": {
+              "strategy": "rolling"
+            }
+          },
+          {
+            "var": {
+              "strategy": "canary"
+            }
+          }
+        ]
+      },
+      "parallel": [
+        {
+          "run": "echo \"Running smoke tests...\""
+        },
+        {
+          "run": "echo \"Checking health endpoints...\""
+        },
+        {
+          "when": {
+            "var": {
+              "strategy": "canary"
+            }
+          },
+          "run": "echo \"Monitoring canary metrics...\""
+        }
+      ]
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "prodApproval": "approve_prod"
+            }
+          },
+          {
+            "file": "./test-results/smoke.json"
+          }
+        ]
+      },
+      "parallel": [
+        {
+          "run": "echo \"Running security scan...\""
+        },
+        {
+          "run": "echo \"Running performance tests...\""
+        }
+      ]
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "prodApproval": "approve_prod"
+            }
+          },
+          {
+            "file": "./test-results/security.json"
+          }
+        ]
+      },
+      "choose": {
+        "message": "All checks passed. Final approval for production?",
+        "options": [
+          {
+            "id": "final_approve",
+            "label": "Yes, proceed to production"
+          },
+          {
+            "id": "final_cancel",
+            "label": "No, abort deployment"
+          }
+        ],
+        "as": "finalApproval"
+      }
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "prodApproval": "approve_prod"
+            }
+          },
+          {
+            "var": {
+              "finalApproval": "final_approve"
+            }
+          }
+        ]
+      },
+      "run": "echo \"🚀 Deploying to production...\"",
+      "timeout": 600,
+      "retry": 3
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "prodApproval": "approve_prod"
+            }
+          },
+          {
+            "var": {
+              "finalApproval": "final_cancel"
+            }
+          }
+        ]
+      },
+      "fail": {
+        "message": "Production deployment cancelled at final step"
+      }
+    },
+    {
+      "when": {
+        "any": [
+          {
+            "var": {
+              "env": "dev"
+            }
+          },
+          {
+            "var": {
+              "env": "staging"
+            }
+          },
+          {
+            "var": {
+              "finalApproval": "final_approve"
+            }
+          }
+        ]
+      },
+      "run": "echo \"✅ Deployment completed successfully!\""
+    }
+  ]
+}
+

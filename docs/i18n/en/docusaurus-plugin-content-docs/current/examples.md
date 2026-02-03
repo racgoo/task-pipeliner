@@ -1,0 +1,140 @@
+# Examples
+
+Check out task-pipeliner usage examples.
+
+## Project Examples
+
+Check out the `examples/` directory for complete project examples:
+
+### Monorepo Example {#monorepo-example}
+
+- **`monorepo-example/`** - Monorepo workflow with multiple projects
+
+### Simple Project Example {#simple-project}
+
+- **`simple-project/`** - Simple single-project workflow
+
+### React App Example
+
+- **`react-app/`** - React application build and deployment
+
+## YAML Examples
+
+Check out `examples/yaml-examples/` for YAML workflow examples:
+
+- **`basic.yaml`** - Basic workflow with choices and conditions
+- **`simple.yaml`** - Minimal workflow example
+- **`parallel.yaml`** - Parallel execution example
+- **`conditions.yaml`** - Various condition types
+- **`file-checks.yaml`** - File existence checks
+- **`prompt.yaml`** - User input prompts
+- **`variables.yaml`** - Variable substitution examples
+- **`var-value-example.yaml`** - Variable value comparison examples
+- **`choice-as-example.yaml`** - Using `as` keyword in choices
+- **`base-dir-example.yaml`** - baseDir configuration example
+- **`timeout-retry-example.yaml`** - Timeout and retry features
+
+### CI/CD Pipeline {#cicd-pipeline}
+
+- **`cicd.yaml`** - CI/CD pipeline example
+
+- **`advanced.yaml`** - Advanced workflow patterns
+- **`multi-choice.yaml`** - Multiple sequential choices
+- **`react.yaml`** - React-specific workflow
+
+## JSON Examples
+
+Check out `examples/json-examples/` for JSON workflow examples (equivalent to YAML examples):
+
+- **`basic.json`** - Basic workflow with choices and conditions
+- **`simple.json`** - Minimal workflow example
+- **`parallel.json`** - Parallel execution example
+- **`conditions.json`** - Condition evaluation examples
+- **`prompt.json`** - User input prompts
+- **`variables.json`** - Variable substitution examples
+
+**Note:** Both YAML and JSON formats are fully supported. Choose the format that fits your preference - YAML for readability, JSON for programmatic generation.
+
+## Quick Examples
+
+### Basic Workflow
+
+```yaml
+name: Basic Workflow
+
+steps:
+  - run: echo "Hello, World!"
+```
+
+### Conditional Execution
+
+```yaml
+name: Conditional Execution
+
+steps:
+  - when:
+      file: ./package.json
+    run: npm install
+  
+  - when:
+      not:
+        file: ./dist
+    run: npm run build
+```
+
+### User Choice
+
+```yaml
+name: User Choice
+
+steps:
+  - choose:
+      message: "Select environment:"
+      options:
+        - id: dev
+          label: "Development"
+        - id: staging
+          label: "Staging"
+        - id: prod
+          label: "Production"
+      as: env
+  
+  - when:
+      var:
+        env: prod
+    run: echo "Deploying to production"
+```
+
+### Variable Usage
+
+```yaml
+name: Variable Usage
+
+steps:
+  - prompt:
+      message: "Enter version number:"
+      as: version
+      default: "1.0.0"
+  
+  - run: echo "Building version {{version}}"
+  
+  - run: npm version {{version}}
+```
+
+### Parallel Execution
+
+```yaml
+name: Parallel Execution
+
+steps:
+  - parallel:
+      - run: npm run test:unit
+      - run: npm run test:integration
+      - run: npm run lint
+```
+
+## Next Steps
+
+- **[Getting Started](/docs/getting-started)** - From installation to your first workflow
+- **[DSL Reference](/docs/dsl-reference/workflow-structure)** - Complete syntax guide
+

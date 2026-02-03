@@ -1,0 +1,102 @@
+{
+  "name": "React Build Workflow",
+  "steps": [
+    {
+      "run": "npm install"
+    },
+    {
+      "run": "npm run lint"
+    },
+    {
+      "run": "npm run build"
+    },
+    {
+      "when": {
+        "file": "./dist"
+      },
+      "run": "echo \"Build successful! dist/ directory created\""
+    },
+    {
+      "choose": {
+        "message": "Where would you like to deploy?",
+        "options": [
+          {
+            "id": "staging",
+            "label": "Staging"
+          },
+          {
+            "id": "production",
+            "label": "Production"
+          }
+        ],
+        "as": "env"
+      }
+    },
+    {
+      "when": {
+        "var": {
+          "env": "staging"
+        }
+      },
+      "run": "echo \"Deploying to staging...\""
+    },
+    {
+      "when": {
+        "var": {
+          "env": "production"
+        }
+      },
+      "choose": {
+        "message": "Are you sure you want to deploy to production?",
+        "options": [
+          {
+            "id": "confirm",
+            "label": "Yes, deploy"
+          },
+          {
+            "id": "cancel",
+            "label": "Cancel"
+          }
+        ],
+        "as": "confirmProd"
+      }
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "env": "production"
+            }
+          },
+          {
+            "var": {
+              "confirmProd": "confirm"
+            }
+          }
+        ]
+      },
+      "run": "echo \"Deploying to production...\""
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "env": "production"
+            }
+          },
+          {
+            "var": {
+              "confirmProd": "cancel"
+            }
+          }
+        ]
+      },
+      "fail": {
+        "message": "Deployment cancelled"
+      }
+    }
+  ]
+}
+

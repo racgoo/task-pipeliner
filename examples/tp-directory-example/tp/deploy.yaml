@@ -1,0 +1,22 @@
+name: Deploy Application
+
+steps:
+  - choose:
+      message: "Select deployment environment:"
+      options:
+        - id: staging
+          label: "Staging"
+        - id: production
+          label: "Production"
+      as: env
+  
+  - when:
+      var:
+        env: staging
+    run: echo "Deploying to staging..."
+  
+  - when:
+      var:
+        env: production
+    run: echo "Deploying to production..."
+

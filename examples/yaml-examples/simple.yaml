@@ -1,0 +1,32 @@
+name: Simple Example
+
+steps:
+  # Step 1: Run a command
+  - run: echo "Hello, World!"
+
+  # Step 2: Ask for user choice
+  - choose:
+      message: "What would you like to do?"
+      options:
+        - id: greet
+          label: "Say hello"
+        - id: build
+          label: "Build project"
+      as: action
+
+  # Step 3: Conditional execution based on choice
+  - when:
+      var:
+        action: greet
+    run: echo "Greetings!"
+
+  - when:
+      var:
+        action: build
+    run: echo "Building..."
+
+  # Step 4: Check if file exists
+  - when:
+      file: ./package.json
+    run: echo "package.json found"
+

@@ -1,0 +1,94 @@
+{
+  "name": "Condition Examples",
+  "steps": [
+    {
+      "choose": {
+        "message": "Environment?",
+        "options": [
+          {
+            "id": "dev",
+            "label": "Development"
+          },
+          {
+            "id": "staging",
+            "label": "Staging"
+          },
+          {
+            "id": "prod",
+            "label": "Production"
+          }
+        ],
+        "as": "env"
+      }
+    },
+    {
+      "when": {
+        "var": {
+          "env": "prod"
+        }
+      },
+      "run": "echo \"Production deployment\""
+    },
+    {
+      "when": {
+        "file": "./dist"
+      },
+      "run": "echo \"Dist directory exists\""
+    },
+    {
+      "prompt": {
+        "message": "Enter project name:",
+        "as": "project_name"
+      }
+    },
+    {
+      "when": {
+        "var": "project_name"
+      },
+      "run": "echo \"Project: {{project_name}}\""
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "file": "./dist"
+          },
+          {
+            "var": {
+              "env": "prod"
+            }
+          }
+        ]
+      },
+      "run": "echo \"Production build with dist\""
+    },
+    {
+      "when": {
+        "any": [
+          {
+            "var": {
+              "env": "staging"
+            }
+          },
+          {
+            "var": {
+              "env": "prod"
+            }
+          }
+        ]
+      },
+      "run": "echo \"Deploying to server\""
+    },
+    {
+      "when": {
+        "not": {
+          "file": "./dist"
+        }
+      },
+      "fail": {
+        "message": "Build output not found"
+      }
+    }
+  ]
+}
+

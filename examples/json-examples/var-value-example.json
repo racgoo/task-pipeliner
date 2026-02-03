@@ -1,0 +1,88 @@
+{
+  "name": "Variable Value Comparison Example",
+  "steps": [
+    {
+      "choose": {
+        "message": "Select deployment environment:",
+        "options": [
+          {
+            "id": "dev",
+            "label": "Development"
+          },
+          {
+            "id": "staging",
+            "label": "Staging"
+          },
+          {
+            "id": "production",
+            "label": "Production"
+          }
+        ],
+        "as": "env"
+      }
+    },
+    {
+      "when": {
+        "var": {
+          "env": "dev"
+        }
+      },
+      "run": "echo \"Deploying to development...\""
+    },
+    {
+      "when": {
+        "var": {
+          "env": "staging"
+        }
+      },
+      "run": "echo \"Deploying to staging...\""
+    },
+    {
+      "when": {
+        "var": {
+          "env": "production"
+        }
+      },
+      "run": "echo \"Deploying to production...\""
+    },
+    {
+      "prompt": {
+        "message": "Enter version number:",
+        "as": "version",
+        "default": "1.0.0"
+      }
+    },
+    {
+      "when": {
+        "var": {
+          "version": "1.0.0"
+        }
+      },
+      "run": "echo \"Deploying stable version 1.0.0\""
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "env": "staging"
+            }
+          },
+          {
+            "var": {
+              "version": "2.0.0"
+            }
+          }
+        ]
+      },
+      "run": "echo \"Deploying version 2.0.0 to staging\""
+    },
+    {
+      "when": {
+        "var": "env"
+      },
+      "run": "echo \"Environment is set\""
+    }
+  ]
+}
+

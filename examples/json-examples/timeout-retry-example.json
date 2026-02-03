@@ -1,0 +1,44 @@
+{
+  "name": "Timeout and Retry Example",
+  "steps": [
+    {
+      "run": "echo \"This command has a 10 second timeout\"",
+      "timeout": 10
+    },
+    {
+      "run": "echo \"This command will retry up to 3 times if it fails\"",
+      "retry": 3
+    },
+    {
+      "run": "echo \"This command has both timeout (30s) and retry (2 attempts)\"",
+      "timeout": 30,
+      "retry": 2
+    },
+    {
+      "run": "echo \"Simulating network request...\"",
+      "timeout": 60,
+      "retry": 5
+    },
+    {
+      "run": "echo \"Building project (max 5 minutes)...\"",
+      "timeout": 300
+    },
+    {
+      "run": "echo \"Installing dependencies (will retry on failure)...\"",
+      "retry": 3
+    },
+    {
+      "when": {
+        "file": "./package.json"
+      },
+      "run": "echo \"Running npm install with timeout...\"",
+      "timeout": 120
+    },
+    {
+      "run": "echo \"Critical deployment step (will retry up to 5 times)...\"",
+      "retry": 5,
+      "timeout": 180
+    }
+  ]
+}
+

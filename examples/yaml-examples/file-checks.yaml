@@ -1,0 +1,83 @@
+name: File Checks Example
+
+steps:
+  # 1. Build project
+  - run: echo "Building project..."
+
+  # 2. Check build output
+  - when:
+      file: ./dist
+    run: echo "Build output found"
+
+  # 3. Handle build failure
+  - when:
+      not:
+        file: ./dist
+    fail:
+      message: "Build failed: dist directory not found"
+
+  # 4. Run tests
+  - run: echo "Running tests..."
+
+  # 5. Check test results
+  - when:
+      file: ./test-results
+    run: echo "Test results found"
+
+  # 6. Check multiple files
+  - when:
+      all:
+        - file: ./dist
+        - file: ./package.json
+    run: echo "All required files present"
+
+  # 7. Warn if file is missing
+  - when:
+      not:
+        file: ./.env
+    run: 'echo "Warning: .env file not found"'
+
+  # 8. Environment-specific file check
+  - choose:
+      message: "Select environment:"
+      options:
+        - id: dev
+          label: "Development"
+        - id: prod
+          label: "Production"
+      as: env
+
+  # 9. Check environment-specific config files
+  - when:
+      all:
+        - var:
+            env: dev
+        - file: ./.env.development
+    run: echo "Development config found"
+
+  - when:
+      all:
+        - var:
+            env: prod
+        - file: ./.env.production
+    run: echo "Production config found"
+
+  # 10. Fail if config file is missing for selected environment
+  - when:
+      all:
+        - var:
+            env: prod
+        - not:
+            file: ./.env.production
+    fail:
+      message: "Production config file (.env.production) not found"
+
+  - when:
+      all:
+        - var:
+            env: dev
+        - not:
+            file: ./.env.development
+    fail:
+      message: "Development config file (.env.development) not found"
+

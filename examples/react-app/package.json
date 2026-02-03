@@ -1,0 +1,11 @@
+{
+  "name": "react-app",
+  "version": "1.0.0",
+  "scripts": {
+    "install": "echo 'Installing dependencies...' && echo 'Dependencies installed'",
+    "build": "echo 'Building React app...' && mkdir -p build && echo '<html>React App</html>' > build/index.html",
+    "test": "echo 'Running React tests...' && echo 'All tests passed'",
+    "start": "echo 'Starting React dev server on http://localhost:3000'"
+  }
+}
+

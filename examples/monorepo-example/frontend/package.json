@@ -1,0 +1,10 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'Building frontend...' && mkdir -p dist && echo 'Frontend build complete' > dist/index.html",
+    "test": "echo 'Running frontend tests...' && echo 'All tests passed'",
+    "start": "echo 'Starting frontend server on http://localhost:3000'"
+  }
+}
+

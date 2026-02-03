@@ -1,0 +1,36 @@
+name: Basic Workflow Example
+
+steps:
+  - run: echo "Building..."
+
+  - choose:
+      message: "Deploy to which environment?"
+      options:
+        - id: staging
+          label: "Staging"
+        - id: prod
+          label: "Production"
+      as: env
+
+  # when clause checks variable values
+  - when:
+      var:
+        env: staging
+    run: echo "Deploying to staging..."
+
+  - when:
+      var:
+        env: prod
+    run: echo "Deploying to production..."
+
+  # File existence check example
+  - when:
+      file: ./dist
+    run: echo "Build output exists"
+
+  # Variable usage example (values from prompts are stored as variables)
+  - prompt:
+      message: "Enter version:"
+      as: version
+  - run: echo "Building version {{version}}"
+

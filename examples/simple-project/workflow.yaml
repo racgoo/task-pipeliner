@@ -1,0 +1,48 @@
+name: Simple Project Workflow
+
+baseDir: ./
+
+steps:
+  # Step 1: Show project structure
+  - run: echo "Project structure:" && ls -la
+
+  # Step 2: Lint code
+  - run: npm run lint
+
+  # Step 3: Run tests
+  - run: npm run test
+
+  # Step 4: Build project
+  - run: npm run build
+
+  # Step 5: Verify build output
+  - when:
+      file: ./dist/output.txt
+    run: echo "✓ Build output verified"
+
+  - when:
+      file: ./dist/output.txt
+    run: echo "Build contents:" && cat dist/output.txt
+
+  # Step 6: Ask for confirmation
+  - choose:
+      message: "Ready to deploy?"
+      options:
+        - id: yes
+          label: "Yes, deploy now"
+        - id: no
+          label: "No, cancel"
+      as: deployConfirm
+
+  # Step 7: Deploy if confirmed
+  - when:
+      var:
+        deployConfirm: yes
+    run: echo "Deploying to production..."
+
+  # Step 8: Cancel message
+  - when:
+      var:
+        deployConfirm: no
+    run: echo "Deployment cancelled"
+

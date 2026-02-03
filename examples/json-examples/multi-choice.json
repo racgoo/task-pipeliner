@@ -1,0 +1,401 @@
+{
+  "name": "Multi-Choice Workflow Example",
+  "steps": [
+    {
+      "choose": {
+        "message": "What type of project are you deploying?",
+        "options": [
+          {
+            "id": "web_app",
+            "label": "Web Application"
+          },
+          {
+            "id": "api_service",
+            "label": "API Service"
+          },
+          {
+            "id": "microservice",
+            "label": "Microservice"
+          },
+          {
+            "id": "monorepo",
+            "label": "Monorepo"
+          }
+        ],
+        "as": "projectType"
+      }
+    },
+    {
+      "when": {
+        "var": {
+          "projectType": "web_app"
+        }
+      },
+      "choose": {
+        "message": "Select frontend framework:",
+        "options": [
+          {
+            "id": "react",
+            "label": "React"
+          },
+          {
+            "id": "vue",
+            "label": "Vue"
+          },
+          {
+            "id": "angular",
+            "label": "Angular"
+          },
+          {
+            "id": "svelte",
+            "label": "Svelte"
+          }
+        ],
+        "as": "frontend"
+      }
+    },
+    {
+      "when": {
+        "var": {
+          "projectType": "api_service"
+        }
+      },
+      "choose": {
+        "message": "Select API framework:",
+        "options": [
+          {
+            "id": "express",
+            "label": "Express.js"
+          },
+          {
+            "id": "fastify",
+            "label": "Fastify"
+          },
+          {
+            "id": "nestjs",
+            "label": "NestJS"
+          },
+          {
+            "id": "koa",
+            "label": "Koa"
+          }
+        ],
+        "as": "apiFramework"
+      }
+    },
+    {
+      "when": {
+        "var": {
+          "projectType": "microservice"
+        }
+      },
+      "choose": {
+        "message": "Select communication pattern:",
+        "options": [
+          {
+            "id": "rest",
+            "label": "REST API"
+          },
+          {
+            "id": "graphql",
+            "label": "GraphQL"
+          },
+          {
+            "id": "grpc",
+            "label": "gRPC"
+          },
+          {
+            "id": "event_driven",
+            "label": "Event-Driven"
+          }
+        ],
+        "as": "communication"
+      }
+    },
+    {
+      "when": {
+        "var": {
+          "projectType": "monorepo"
+        }
+      },
+      "choose": {
+        "message": "Select monorepo tool:",
+        "options": [
+          {
+            "id": "pnpm",
+            "label": "pnpm workspaces"
+          },
+          {
+            "id": "yarn",
+            "label": "Yarn workspaces"
+          },
+          {
+            "id": "nx",
+            "label": "Nx"
+          },
+          {
+            "id": "turborepo",
+            "label": "Turborepo"
+          }
+        ],
+        "as": "monorepoTool"
+      }
+    },
+    {
+      "choose": {
+        "message": "Select build tool:",
+        "options": [
+          {
+            "id": "vite",
+            "label": "Vite"
+          },
+          {
+            "id": "webpack",
+            "label": "Webpack"
+          },
+          {
+            "id": "esbuild",
+            "label": "esbuild"
+          },
+          {
+            "id": "rollup",
+            "label": "Rollup"
+          },
+          {
+            "id": "tsc",
+            "label": "TypeScript Compiler"
+          }
+        ],
+        "as": "buildTool"
+      }
+    },
+    {
+      "choose": {
+        "message": "Select testing framework:",
+        "options": [
+          {
+            "id": "jest",
+            "label": "Jest"
+          },
+          {
+            "id": "vitest",
+            "label": "Vitest"
+          },
+          {
+            "id": "mocha",
+            "label": "Mocha"
+          },
+          {
+            "id": "playwright",
+            "label": "Playwright"
+          },
+          {
+            "id": "cypress",
+            "label": "Cypress"
+          }
+        ],
+        "as": "testFramework"
+      }
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "projectType": "web_app"
+            }
+          },
+          {
+            "var": {
+              "frontend": "react"
+            }
+          },
+          {
+            "var": {
+              "buildTool": "vite"
+            }
+          }
+        ]
+      },
+      "run": "echo \"Setting up React + Vite project...\""
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "projectType": "api_service"
+            }
+          },
+          {
+            "var": {
+              "apiFramework": "express"
+            }
+          }
+        ]
+      },
+      "run": "echo \"Setting up Express.js API...\""
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "projectType": "microservice"
+            }
+          },
+          {
+            "var": {
+              "communication": "grpc"
+            }
+          }
+        ]
+      },
+      "run": "echo \"Setting up gRPC microservice...\""
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "projectType": "monorepo"
+            }
+          },
+          {
+            "var": {
+              "monorepoTool": "turborepo"
+            }
+          }
+        ]
+      },
+      "run": "echo \"Setting up Turborepo monorepo...\""
+    },
+    {
+      "when": {
+        "any": [
+          {
+            "var": {
+              "testFramework": "jest"
+            }
+          },
+          {
+            "var": {
+              "testFramework": "vitest"
+            }
+          }
+        ]
+      },
+      "run": "echo \"Configuring unit tests...\""
+    },
+    {
+      "when": {
+        "any": [
+          {
+            "var": {
+              "testFramework": "playwright"
+            }
+          },
+          {
+            "var": {
+              "testFramework": "cypress"
+            }
+          }
+        ]
+      },
+      "run": "echo \"Configuring E2E tests...\""
+    },
+    {
+      "when": {
+        "any": [
+          {
+            "all": [
+              {
+                "var": {
+                  "projectType": "web_app"
+                }
+              },
+              {
+                "var": {
+                  "frontend": "react"
+                }
+              }
+            ]
+          },
+          {
+            "all": [
+              {
+                "var": {
+                  "projectType": "api_service"
+                }
+              },
+              {
+                "var": {
+                  "apiFramework": "express"
+                }
+              }
+            ]
+          },
+          {
+            "all": [
+              {
+                "var": {
+                  "projectType": "microservice"
+                }
+              },
+              {
+                "var": {
+                  "communication": "grpc"
+                }
+              }
+            ]
+          },
+          {
+            "all": [
+              {
+                "var": {
+                  "projectType": "monorepo"
+                }
+              },
+              {
+                "var": {
+                  "monorepoTool": "turborepo"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "run": "echo \"✅ Project setup completed based on your choices!\""
+    },
+    {
+      "when": {
+        "not": {
+          "any": [
+            {
+              "var": {
+                "testFramework": "jest"
+              }
+            },
+            {
+              "var": {
+                "testFramework": "vitest"
+              }
+            },
+            {
+              "var": {
+                "testFramework": "playwright"
+              }
+            },
+            {
+              "var": {
+                "testFramework": "cypress"
+              }
+            }
+          ]
+        }
+      },
+      "run": "echo \"Warning: No testing framework configured\""
+    }
+  ]
+}
+

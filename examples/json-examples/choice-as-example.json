@@ -1,0 +1,56 @@
+{
+  "name": "Choice with 'as' Variable Example",
+  "steps": [
+    {
+      "choose": {
+        "message": "Select deployment environment:",
+        "options": [
+          {
+            "id": "dev",
+            "label": "Development"
+          },
+          {
+            "id": "staging",
+            "label": "Staging"
+          },
+          {
+            "id": "production",
+            "label": "Production"
+          }
+        ],
+        "as": "env"
+      }
+    },
+    {
+      "run": "echo \"Deploying to {{env}} environment...\""
+    },
+    {
+      "choose": {
+        "message": "Select build type:",
+        "options": [
+          {
+            "id": "debug",
+            "label": "Debug Build"
+          },
+          {
+            "id": "release",
+            "label": "Release Build"
+          }
+        ],
+        "as": "buildType"
+      }
+    },
+    {
+      "run": "echo \"Building {{buildType}} for {{env}}...\""
+    },
+    {
+      "when": {
+        "var": {
+          "env": "dev"
+        }
+      },
+      "run": "echo \"Development-specific step\""
+    }
+  ]
+}
+

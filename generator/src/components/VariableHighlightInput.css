@@ -1,0 +1,111 @@
+.variable-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.variable-input-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.variable-indicator {
+  font-size: 0.85rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.variable-input-container {
+  position: relative;
+}
+
+.variable-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+  transition: all 0.2s;
+}
+
+.variable-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.variable-input.has-variables {
+  border-color: #4caf50;
+  background: linear-gradient(to right, #f1f8f4 0%, #f1f8f4 2px, white 2px);
+  background-size: 100% 100%;
+}
+
+.variable-input.has-variables:focus {
+  border-color: #4caf50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15);
+}
+
+.variable-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: white;
+  border: 1px solid #4caf50;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 250px;
+  font-size: 0.85rem;
+}
+
+.variable-tooltip strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #2e7d32;
+}
+
+.variable-tooltip ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  list-style: none;
+}
+
+.variable-tooltip li {
+  margin: 0.25rem 0;
+}
+
+.variable-tooltip code {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+.variable-tooltip-hint {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e0e0e0;
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.variable-tooltip-hint code {
+  background: #e3f2fd;
+  color: #1976d2;
+  font-weight: normal;
+}
+

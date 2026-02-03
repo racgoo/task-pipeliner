@@ -1,0 +1,14 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.tutorialSidebar.category.dslReference": {
+    "message": "DSL Reference",
+    "description": "The label for category 'dslReference' in sidebar 'tutorialSidebar'"
+  },
+  "sidebar.tutorialSidebar.category.DLS": {
+    "message": "DLS",
+    "description": "The label for category 'DLS' in sidebar 'tutorialSidebar'"
+  }
+}

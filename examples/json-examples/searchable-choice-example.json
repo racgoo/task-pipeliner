@@ -1,0 +1,98 @@
+{
+  "name": "Searchable Choice Example",
+  "steps": [
+    {
+      "choose": {
+        "message": "Select your country:",
+        "options": [
+          { "id": "us", "label": "United States" },
+          { "id": "uk", "label": "United Kingdom" },
+          { "id": "ca", "label": "Canada" },
+          { "id": "au", "label": "Australia" },
+          { "id": "de", "label": "Germany" },
+          { "id": "fr", "label": "France" },
+          { "id": "jp", "label": "Japan" },
+          { "id": "kr", "label": "South Korea" },
+          { "id": "cn", "label": "China" },
+          { "id": "in", "label": "India" },
+          { "id": "br", "label": "Brazil" },
+          { "id": "mx", "label": "Mexico" },
+          { "id": "es", "label": "Spain" },
+          { "id": "it", "label": "Italy" },
+          { "id": "nl", "label": "Netherlands" },
+          { "id": "se", "label": "Sweden" },
+          { "id": "no", "label": "Norway" },
+          { "id": "dk", "label": "Denmark" },
+          { "id": "fi", "label": "Finland" }
+        ],
+        "as": "country"
+      }
+    },
+    {
+      "choose": {
+        "message": "Select your primary programming language:",
+        "options": [
+          { "id": "javascript", "label": "JavaScript" },
+          { "id": "typescript", "label": "TypeScript" },
+          { "id": "python", "label": "Python" },
+          { "id": "java", "label": "Java" },
+          { "id": "csharp", "label": "C#" },
+          { "id": "cpp", "label": "C++" },
+          { "id": "c", "label": "C" },
+          { "id": "go", "label": "Go" },
+          { "id": "rust", "label": "Rust" },
+          { "id": "swift", "label": "Swift" },
+          { "id": "kotlin", "label": "Kotlin" },
+          { "id": "php", "label": "PHP" },
+          { "id": "ruby", "label": "Ruby" },
+          { "id": "scala", "label": "Scala" },
+          { "id": "elixir", "label": "Elixir" },
+          { "id": "haskell", "label": "Haskell" },
+          { "id": "clojure", "label": "Clojure" },
+          { "id": "erlang", "label": "Erlang" },
+          { "id": "lua", "label": "Lua" },
+          { "id": "perl", "label": "Perl" }
+        ],
+        "as": "language"
+      }
+    },
+    {
+      "choose": {
+        "message": "Select your web framework:",
+        "options": [
+          { "id": "react", "label": "React" },
+          { "id": "vue", "label": "Vue.js" },
+          { "id": "angular", "label": "Angular" },
+          { "id": "svelte", "label": "Svelte" },
+          { "id": "nextjs", "label": "Next.js" },
+          { "id": "nuxt", "label": "Nuxt.js" },
+          { "id": "remix", "label": "Remix" },
+          { "id": "astro", "label": "Astro" },
+          { "id": "solid", "label": "Solid.js" },
+          { "id": "qwik", "label": "Qwik" },
+          { "id": "express", "label": "Express.js" },
+          { "id": "fastify", "label": "Fastify" },
+          { "id": "nestjs", "label": "NestJS" },
+          { "id": "koa", "label": "Koa" },
+          { "id": "hapi", "label": "Hapi" },
+          { "id": "meteor", "label": "Meteor" },
+          { "id": "ember", "label": "Ember.js" },
+          { "id": "backbone", "label": "Backbone.js" },
+          { "id": "mithril", "label": "Mithril" },
+          { "id": "preact", "label": "Preact" }
+        ],
+        "as": "framework"
+      }
+    },
+    {
+      "run": "echo \"Selected country: {{country}}\""
+    },
+    {
+      "run": "echo \"Selected language: {{language}}\""
+    },
+    {
+      "run": "echo \"Selected framework: {{framework}}\""
+    }
+  ]
+}
+

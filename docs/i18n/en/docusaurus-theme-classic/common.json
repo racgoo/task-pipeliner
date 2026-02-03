@@ -1,0 +1,263 @@
+{
+  "homepage.tagline": {
+    "message": "Condition-based Task Pipeline Runner",
+    "description": "The homepage tagline"
+  },
+  "homepage.hero.description": {
+    "message": "A modern workflow automation tool that lets you define complex task pipelines using simple YAML or JSON files. With conditional execution, parallel tasks, interactive prompts, and beautiful terminal output.",
+    "description": "The homepage hero description"
+  },
+  "homepage.hero.quickStart": {
+    "message": "Quick Start",
+    "description": "The quick start button label"
+  },
+  "homepage.hero.dslReference": {
+    "message": "DSL Reference",
+    "description": "The DSL reference button label"
+  },
+  "homepage.codeExample.title": {
+    "message": "Start with Simple YAML",
+    "description": "The code example section title"
+  },
+  "homepage.codeExample.subtitle": {
+    "message": "Define workflows declaratively with YAML instead of complex scripts.",
+    "description": "The code example section subtitle"
+  },
+  "homepage.codeExample.runCommand": {
+    "message": "Run:",
+    "description": "The run command label"
+  },
+  "homepage.features.title": {
+    "message": "Key Features",
+    "description": "The features section title"
+  },
+  "homepage.features.subtitle": {
+    "message": "Check out the powerful features that task-pipeliner provides",
+    "description": "The features section subtitle"
+  },
+  "homepage.features.conditional.title": {
+    "message": "Condition-based Execution",
+    "description": "The conditional execution feature title"
+  },
+  "homepage.features.conditional.description": {
+    "message": "Run steps based on file existence, user choices, environment variables, and more",
+    "description": "The conditional execution feature description"
+  },
+  "homepage.features.conditional.detail1": {
+    "message": "File existence checks",
+    "description": "Conditional execution detail 1"
+  },
+  "homepage.features.conditional.detail2": {
+    "message": "Variable value comparisons",
+    "description": "Conditional execution detail 2"
+  },
+  "homepage.features.conditional.detail3": {
+    "message": "User choice checks",
+    "description": "Conditional execution detail 3"
+  },
+  "homepage.features.conditional.detail4": {
+    "message": "Complex logic with all/any/not",
+    "description": "Conditional execution detail 4"
+  },
+  "homepage.features.parallel.title": {
+    "message": "Parallel Execution",
+    "description": "The parallel execution feature title"
+  },
+  "homepage.features.parallel.description": {
+    "message": "Run multiple tasks simultaneously to save time",
+    "description": "The parallel execution feature description"
+  },
+  "homepage.features.parallel.detail1": {
+    "message": "Execute multiple steps at once",
+    "description": "Parallel execution detail 1"
+  },
+  "homepage.features.parallel.detail2": {
+    "message": "Isolated workspace state per branch",
+    "description": "Parallel execution detail 2"
+  },
+  "homepage.features.parallel.detail3": {
+    "message": "Wait for all steps to complete",
+    "description": "Parallel execution detail 3"
+  },
+  "homepage.features.parallel.detail4": {
+    "message": "Stop on any failure",
+    "description": "Parallel execution detail 4"
+  },
+  "homepage.features.prompt.title": {
+    "message": "Interactive Prompts",
+    "description": "The interactive prompts feature title"
+  },
+  "homepage.features.prompt.description": {
+    "message": "Ask users for input and choices during execution",
+    "description": "The interactive prompts feature description"
+  },
+  "homepage.features.prompt.detail1": {
+    "message": "Text input prompts",
+    "description": "Interactive prompts detail 1"
+  },
+  "homepage.features.prompt.detail2": {
+    "message": "Selection menus",
+    "description": "Interactive prompts detail 2"
+  },
+  "homepage.features.prompt.detail3": {
+    "message": "Default values support",
+    "description": "Interactive prompts detail 3"
+  },
+  "homepage.features.prompt.detail4": {
+    "message": "Store results as variables",
+    "description": "Interactive prompts detail 4"
+  },
+  "homepage.features.output.title": {
+    "message": "Beautiful Output",
+    "description": "The beautiful output feature title"
+  },
+  "homepage.features.output.description": {
+    "message": "Real-time terminal output with colors and formatting",
+    "description": "The beautiful output feature description"
+  },
+  "homepage.features.output.detail1": {
+    "message": "Color-coded output",
+    "description": "Beautiful output detail 1"
+  },
+  "homepage.features.output.detail2": {
+    "message": "Real-time streaming",
+    "description": "Beautiful output detail 2"
+  },
+  "homepage.features.output.detail3": {
+    "message": "Formatted step display",
+    "description": "Beautiful output detail 3"
+  },
+  "homepage.features.output.detail4": {
+    "message": "Error highlighting",
+    "description": "Beautiful output detail 4"
+  },
+  "homepage.features.variables.title": {
+    "message": "Variable Substitution",
+    "description": "The variable substitution feature title"
+  },
+  "homepage.features.variables.description": {
+    "message": "Use variables throughout your workflows with {{variable}} syntax",
+    "description": "The variable substitution feature description"
+  },
+  "homepage.features.variables.detail1": {
+    "message": "Store user input as variables",
+    "description": "Variable substitution detail 1"
+  },
+  "homepage.features.variables.detail2": {
+    "message": "Use in commands with {{variable}}",
+    "description": "Variable substitution detail 2"
+  },
+  "homepage.features.variables.detail3": {
+    "message": "Check in conditions",
+    "description": "Variable substitution detail 3"
+  },
+  "homepage.features.variables.detail4": {
+    "message": "Case-sensitive variable names",
+    "description": "Variable substitution detail 4"
+  },
+  "homepage.features.baseDir.title": {
+    "message": "Base Directory",
+    "description": "The base directory feature title"
+  },
+  "homepage.features.baseDir.description": {
+    "message": "Set a base directory for all command executions",
+    "description": "The base directory feature description"
+  },
+  "homepage.features.baseDir.detail1": {
+    "message": "Relative or absolute paths",
+    "description": "Base directory detail 1"
+  },
+  "homepage.features.baseDir.detail2": {
+    "message": "Resolved from workflow file location",
+    "description": "Base directory detail 2"
+  },
+  "homepage.features.baseDir.detail3": {
+    "message": "All commands run in baseDir",
+    "description": "Base directory detail 3"
+  },
+  "homepage.features.baseDir.detail4": {
+    "message": "Optional - defaults to current directory",
+    "description": "Base directory detail 4"
+  },
+  "homepage.useCases.title": {
+    "message": "Use Cases",
+    "description": "The use cases section title"
+  },
+  "homepage.useCases.subtitle": {
+    "message": "Various scenarios that can be solved with task-pipeliner",
+    "description": "The use cases section subtitle"
+  },
+  "homepage.useCases.exampleLabel": {
+    "message": "Example:",
+    "description": "The example label in use cases"
+  },
+  "homepage.useCases.viewExample": {
+    "message": "View Example",
+    "description": "The view example link label"
+  },
+  "homepage.useCases.cicd.title": {
+    "message": "CI/CD Pipeline",
+    "description": "CI/CD use case title"
+  },
+  "homepage.useCases.cicd.description": {
+    "message": "Automate build, test, and deployment workflows",
+    "description": "CI/CD use case description"
+  },
+  "homepage.useCases.cicd.example": {
+    "message": "cicd.yaml",
+    "description": "CI/CD use case example"
+  },
+  "homepage.useCases.monorepo.title": {
+    "message": "Monorepo Workflow",
+    "description": "Monorepo use case title"
+  },
+  "homepage.useCases.monorepo.description": {
+    "message": "Manage multiple projects in a single repository",
+    "description": "Monorepo use case description"
+  },
+  "homepage.useCases.monorepo.example": {
+    "message": "monorepo-example/",
+    "description": "Monorepo use case example"
+  },
+  "homepage.useCases.devEnv.title": {
+    "message": "Development Environment",
+    "description": "Development environment use case title"
+  },
+  "homepage.useCases.devEnv.description": {
+    "message": "Set up and manage development environments",
+    "description": "Development environment use case description"
+  },
+  "homepage.useCases.devEnv.example": {
+    "message": "simple-project/",
+    "description": "Development environment use case example"
+  },
+  "homepage.useCases.interactive.title": {
+    "message": "Interactive Scripts",
+    "description": "Interactive scripts use case title"
+  },
+  "homepage.useCases.interactive.description": {
+    "message": "Create interactive scripts with user prompts and choices",
+    "description": "Interactive scripts use case description"
+  },
+  "homepage.useCases.interactive.example": {
+    "message": "prompt.yaml, choose.yaml",
+    "description": "Interactive scripts use case example"
+  },
+  "homepage.useCases.cicd.link": {
+    "message": "/docs/examples#cicd-pipeline",
+    "description": "CI/CD use case link"
+  },
+  "homepage.useCases.monorepo.link": {
+    "message": "/docs/examples#monorepo-example",
+    "description": "Monorepo use case link"
+  },
+  "homepage.useCases.devEnv.link": {
+    "message": "/docs/examples#simple-project",
+    "description": "Development environment use case link"
+  },
+  "homepage.useCases.interactive.link": {
+    "message": "/docs/examples",
+    "description": "Interactive scripts use case link"
+  }
+}
+

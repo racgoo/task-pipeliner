@@ -1,0 +1,50 @@
+name: Prompt Example
+
+steps:
+  # 1. Enter user name (stored as variable with 'as')
+  - prompt:
+      message: "What is your name?"
+      as: user_name
+
+  # 2. Verify input
+  - when:
+      var: user_name
+    run: echo "Hello, {{user_name}}!"
+
+  # 3. Enter version (stored as variable with 'as')
+  - prompt:
+      message: "Enter version number:"
+      as: version
+      default: "1.0.0"
+
+  # 4. Build after version verification
+  - when:
+      var: version
+    run: echo "Building version {{version}}..."
+
+  # 5. Select environment (choose)
+  - choose:
+      message: "Deploy to which environment?"
+      options:
+        - id: staging
+          label: "Staging"
+        - id: prod
+          label: "Production"
+      as: env
+
+  # 6. Additional confirmation when Production is selected
+  - when:
+      var:
+        env: prod
+    prompt:
+      message: "Enter production deployment reason:"
+      as: deploy_reason
+
+  # 7. Execute deployment
+  - when:
+      any:
+        - var:
+            env: staging
+        - var: deploy_reason
+    run: echo "Deploying..."
+

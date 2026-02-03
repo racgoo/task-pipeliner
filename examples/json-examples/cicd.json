@@ -1,0 +1,148 @@
+{
+  "name": "CI/CD Pipeline Example",
+  "steps": [
+    {
+      "run": "echo \"Building application...\"",
+      "timeout": 300
+    },
+    {
+      "run": "echo \"Running linter...\"",
+      "timeout": 60
+    },
+    {
+      "run": "echo \"Running type check...\"",
+      "timeout": 120
+    },
+    {
+      "parallel": [
+        {
+          "run": "echo \"Running unit tests...\"",
+          "timeout": 180
+        },
+        {
+          "run": "echo \"Running integration tests...\"",
+          "timeout": 300
+        },
+        {
+          "run": "echo \"Running e2e tests...\"",
+          "timeout": 600
+        }
+      ]
+    },
+    {
+      "when": {
+        "file": "./dist"
+      },
+      "run": "echo \"Build artifacts found\""
+    },
+    {
+      "when": {
+        "file": "./test-results"
+      },
+      "run": "echo \"Test results found\""
+    },
+    {
+      "choose": {
+        "message": "Deploy to which environment?",
+        "options": [
+          {
+            "id": "staging",
+            "label": "Staging"
+          },
+          {
+            "id": "production",
+            "label": "Production"
+          }
+        ],
+        "as": "env"
+      }
+    },
+    {
+      "when": {
+        "var": {
+          "env": "staging"
+        }
+      },
+      "run": "echo \"Deploying to staging...\"",
+      "timeout": 300,
+      "retry": 2
+    },
+    {
+      "when": {
+        "var": {
+          "env": "production"
+        }
+      },
+      "choose": {
+        "message": "Are you sure you want to deploy to production?",
+        "options": [
+          {
+            "id": "confirm",
+            "label": "Yes, deploy"
+          },
+          {
+            "id": "cancel",
+            "label": "Cancel"
+          }
+        ],
+        "as": "confirmProd"
+      }
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "env": "production"
+            }
+          },
+          {
+            "var": {
+              "confirmProd": "confirm"
+            }
+          }
+        ]
+      },
+      "run": "echo \"Deploying to production...\"",
+      "timeout": 600,
+      "retry": 3
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "var": {
+              "env": "production"
+            }
+          },
+          {
+            "var": {
+              "confirmProd": "cancel"
+            }
+          }
+        ]
+      },
+      "fail": {
+        "message": "Production deployment cancelled"
+      }
+    },
+    {
+      "when": {
+        "any": [
+          {
+            "var": {
+              "env": "staging"
+            }
+          },
+          {
+            "var": {
+              "confirmProd": "confirm"
+            }
+          }
+        ]
+      },
+      "run": "echo \"Running post-deployment checks...\""
+    }
+  ]
+}
+

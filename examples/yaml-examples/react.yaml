@@ -1,0 +1,65 @@
+name: React Build Workflow
+
+steps:
+  # Install dependencies
+  - run: npm install
+
+  # Run linter
+  - run: npm run lint
+
+  # Build the project
+  - run: npm run build
+
+  # Verify build output exists
+  - when:
+      file: ./dist
+    run: echo "Build successful! dist/ directory created"
+
+  # Ask for deployment target
+  - choose:
+      message: "Where would you like to deploy?"
+      options:
+        - id: staging
+          label: "Staging"
+        - id: production
+          label: "Production"
+      as: env
+
+  # Deploy to staging
+  - when:
+      var:
+        env: staging
+    run: echo "Deploying to staging..."
+
+  # Deploy to production (with confirmation)
+  - when:
+      var:
+        env: production
+    choose:
+      message: "Are you sure you want to deploy to production?"
+      options:
+        - id: confirm
+          label: "Yes, deploy"
+        - id: cancel
+          label: "Cancel"
+      as: confirmProd
+
+  # Final deployment
+  - when:
+      all:
+        - var:
+            env: production
+        - var:
+            confirmProd: confirm
+    run: echo "Deploying to production..."
+
+  # Deployment cancelled
+  - when:
+      all:
+        - var:
+            env: production
+        - var:
+            confirmProd: cancel
+    fail:
+      message: "Deployment cancelled"
+

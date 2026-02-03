@@ -1,0 +1,68 @@
+name: Variables Example
+
+steps:
+  # 1. Enter project name
+  - prompt:
+      message: "Enter project name:"
+      as: project_name
+      default: "my-project"
+
+  # 2. Enter version
+  - prompt:
+      message: "Enter version:"
+      as: version
+      default: "1.0.0"
+
+  # 3. Use variable
+  - when:
+      var: project_name
+    run: echo "Building {{project_name}}..."
+
+  # 4. Use multiple variables
+  - when:
+      all:
+        - var: project_name
+        - var: version
+    run: echo "Building {{project_name}} version {{version}}..."
+
+  # 5. Select environment
+  - choose:
+      message: "Select environment:"
+      options:
+        - id: dev
+          label: "Development"
+        - id: staging
+          label: "Staging"
+        - id: prod
+          label: "Production"
+      as: env
+
+  # 6. Combine selected environment with variables
+  - when:
+      var:
+        env: prod
+    prompt:
+      message: "Enter production deployment reason:"
+      as: deploy_reason
+
+  # 7. Deploy using all information
+  - when:
+      all:
+        - var: project_name
+        - var: version
+        - any:
+            - var:
+                env: dev
+            - var:
+                env: staging
+            - var: deploy_reason
+    run: echo "Deploying {{project_name}} v{{version}}..."
+
+  # 8. Production deployment message
+  - when:
+      all:
+        - var:
+            env: prod
+        - var: deploy_reason
+    run: 'echo "Production deployment reason: {{deploy_reason}}"'
+

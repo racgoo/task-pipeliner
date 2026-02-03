@@ -1,0 +1,263 @@
+{
+  "homepage.tagline": {
+    "message": "조건 기반 작업 파이프라인 실행기",
+    "description": "The homepage tagline"
+  },
+  "homepage.hero.description": {
+    "message": "간단한 YAML 또는 JSON 파일로 복잡한 작업 파이프라인을 정의할 수 있는 현대적인 워크플로우 자동화 도구. 조건부 실행, 병렬 작업, 대화형 프롬프트, 그리고 아름다운 터미널 출력을 제공합니다.",
+    "description": "The homepage hero description"
+  },
+  "homepage.hero.quickStart": {
+    "message": "빠른 시작",
+    "description": "The quick start button label"
+  },
+  "homepage.hero.dslReference": {
+    "message": "DSL 참조",
+    "description": "The DSL reference button label"
+  },
+  "homepage.codeExample.title": {
+    "message": "간단한 YAML로 시작하세요",
+    "description": "The code example section title"
+  },
+  "homepage.codeExample.subtitle": {
+    "message": "복잡한 스크립트 대신, 선언적인 YAML로 워크플로우를 정의합니다.",
+    "description": "The code example section subtitle"
+  },
+  "homepage.codeExample.runCommand": {
+    "message": "실행:",
+    "description": "The run command label"
+  },
+  "homepage.features.title": {
+    "message": "주요 기능",
+    "description": "The features section title"
+  },
+  "homepage.features.subtitle": {
+    "message": "task-pipeliner가 제공하는 강력한 기능들을 확인하세요",
+    "description": "The features section subtitle"
+  },
+  "homepage.features.conditional.title": {
+    "message": "조건 기반 실행",
+    "description": "The conditional execution feature title"
+  },
+  "homepage.features.conditional.description": {
+    "message": "파일 존재 여부, 사용자 선택, 환경 변수 등을 기반으로 단계 실행",
+    "description": "The conditional execution feature description"
+  },
+  "homepage.features.conditional.detail1": {
+    "message": "파일 존재 확인",
+    "description": "Conditional execution detail 1"
+  },
+  "homepage.features.conditional.detail2": {
+    "message": "변수 값 비교",
+    "description": "Conditional execution detail 2"
+  },
+  "homepage.features.conditional.detail3": {
+    "message": "사용자 선택 확인",
+    "description": "Conditional execution detail 3"
+  },
+  "homepage.features.conditional.detail4": {
+    "message": "all/any/not으로 복잡한 논리",
+    "description": "Conditional execution detail 4"
+  },
+  "homepage.features.parallel.title": {
+    "message": "병렬 실행",
+    "description": "The parallel execution feature title"
+  },
+  "homepage.features.parallel.description": {
+    "message": "여러 작업을 동시에 실행하여 시간을 절약합니다",
+    "description": "The parallel execution feature description"
+  },
+  "homepage.features.parallel.detail1": {
+    "message": "여러 단계를 동시에 실행",
+    "description": "Parallel execution detail 1"
+  },
+  "homepage.features.parallel.detail2": {
+    "message": "브랜치별 격리된 워크스페이스 상태",
+    "description": "Parallel execution detail 2"
+  },
+  "homepage.features.parallel.detail3": {
+    "message": "모든 단계 완료까지 대기",
+    "description": "Parallel execution detail 3"
+  },
+  "homepage.features.parallel.detail4": {
+    "message": "어떤 단계라도 실패하면 중지",
+    "description": "Parallel execution detail 4"
+  },
+  "homepage.features.prompt.title": {
+    "message": "대화형 프롬프트",
+    "description": "The interactive prompts feature title"
+  },
+  "homepage.features.prompt.description": {
+    "message": "실행 중 사용자에게 입력과 선택을 요청",
+    "description": "The interactive prompts feature description"
+  },
+  "homepage.features.prompt.detail1": {
+    "message": "텍스트 입력 프롬프트",
+    "description": "Interactive prompts detail 1"
+  },
+  "homepage.features.prompt.detail2": {
+    "message": "선택 메뉴",
+    "description": "Interactive prompts detail 2"
+  },
+  "homepage.features.prompt.detail3": {
+    "message": "기본값 지원",
+    "description": "Interactive prompts detail 3"
+  },
+  "homepage.features.prompt.detail4": {
+    "message": "결과를 변수로 저장",
+    "description": "Interactive prompts detail 4"
+  },
+  "homepage.features.output.title": {
+    "message": "아름다운 출력",
+    "description": "The beautiful output feature title"
+  },
+  "homepage.features.output.description": {
+    "message": "색상과 포맷팅이 적용된 실시간 터미널 출력",
+    "description": "The beautiful output feature description"
+  },
+  "homepage.features.output.detail1": {
+    "message": "색상 코딩된 출력",
+    "description": "Beautiful output detail 1"
+  },
+  "homepage.features.output.detail2": {
+    "message": "실시간 스트리밍",
+    "description": "Beautiful output detail 2"
+  },
+  "homepage.features.output.detail3": {
+    "message": "포맷팅된 단계 표시",
+    "description": "Beautiful output detail 3"
+  },
+  "homepage.features.output.detail4": {
+    "message": "오류 강조",
+    "description": "Beautiful output detail 4"
+  },
+  "homepage.features.variables.title": {
+    "message": "변수 치환",
+    "description": "The variable substitution feature title"
+  },
+  "homepage.features.variables.description": {
+    "message": "{{variable}} 문법으로 워크플로우 전반에서 변수 사용",
+    "description": "The variable substitution feature description"
+  },
+  "homepage.features.variables.detail1": {
+    "message": "사용자 입력을 변수로 저장",
+    "description": "Variable substitution detail 1"
+  },
+  "homepage.features.variables.detail2": {
+    "message": "{{variable}}로 명령에서 사용",
+    "description": "Variable substitution detail 2"
+  },
+  "homepage.features.variables.detail3": {
+    "message": "조건에서 확인",
+    "description": "Variable substitution detail 3"
+  },
+  "homepage.features.variables.detail4": {
+    "message": "대소문자 구분 변수 이름",
+    "description": "Variable substitution detail 4"
+  },
+  "homepage.features.baseDir.title": {
+    "message": "기본 디렉토리",
+    "description": "The base directory feature title"
+  },
+  "homepage.features.baseDir.description": {
+    "message": "모든 명령 실행을 위한 기본 디렉토리 설정",
+    "description": "The base directory feature description"
+  },
+  "homepage.features.baseDir.detail1": {
+    "message": "상대 또는 절대 경로",
+    "description": "Base directory detail 1"
+  },
+  "homepage.features.baseDir.detail2": {
+    "message": "워크플로우 파일 위치 기준으로 해석",
+    "description": "Base directory detail 2"
+  },
+  "homepage.features.baseDir.detail3": {
+    "message": "모든 명령이 baseDir에서 실행",
+    "description": "Base directory detail 3"
+  },
+  "homepage.features.baseDir.detail4": {
+    "message": "선택사항 - 기본값은 현재 디렉토리",
+    "description": "Base directory detail 4"
+  },
+  "homepage.useCases.title": {
+    "message": "사용 사례",
+    "description": "The use cases section title"
+  },
+  "homepage.useCases.subtitle": {
+    "message": "task-pipeliner로 해결할 수 있는 다양한 시나리오",
+    "description": "The use cases section subtitle"
+  },
+  "homepage.useCases.exampleLabel": {
+    "message": "예시:",
+    "description": "The example label in use cases"
+  },
+  "homepage.useCases.viewExample": {
+    "message": "예제 보기",
+    "description": "The view example link label"
+  },
+  "homepage.useCases.cicd.title": {
+    "message": "CI/CD 파이프라인",
+    "description": "CI/CD use case title"
+  },
+  "homepage.useCases.cicd.description": {
+    "message": "빌드, 테스트, 배포 워크플로우 자동화",
+    "description": "CI/CD use case description"
+  },
+  "homepage.useCases.cicd.example": {
+    "message": "cicd.yaml",
+    "description": "CI/CD use case example"
+  },
+  "homepage.useCases.monorepo.title": {
+    "message": "모노레포 워크플로우",
+    "description": "Monorepo use case title"
+  },
+  "homepage.useCases.monorepo.description": {
+    "message": "단일 저장소에서 여러 프로젝트 관리",
+    "description": "Monorepo use case description"
+  },
+  "homepage.useCases.monorepo.example": {
+    "message": "monorepo-example/",
+    "description": "Monorepo use case example"
+  },
+  "homepage.useCases.devEnv.title": {
+    "message": "개발 환경",
+    "description": "Development environment use case title"
+  },
+  "homepage.useCases.devEnv.description": {
+    "message": "개발 환경 설정 및 관리",
+    "description": "Development environment use case description"
+  },
+  "homepage.useCases.devEnv.example": {
+    "message": "simple-project/",
+    "description": "Development environment use case example"
+  },
+  "homepage.useCases.interactive.title": {
+    "message": "대화형 스크립트",
+    "description": "Interactive scripts use case title"
+  },
+  "homepage.useCases.interactive.description": {
+    "message": "사용자 프롬프트와 선택이 있는 대화형 스크립트 생성",
+    "description": "Interactive scripts use case description"
+  },
+  "homepage.useCases.interactive.example": {
+    "message": "prompt.yaml, choose.yaml",
+    "description": "Interactive scripts use case example"
+  },
+  "homepage.useCases.cicd.link": {
+    "message": "/docs/examples#cicd-파이프라인",
+    "description": "CI/CD use case link"
+  },
+  "homepage.useCases.monorepo.link": {
+    "message": "/docs/examples#monorepo-example",
+    "description": "Monorepo use case link"
+  },
+  "homepage.useCases.devEnv.link": {
+    "message": "/docs/examples#simple-project",
+    "description": "Development environment use case link"
+  },
+  "homepage.useCases.interactive.link": {
+    "message": "/docs/examples",
+    "description": "Interactive scripts use case link"
+  }
+}
+

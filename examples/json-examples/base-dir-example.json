@@ -1,0 +1,13 @@
+{
+  "name": "Base Directory Example",
+  "baseDir": "./examples",
+  "steps": [
+    {
+      "run": "echo \"Working in baseDir: $(pwd)\""
+    },
+    {
+      "run": "ls -la | head -5"
+    }
+  ]
+}
+

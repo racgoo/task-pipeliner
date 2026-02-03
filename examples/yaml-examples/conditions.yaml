@@ -1,0 +1,57 @@
+name: Condition Examples
+
+steps:
+  # 1. User choice with variable value comparison
+  - choose:
+      message: "Environment?"
+      options:
+        - id: dev
+          label: "Development"
+        - id: staging
+          label: "Staging"
+        - id: prod
+          label: "Production"
+      as: env
+
+  - when:
+      var:
+        env: prod
+    run: echo "Production deployment"
+
+  # 2. File existence check
+  - when:
+      file: ./dist
+    run: echo "Dist directory exists"
+
+  # 3. Variable existence check (variables from prompts)
+  - prompt:
+      message: "Enter project name:"
+      as: project_name
+  - when:
+      var: project_name
+    run: 'echo "Project: {{project_name}}"'
+
+  # 4. AND combination
+  - when:
+      all:
+        - file: ./dist
+        - var:
+            env: prod
+    run: echo "Production build with dist"
+
+  # 5. OR combination
+  - when:
+      any:
+        - var:
+            env: staging
+        - var:
+            env: prod
+    run: echo "Deploying to server"
+
+  # 6. NOT condition
+  - when:
+      not:
+        file: ./dist
+    fail:
+      message: "Build output not found"
+

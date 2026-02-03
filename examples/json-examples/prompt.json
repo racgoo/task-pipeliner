@@ -1,0 +1,73 @@
+{
+  "name": "Prompt Example",
+  "steps": [
+    {
+      "prompt": {
+        "message": "What is your name?",
+        "as": "user_name"
+      }
+    },
+    {
+      "when": {
+        "var": "user_name"
+      },
+      "run": "echo \"Hello, {{user_name}}!\""
+    },
+    {
+      "prompt": {
+        "message": "Enter version number:",
+        "as": "version",
+        "default": "1.0.0"
+      }
+    },
+    {
+      "when": {
+        "var": "version"
+      },
+      "run": "echo \"Building version {{version}}...\""
+    },
+    {
+      "choose": {
+        "message": "Deploy to which environment?",
+        "options": [
+          {
+            "id": "staging",
+            "label": "Staging"
+          },
+          {
+            "id": "prod",
+            "label": "Production"
+          }
+        ],
+        "as": "env"
+      }
+    },
+    {
+      "when": {
+        "var": {
+          "env": "prod"
+        }
+      },
+      "prompt": {
+        "message": "Enter production deployment reason:",
+        "as": "deploy_reason"
+      }
+    },
+    {
+      "when": {
+        "any": [
+          {
+            "var": {
+              "env": "staging"
+            }
+          },
+          {
+            "var": "deploy_reason"
+          }
+        ]
+      },
+      "run": "echo \"Deploying...\""
+    }
+  ]
+}
+

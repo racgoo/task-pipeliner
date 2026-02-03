@@ -1,0 +1,60 @@
+{
+  "name": "Parallel Execution Example",
+  "steps": [
+    {
+      "parallel": [
+        {
+          "run": "echo \"Running web tests...\""
+        },
+        {
+          "run": "echo \"Running API tests...\""
+        }
+      ]
+    },
+    {
+      "when": {
+        "file": "./test-results/web.json"
+      },
+      "run": "echo \"Web tests completed\""
+    },
+    {
+      "when": {
+        "file": "./test-results/api.json"
+      },
+      "run": "echo \"API tests completed\""
+    },
+    {
+      "choose": {
+        "message": "Deploy strategy?",
+        "options": [
+          {
+            "id": "blue_green",
+            "label": "Blue-Green"
+          },
+          {
+            "id": "rolling",
+            "label": "Rolling"
+          }
+        ],
+        "as": "strategy"
+      }
+    },
+    {
+      "when": {
+        "var": {
+          "strategy": "blue_green"
+        }
+      },
+      "run": "echo \"Deploying with blue-green strategy...\""
+    },
+    {
+      "when": {
+        "var": {
+          "strategy": "rolling"
+        }
+      },
+      "run": "echo \"Deploying with rolling strategy...\""
+    }
+  ]
+}
+

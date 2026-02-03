@@ -18,7 +18,7 @@ inject-force:
 
 build-binary: 
     just build
-    npx pkg dist/index.cjs --targets node18-macos-arm64 --output tp-test --config package.json
+    npx pkg dist/index.cjs --targets node18-macos-arm64 --output ./binary-result/tp-test --config package.json
 
 
 install:

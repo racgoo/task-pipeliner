@@ -1,0 +1,70 @@
+name: Monorepo Build and Deploy Workflow
+
+baseDir: ./
+
+steps:
+  # Step 1: Choose deployment environment
+  - choose:
+      message: "Select deployment environment:"
+      options:
+        - id: dev
+          label: "Development"
+        - id: staging
+          label: "Staging"
+        - id: production
+          label: "Production"
+      as: env
+
+  # Step 2: Build all projects in parallel
+  - parallel:
+      - run: echo "Building frontend..." && cd frontend && npm run build
+      - run: echo "Building backend..." && cd backend && npm run build
+
+  # Step 3: Verify build outputs exist
+  - when:
+      file: ./frontend/dist
+    run: echo "✓ Frontend build verified"
+
+  - when:
+      file: ./backend/dist
+    run: echo "✓ Backend build verified"
+
+  # Step 4: Run tests (only for staging and production)
+  - when:
+      any:
+        - var:
+            env: staging
+        - var:
+            env: production
+    parallel:
+      - run: echo "Testing frontend..." && cd frontend && npm run test
+      - run: echo "Testing backend..." && cd backend && npm run test
+
+  # Step 5: Get version number
+  - prompt:
+      message: "Enter version number:"
+      as: version
+      default: "1.0.0"
+
+  # Step 6: Environment-specific deployment
+  - when:
+      var:
+        env: dev
+    run: echo "Deploying version {{version}} to Development..."
+
+  - when:
+      var:
+        env: staging
+    run: echo "Deploying version {{version}} to Staging..."
+
+  - when:
+      var:
+        env: production
+    run: echo "Deploying version {{version}} to Production..."
+
+  # Step 7: Start services
+  - run: echo "Starting services..."
+  - parallel:
+      - run: cd frontend && npm run start
+      - run: cd backend && npm run start
+

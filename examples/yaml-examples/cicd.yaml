@@ -1,0 +1,91 @@
+name: CI/CD Pipeline Example
+
+steps:
+  # 1. Build source code (with timeout to prevent hanging)
+  - run: echo "Building application..."
+    timeout: 300  # 5 minutes timeout
+  - run: echo "Running linter..."
+    timeout: 60  # 1 minute timeout
+  - run: echo "Running type check..."
+    timeout: 120  # 2 minutes timeout
+
+  # 2. Run tests (parallel with timeout)
+  - parallel:
+      - run: echo "Running unit tests..."
+        timeout: 180  # 3 minutes
+      - run: echo "Running integration tests..."
+        timeout: 300  # 5 minutes
+      - run: echo "Running e2e tests..."
+        timeout: 600  # 10 minutes
+
+  # 3. Check build output
+  - when:
+      file: ./dist
+    run: echo "Build artifacts found"
+
+  # 4. Check test results
+  - when:
+      file: ./test-results
+    run: echo "Test results found"
+
+  # 5. Select deployment environment
+  - choose:
+      message: "Deploy to which environment?"
+      options:
+        - id: staging
+          label: "Staging"
+        - id: production
+          label: "Production"
+      as: env
+
+  # 6. Deploy to staging (with retry for network reliability)
+  - when:
+      var:
+        env: staging
+    run: echo "Deploying to staging..."
+    timeout: 300  # 5 minutes
+    retry: 2  # Retry up to 2 times on failure
+
+  # 7. Deploy to production (with confirmation)
+  - when:
+      var:
+        env: production
+    choose:
+      message: "Are you sure you want to deploy to production?"
+      options:
+        - id: confirm
+          label: "Yes, deploy"
+        - id: cancel
+          label: "Cancel"
+      as: confirmProd
+
+  # 8. Execute production deployment (with timeout and retry)
+  - when:
+      all:
+        - var:
+            env: production
+        - var:
+            confirmProd: confirm
+    run: echo "Deploying to production..."
+    timeout: 600  # 10 minutes
+    retry: 3  # Retry up to 3 times for critical deployment
+
+  # 9. Cancel production deployment
+  - when:
+      all:
+        - var:
+            env: production
+        - var:
+            confirmProd: cancel
+    fail:
+      message: "Production deployment cancelled"
+
+  # 10. Post-deployment verification
+  - when:
+      any:
+        - var:
+            env: staging
+        - var:
+            confirmProd: confirm
+    run: echo "Running post-deployment checks..."
+

@@ -1,0 +1,123 @@
+.useCases {
+  padding: 5rem 0;
+  background: linear-gradient(
+    to bottom,
+    var(--ifm-background-color) 0%,
+    var(--ifm-color-emphasis-50) 45%,
+    var(--ifm-background-color) 100%
+  );
+  position: relative;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.sectionSubtitle {
+  font-size: 1.2rem;
+  text-align: center;
+  color: var(--ifm-color-emphasis-700);
+  margin-bottom: 3rem;
+}
+
+/* CSS Grid for responsive layout */
+.useCasesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  width: 100%;
+}
+
+@media screen and (max-width: 996px) {
+  .useCasesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .useCasesGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.useCaseCard {
+  background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(37, 99, 235, 0.06), transparent 55%),
+    var(--ifm-color-background);
+  border-radius: 14px;
+  padding: 2rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.useCaseCard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14);
+  border-color: var(--ifm-color-primary-lightest);
+}
+
+.useCaseTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--ifm-color-primary);
+}
+
+.useCaseDescription {
+  color: var(--ifm-color-emphasis-700);
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  flex-grow: 1;
+}
+
+.useCaseExample {
+  padding: 0.75rem;
+  background: var(--ifm-color-emphasis-100);
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.useCaseExampleLabel {
+  font-weight: 600;
+  color: var(--ifm-color-emphasis-800);
+  margin-right: 0.5rem;
+}
+
+.useCaseLink {
+  color: var(--ifm-color-primary);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.useCaseLink:hover {
+  color: var(--ifm-color-primary-dark);
+  text-decoration: underline;
+}
+
+@media screen and (max-width: 996px) {
+  .useCases {
+    padding: 2rem 0;
+  }
+
+  .sectionTitle {
+    font-size: 2rem;
+  }
+
+  .sectionSubtitle {
+    font-size: 1rem;
+  }
+
+  .useCaseCard {
+    padding: 1.5rem;
+  }
+}
+

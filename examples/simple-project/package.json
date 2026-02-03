@@ -1,0 +1,11 @@
+{
+  "name": "simple-project",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'Building project...' && mkdir -p dist && echo 'Build complete' > dist/output.txt",
+    "test": "echo 'Running tests...' && echo 'Tests passed'",
+    "lint": "echo 'Linting code...' && echo 'No issues found'",
+    "clean": "rm -rf dist"
+  }
+}
+
