@@ -92,7 +92,8 @@ This way, `tp schedule add` works correctly regardless of where you run it from.
 # │ │ │ ┌──────── day of month (1-31)
 # │ │ │ │ ┌────── month (1-12)
 # │ │ │ │ │ ┌──── day of week (0-7)
-* * * * * *
+# │ │ │ │ │ │
+# * * * * * *
 ```
 
 **Common examples (5 fields):**

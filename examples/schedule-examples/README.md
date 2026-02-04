@@ -97,7 +97,8 @@ You'll be prompted to confirm or override the alias for each schedule.
 # │ │ │ ┌──────── day of month (1-31)
 # │ │ │ │ ┌────── month (1-12)
 # │ │ │ │ │ ┌──── day of week (0-7)
-* * * * * *
+# │ │ │ │ │ │
+# * * * * * *
 ```
 
 Common examples (5 fields):

@@ -1419,7 +1419,7 @@ You'll be prompted to confirm or override the alias for each schedule
 # │ │ │ │ ┌────── month (1-12)
 # │ │ │ │ │ ┌──── day of week (0-7)
 # │ │ │ │ │ │
-* * * * * *
+# * * * * * *
 ```
 
 **Common Examples (5 fields):**
