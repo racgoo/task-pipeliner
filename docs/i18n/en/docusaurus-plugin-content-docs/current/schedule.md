@@ -156,23 +156,67 @@ Select a schedule to toggle its enabled/disabled state.
 
 ## Running the Scheduler
 
-Start the scheduler daemon so that workflows run at their scheduled times:
+Start the scheduler to run workflows at their scheduled times. You can run it in two modes:
+
+### Foreground Mode
 
 ```bash
 tp schedule start
 ```
 
+- Runs in the foreground (attached to your terminal)
+- Press `Ctrl+C` to stop the scheduler
+- Useful for testing or temporary scheduling
+
+### Daemon Mode (Background)
+
+```bash
+tp schedule start -d
+```
+
+- Runs as a background daemon process
+- Continues running even after closing the terminal
+- Only one daemon instance can run at a time (duplicate execution is prevented)
+- Use `tp schedule stop` to stop the daemon
+
+### Checking Daemon Status
+
+```bash
+tp schedule status
+```
+
+- Shows real-time daemon status with systemctl-style display
+- Displays:
+  - Daemon state (active/inactive)
+  - Process ID (PID)
+  - Start time and uptime
+  - All schedules with their status (active/inactive)
+  - Last run time for each schedule
+- Updates every second automatically
+- Press `Ctrl+C` to exit (daemon continues running)
+
+### Stopping the Daemon
+
+```bash
+tp schedule stop
+```
+
+- Stops the running daemon process gracefully
+- Removes PID and start time files
+
 The scheduler will:
 
-- Run as a daemon process (stays running in the background)
 - Execute workflows at their scheduled times
 - Apply `silent` and `profile` options per schedule
 - Log executions to `~/.pipeliner/workflow-history/` (when not silent)
 - Display real-time execution status (unless the schedule has `silent: true`)
+- Prevent duplicate daemon instances (only one can run at a time)
 
 ## Storage
 
-Schedules are stored in `~/.pipeliner/schedules/schedules.json`.
+- **Schedules**: Stored in `~/.pipeliner/schedules/schedules.json`
+- **Daemon PID**: Stored in `~/.pipeliner/daemon/scheduler.pid`
+- **Daemon start time**: Stored in `~/.pipeliner/daemon/scheduler.started`
 
 ## Next Steps
 
