@@ -1,0 +1,27 @@
+{
+  "schedules": [
+    {
+      "name": "Daily Build",
+      "cron": "0 9 * * *",
+      "workflow": "../simple-project/workflow.yaml"
+    },
+    {
+      "name": "Nightly Test (Silent)",
+      "cron": "0 2 * * *",
+      "workflow": "../yaml-examples/basic.yaml",
+      "silent": true
+    },
+    {
+      "name": "Production Deploy",
+      "cron": "0 18 * * 5",
+      "workflow": "../yaml-examples/profiles-example.yaml",
+      "profile": "Production"
+    },
+    {
+      "name": "Hourly Check",
+      "cron": "0 * * * *",
+      "workflow": "simple.yaml",
+      "baseDir": "../yaml-examples"
+    }
+  ]
+}

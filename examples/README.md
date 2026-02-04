@@ -68,6 +68,14 @@ See [json-examples/README.md](json-examples/README.md) for details.
 
 **Note:** task-pipeliner supports both YAML (`.yaml`, `.yml`) and JSON (`.json`) formats. The parser automatically detects the format based on file extension.
 
+## Schedule Examples
+
+Schedule file examples for `tp schedule add` are in the `schedule-examples/` directory:
+- **`daily-build.yaml`** - YAML format with 3 schedules
+- **`daily-build.json`** - JSON format with 3 schedules
+
+See [schedule-examples/README.md](schedule-examples/README.md) for schedule file format and usage.
+
 ## Running Examples
 
 All examples can be run from the project root:

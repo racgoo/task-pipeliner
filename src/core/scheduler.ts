@@ -96,8 +96,14 @@ export class WorkflowScheduler {
    */
   private async executeSchedule(schedule: Schedule): Promise<void> {
     const name = schedule.name ?? schedule.workflowPath;
-    console.log(`\n⏰ Running scheduled workflow: ${name}`);
-    console.log(`   Time: ${new Date().toISOString()}`);
+
+    if (!schedule.silent) {
+      console.log(`\n⏰ Running scheduled workflow: ${name}`);
+      console.log(`   Time: ${new Date().toISOString()}`);
+      if (schedule.profile) {
+        console.log(`   Profile: ${schedule.profile}`);
+      }
+    }
 
     try {
       // Resolve workflow path
@@ -108,18 +114,41 @@ export class WorkflowScheduler {
       const content = await readFile(workflowPath, 'utf-8');
       const workflow = parser.parse(content);
 
-      // Execute workflow
+      // Execute workflow with options
       const executor = new Executor();
 
-      await executor.execute(workflow);
+      // Prepare execution options
+      const executeOptions: { profileVars?: Record<string, string> } = {};
+
+      if (schedule.profile) {
+        // Find and apply profile
+        if (!workflow.profiles) {
+          throw new Error(
+            `Profile "${schedule.profile}" not found: no profiles defined in workflow`
+          );
+        }
+        const profile = workflow.profiles.find((p) => p.name === schedule.profile);
+        if (!profile) {
+          throw new Error(
+            `Profile "${schedule.profile}" not found. Available profiles: ${workflow.profiles.map((p) => p.name).join(', ')}`
+          );
+        }
+        executeOptions.profileVars = profile.var;
+      }
+
+      await executor.execute(workflow, executeOptions);
 
       // Update last run time
       await this.scheduleManager.updateLastRun(schedule.id);
 
-      console.log(`✓ Scheduled workflow completed: ${name}\n`);
+      if (!schedule.silent) {
+        console.log(`✓ Scheduled workflow completed: ${name}\n`);
+      }
     } catch (error) {
-      console.error(`✗ Scheduled workflow failed: ${name}`);
-      console.error(`  Error: ${error instanceof Error ? error.message : String(error)}\n`);
+      if (!schedule.silent) {
+        console.error(`✗ Scheduled workflow failed: ${name}`);
+        console.error(`  Error: ${error instanceof Error ? error.message : String(error)}\n`);
+      }
     }
   }
 

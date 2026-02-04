@@ -74,9 +74,9 @@ tp history remove-all # Remove all histories
 **Workflow Scheduling:**
 ```bash
 tp schedule        # View all schedules
-tp schedule add    # Add a new workflow schedule
-tp schedule add workflow.yaml  # Add schedule for specific workflow
+tp schedule add schedules.yaml  # Add schedules from a schedule file
 tp schedule remove # Remove a schedule
+tp schedule remove-all # Remove all schedules
 tp schedule toggle # Enable/disable a schedule
 tp schedule start  # Start scheduler daemon
 ```
@@ -1335,36 +1335,104 @@ Each record contains:
 
 Schedule workflows to run automatically at specified times using cron expressions.
 
-### Adding a Schedule
+### Adding Schedules
 
-Add a new workflow schedule:
+Create a schedule file (YAML or JSON) defining your schedules:
+
+**YAML (`schedules.yaml`):**
+```yaml
+schedules:
+  - name: Daily Build          # Schedule alias (for identification)
+    cron: "0 9 * * *"          # Cron expression
+    workflow: ./build.yaml     # Path relative to schedule file
+
+  - name: Nightly Test
+    cron: "0 2 * * *"
+    workflow: ./test.yaml
+    silent: true               # Optional: run in silent mode
+
+  - name: Production Deploy
+    cron: "0 18 * * 5"         # Every Friday at 6 PM
+    workflow: ./deploy.yaml
+    profile: Production        # Optional: use specific profile
+
+  - name: Hourly Check
+    cron: "0 * * * *"
+    workflow: simple.yaml
+    baseDir: /path/to/workflows  # Optional: base directory for workflow path
+```
+
+**Field Descriptions:**
+- `name`: Alias to identify the schedule
+- `cron`: Execution time (cron expression)
+- `workflow`: Path to workflow file (relative to schedule file or `baseDir`, or absolute)
+- `baseDir`: (Optional) Base directory for workflow path (defaults to schedule file's directory)
+- `silent`: (Optional) Run in silent mode, suppressing console output
+- `profile`: (Optional) Profile name to use (for workflows with profiles)
+
+**Path Resolution:**
+By default, relative workflow paths are resolved from the schedule file's directory. This means if your schedule file and workflow are in the same folder, you can simply use `./workflow.yaml`. Use `baseDir` to specify a different base directory if needed.
+
+**JSON (`schedules.json`):**
+```json
+{
+  "schedules": [
+    {
+      "name": "Daily Build",
+      "cron": "0 9 * * *",
+      "workflow": "./build.yaml"
+    },
+    {
+      "name": "Nightly Test",
+      "cron": "0 2 * * *",
+      "workflow": "./test.yaml",
+      "silent": true
+    },
+    {
+      "name": "Production Deploy",
+      "cron": "0 18 * * 5",
+      "workflow": "./deploy.yaml",
+      "profile": "Production"
+    }
+  ]
+}
+```
+
+Then add all schedules from the file:
 
 ```bash
-tp schedule add workflow.yaml
+tp schedule add schedules.yaml
 ```
 
-You'll be prompted for:
-- **Schedule name** (optional): A friendly name for the schedule
-- **Cron expression**: When to run the workflow (e.g., `0 9 * * *` for daily at 9 AM)
-- **Enable status**: Whether to enable the schedule immediately
+You'll be prompted to confirm or override the alias for each schedule
 
 **Cron Expression Format:**
+
+5 fields (standard) or **6 fields with seconds** (node-cron extension):
+
 ```
-* * * * *
-│ │ │ │ │
-│ │ │ │ └─── Day of week (0-7, Sunday=0 or 7)
-│ │ │ └───── Month (1-12)
-│ │ └─────── Day of month (1-31)
-│ └───────── Hour (0-23)
-└─────────── Minute (0-59)
+# 6 fields (optional seconds)
+# ┌────────────── second (0-59, optional)
+# │ ┌──────────── minute (0-59)
+# │ │ ┌────────── hour (0-23)
+# │ │ │ ┌──────── day of month (1-31)
+# │ │ │ │ ┌────── month (1-12)
+# │ │ │ │ │ ┌──── day of week (0-7)
+# │ │ │ │ │ │
+* * * * * *
 ```
 
-**Common Examples:**
+**Common Examples (5 fields):**
 - `0 9 * * *` - Daily at 9:00 AM
 - `0 0 * * 1` - Weekly on Monday at midnight
 - `*/15 * * * *` - Every 15 minutes
 - `0 */2 * * *` - Every 2 hours
 - `0 9 * * 1-5` - Weekdays at 9:00 AM
+
+**With seconds (6 fields):**
+- `* * * * * *` - Every second
+- `*/5 * * * * *` - Every 5 seconds
+- `0 * * * * *` - Every minute (same as `* * * * *`)
 
 ### Managing Schedules
 
@@ -1374,6 +1442,9 @@ tp schedule list
 
 # Remove a schedule
 tp schedule remove
+
+# Remove all schedules
+tp schedule remove-all
 
 # Enable/disable a schedule
 tp schedule toggle

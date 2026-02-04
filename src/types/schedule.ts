@@ -8,6 +8,8 @@ export interface Schedule {
   workflowPath: string;
   cron: string;
   enabled: boolean;
+  silent?: boolean;
+  profile?: string;
   createdAt: string;
   lastRun?: string;
 }
