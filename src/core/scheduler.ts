@@ -2,6 +2,7 @@ import { readFile } from 'fs/promises';
 import { resolve } from 'path';
 import cron, { ScheduledTask } from 'node-cron';
 import { Schedule } from '../types/schedule';
+import { getDaemonStatus, isDaemonRunning, removeDaemonPid } from './daemon-manager';
 import { Executor } from './executor';
 import { getParser } from './parser';
 import { ScheduleManager } from './schedule-manager';
@@ -23,22 +24,62 @@ export class WorkflowScheduler {
   /**
    * Start the scheduler daemon
    * Loads schedules and starts cron jobs
+   * @param daemonMode - If true, run in background daemon mode
    */
-  async start(): Promise<void> {
-    console.log('🚀 Starting workflow scheduler...');
+  async start(daemonMode: boolean = false): Promise<void> {
+    // Check if daemon is already running
+    if (await isDaemonRunning()) {
+      const status = await getDaemonStatus();
+      throw new Error(
+        `Scheduler daemon is already running (PID: ${status.pid}). Use "tp schedule stop" to stop it first.`
+      );
+    }
+
+    if (daemonMode) {
+      // Save PID before forking (will be updated after fork)
+      // Note: In daemon mode, the parent process will save the child PID
+      console.log('🚀 Starting scheduler daemon in background...');
+    } else {
+      console.log('🚀 Starting workflow scheduler...');
+    }
 
     // Load and start all schedules
     await this.reload();
 
-    console.log('✓ Scheduler is running');
-    console.log('  Press Ctrl+C to stop');
+    if (daemonMode) {
+      // PID and start time are already saved in startScheduler() before this is called
+      // Only log if not in daemon mode (when TP_DAEMON_MODE is not set)
+      if (!process.env.TP_DAEMON_MODE) {
+        console.log(`✓ Scheduler daemon started (PID: ${process.pid})`);
+        console.log('  Run "tp schedule stop" to stop the daemon');
+        console.log('  Run "tp schedule status" to check daemon status');
+      }
+    } else {
+      console.log('✓ Scheduler is running');
+      console.log('  Press Ctrl+C to stop');
+    }
 
-    // Keep process alive
-    process.on('SIGINT', () => {
-      console.log('\n⏹  Stopping scheduler...');
+    // Setup cleanup handlers
+    const cleanup = async () => {
+      if (!daemonMode) {
+        console.log('\n⏹  Stopping scheduler...');
+      }
       this.stop();
-      process.exit(0);
-    });
+      await removeDaemonPid();
+      if (!daemonMode) {
+        process.exit(0);
+      }
+    };
+
+    process.on('SIGINT', cleanup);
+    process.on('SIGTERM', cleanup);
+
+    // In daemon mode, detach from terminal
+    if (daemonMode) {
+      // Redirect stdio to prevent terminal attachment
+      process.stdin.destroy();
+      // Keep stdout/stderr for logging, but they won't block the process
+    }
   }
 
   /**
@@ -160,5 +201,44 @@ export class WorkflowScheduler {
       task.stop();
     }
     this.tasks.clear();
+  }
+
+  /**
+   * Stop the daemon process
+   */
+  async stopDaemon(): Promise<boolean> {
+    const status = await getDaemonStatus();
+    if (!status.running || !status.pid) {
+      return false;
+    }
+
+    const pid = status.pid;
+
+    try {
+      // Send SIGTERM to the daemon process
+      process.kill(pid, 'SIGTERM');
+
+      // Wait a bit for graceful shutdown
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Check if process is still running
+      if (await isDaemonRunning()) {
+        // Force kill if still running
+        try {
+          process.kill(pid, 'SIGKILL');
+        } catch {
+          // Process might already be dead
+        }
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+
+      // Clean up PID file
+      await removeDaemonPid();
+      return true;
+    } catch {
+      // Process might already be dead
+      await removeDaemonPid();
+      return false;
+    }
   }
 }

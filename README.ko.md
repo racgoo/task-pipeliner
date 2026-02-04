@@ -78,7 +78,10 @@ tp schedule add schedules.yaml  # 스케줄 파일에서 스케줄 추가
 tp schedule remove # 스케줄 삭제
 tp schedule remove-all # 모든 스케줄 삭제
 tp schedule toggle # 스케줄 활성화/비활성화
-tp schedule start  # 스케줄러 데몬 시작
+tp schedule start  # 포그라운드 모드로 스케줄러 시작
+tp schedule start -d  # 백그라운드 데몬 모드로 스케줄러 시작
+tp schedule stop   # 스케줄러 데몬 종료
+tp schedule status # 데몬 상태 확인 (실시간 모드, Ctrl+C로 종료)
 ```
 
 ## 🚀 빠른 시작
@@ -1451,19 +1454,43 @@ tp schedule toggle
 
 ### 스케줄러 실행
 
-예약된 시간에 워크플로우를 실행하려면 스케줄러 데몬을 시작하세요:
+예약된 시간에 워크플로우를 실행하려면 스케줄러를 시작하세요. 두 가지 모드로 실행할 수 있습니다:
 
+**포그라운드 모드:**
 ```bash
 tp schedule start
 ```
+- 포그라운드에서 실행됩니다 (터미널에 연결됨)
+- `Ctrl+C`를 눌러 스케줄러를 중지합니다
+- 테스트나 임시 스케줄링에 유용합니다
+
+**데몬 모드 (백그라운드):**
+```bash
+tp schedule start -d
+```
+- 백그라운드 데몬 프로세스로 실행됩니다
+- 터미널을 닫아도 계속 실행됩니다
+- 한 번에 하나의 데몬 인스턴스만 실행 가능합니다 (중복 실행 방지)
+- `tp schedule stop`으로 데몬을 종료합니다
+
+**데몬 상태 확인:**
+```bash
+tp schedule status
+```
+- systemctl 스타일의 실시간 데몬 상태를 표시합니다
+- 다음 정보를 표시합니다:
+  - 데몬 상태 (active/inactive)
+  - 프로세스 ID (PID)
+  - 시작 시간 및 업타임
+  - 모든 스케줄과 상태 (active/inactive)
+  - 각 스케줄의 마지막 실행 시간
+- 1초마다 자동으로 업데이트됩니다
+- `Ctrl+C`를 눌러 종료합니다 (데몬은 계속 실행됩니다)
 
 스케줄러는:
-- 데몬 프로세스로 실행됩니다 (백그라운드에서 계속 실행)
 - 예약된 시간에 워크플로우를 실행합니다
 - 모든 실행을 `~/.pipeliner/workflow-history/`에 기록합니다
-- 실시간 실행 상태를 표시합니다
-
-**`Ctrl+C`를 눌러 스케줄러를 중지하세요**
+- 중복 데몬 인스턴스 실행을 방지합니다 (한 번에 하나만 실행 가능)
 
 ### 스케줄 저장
 

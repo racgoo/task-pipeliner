@@ -78,7 +78,10 @@ tp schedule add schedules.yaml  # Add schedules from a schedule file
 tp schedule remove # Remove a schedule
 tp schedule remove-all # Remove all schedules
 tp schedule toggle # Enable/disable a schedule
-tp schedule start  # Start scheduler daemon
+tp schedule start  # Start scheduler in foreground mode
+tp schedule start -d  # Start scheduler daemon in background
+tp schedule stop   # Stop the scheduler daemon
+tp schedule status # Check daemon status (real-time mode, press Ctrl+C to exit)
 ```
 
 ## 🚀 Quick Start
@@ -1452,19 +1455,43 @@ tp schedule toggle
 
 ### Running the Scheduler
 
-Start the scheduler daemon to run workflows at their scheduled times:
+Start the scheduler to run workflows at their scheduled times. You can run it in two modes:
 
+**Foreground Mode:**
 ```bash
 tp schedule start
 ```
+- Runs in the foreground (attached to your terminal)
+- Press `Ctrl+C` to stop the scheduler
+- Useful for testing or temporary scheduling
+
+**Daemon Mode (Background):**
+```bash
+tp schedule start -d
+```
+- Runs as a background daemon process
+- Continues running even after closing the terminal
+- Only one daemon instance can run at a time (duplicate execution is prevented)
+- Use `tp schedule stop` to stop the daemon
+
+**Checking Daemon Status:**
+```bash
+tp schedule status
+```
+- Shows real-time daemon status with systemctl-style display
+- Displays:
+  - Daemon state (active/inactive)
+  - Process ID (PID)
+  - Start time and uptime
+  - All schedules with their status (active/inactive)
+  - Last run time for each schedule
+- Updates every second automatically
+- Press `Ctrl+C` to exit (daemon continues running)
 
 The scheduler will:
-- Run as a daemon process (stays running in the background)
 - Execute workflows at their scheduled times
 - Log all executions to `~/.pipeliner/workflow-history/`
-- Display real-time execution status
-
-**Press `Ctrl+C` to stop the scheduler**
+- Prevent duplicate daemon instances (only one can run at a time)
 
 ### Schedule Storage
 

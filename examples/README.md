@@ -76,6 +76,21 @@ Schedule file examples for `tp schedule add` are in the `schedule-examples/` dir
 
 See [schedule-examples/README.md](schedule-examples/README.md) for schedule file format and usage.
 
+**Quick Start:**
+```bash
+# Add schedules from example file
+tp schedule add examples/schedule-examples/daily-build.yaml
+
+# Start scheduler in daemon mode (background)
+tp schedule start -d
+
+# Check daemon status (real-time)
+tp schedule status
+
+# Stop daemon
+tp schedule stop
+```
+
 ## Running Examples
 
 All examples can be run from the project root:

@@ -122,5 +122,47 @@ tp schedule list        # View all schedules
 tp schedule remove      # Remove a specific schedule
 tp schedule remove-all  # Remove all schedules
 tp schedule toggle      # Enable/disable a schedule
-tp schedule start       # Start the scheduler daemon
 ```
+
+## Running the Scheduler
+
+### Foreground Mode
+
+```bash
+tp schedule start       # Start the scheduler in foreground mode
+```
+
+- Runs in the foreground (attached to your terminal)
+- Press `Ctrl+C` to stop the scheduler
+- Useful for testing or temporary scheduling
+
+### Daemon Mode (Background)
+
+```bash
+tp schedule start -d   # Start the scheduler daemon in background
+```
+
+- Runs as a background daemon process
+- Continues running even after closing the terminal
+- Only one daemon instance can run at a time (duplicate execution is prevented)
+- Use `tp schedule stop` to stop the daemon
+
+### Checking Daemon Status
+
+```bash
+tp schedule status     # Check daemon status (real-time mode)
+```
+
+- Shows real-time daemon status with systemctl-style display
+- Displays daemon state, PID, start time, uptime, and all schedules
+- Updates every second automatically
+- Press `Ctrl+C` to exit (daemon continues running)
+
+### Stopping the Daemon
+
+```bash
+tp schedule stop       # Stop the scheduler daemon
+```
+
+- Stops the running daemon process gracefully
+- Removes PID and start time files
