@@ -17,6 +17,7 @@
 - **Powerful conditional logic**: Branch based on file existence, variable values, and user input
 - **Beautiful output**: Real-time terminal output with colors and formatting
 - **Interactive execution**: Request user input and choices during execution
+- **Profiles**: Run non-interactively with pre-set variables (`tp run --profile <name>`); skip choose/prompt when variables are set in the profile
 - **Parallel processing**: Execute multiple tasks simultaneously to save time
 - **Execution history**: Track and review past execution records
 
@@ -145,6 +146,11 @@ task-pipeliner run workflow.json
 tp run workflow.yaml
 tp run workflow.json
 
+# Run with a profile (skip choose/prompt for variables set in the profile)
+tp run workflow.yaml --profile Test
+# or use the short form
+tp run workflow.yaml -p Test
+
 # Run in silent mode (suppress all console output)
 tp run workflow.yaml --silent
 # or use the short form
@@ -178,6 +184,10 @@ Use `when` clauses to specify execution conditions for steps:
 ### Variables
 
 Store user input or selected values as variables and use them in commands with the `{{variable}}` syntax.
+
+### Profiles
+
+Define named sets of variables in your workflow and run with `tp run --profile <name>`. Choose and prompt steps for those variables are skipped, so you can run the same workflow non-interactively (e.g. in CI).
 
 ### Execution History
 

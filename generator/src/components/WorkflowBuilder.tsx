@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Workflow, Step } from '../types/workflow';
+import type { Workflow, Step, Profile } from '../types/workflow';
 import { generateYAML, generateJSON, downloadYAML, downloadJSON, parseYAML, parseJSON } from '../utils/generator';
 import StepEditor from './StepEditor';
 import './WorkflowBuilder.css';
@@ -9,8 +9,10 @@ export default function WorkflowBuilder() {
     name: '',
     baseDir: '',
     shell: undefined,
+    profiles: undefined,
     steps: [],
   });
+  const [shellInput, setShellInput] = useState('');
   const [outputFormat, setOutputFormat] = useState<'yaml' | 'json'>('yaml');
   const [preview, setPreview] = useState('');
   const [previewError, setPreviewError] = useState<string | null>(null);
@@ -54,12 +56,24 @@ export default function WorkflowBuilder() {
     }));
   };
 
+  const getCleanProfiles = (): Profile[] | undefined => {
+    if (!workflow.profiles?.length) return undefined;
+    return workflow.profiles
+      .map((p) => ({
+        name: p.name,
+        var: Object.fromEntries(Object.entries(p.var).filter(([k]) => k.trim() !== '')),
+      }))
+      .filter((p) => p.name.trim() !== '');
+  };
+
   const generatePreview = () => {
+    const profiles = getCleanProfiles();
     const cleanWorkflow: Workflow = {
       ...workflow,
       name: workflow.name || undefined,
       baseDir: workflow.baseDir || undefined,
       shell: workflow.shell && workflow.shell.length > 0 ? workflow.shell : undefined,
+      profiles: profiles && profiles.length > 0 ? profiles : undefined,
     };
     setPreview(outputFormat === 'yaml' ? generateYAML(cleanWorkflow) : generateJSON(cleanWorkflow));
     setPreviewError(null);
@@ -77,8 +91,10 @@ export default function WorkflowBuilder() {
         name: parsed.name || '',
         baseDir: parsed.baseDir || '',
         shell: parsed.shell || undefined,
+        profiles: parsed.profiles || undefined,
         steps: parsed.steps || [],
       });
+      setShellInput(parsed.shell?.join(' ') ?? '');
       setPreviewError(null);
     } catch (error) {
       setPreviewError(error instanceof Error ? error.message : 'Failed to parse');
@@ -94,11 +110,13 @@ export default function WorkflowBuilder() {
   }, [outputFormat]);
 
   const handleDownload = () => {
+    const profiles = getCleanProfiles();
     const cleanWorkflow: Workflow = {
       ...workflow,
       name: workflow.name || undefined,
       baseDir: workflow.baseDir || undefined,
       shell: workflow.shell && workflow.shell.length > 0 ? workflow.shell : undefined,
+      profiles: profiles && profiles.length > 0 ? profiles : undefined,
     };
     if (outputFormat === 'yaml') {
       downloadYAML(cleanWorkflow);
@@ -151,9 +169,10 @@ export default function WorkflowBuilder() {
               <label>Shell (optional)</label>
               <input
                 type="text"
-                value={workflow.shell?.join(' ') || ''}
+                value={shellInput}
                 onChange={(e) => {
                   const value = e.target.value;
+                  setShellInput(value);
                   const trimmed = value.trim();
                   if (trimmed) {
                     const shellArray = trimmed.split(/\s+/).filter((s) => s !== '');
@@ -167,6 +186,108 @@ export default function WorkflowBuilder() {
               <div className="field-hint">
                 Global shell for all steps (space-separated). If omitted, uses your current shell ($SHELL). Example: <code>bash -lc</code> or <code>zsh -c</code>
               </div>
+            </div>
+
+            <div className="form-group profiles-section">
+              <label>Profiles (optional)</label>
+              <p className="field-hint" style={{ marginBottom: 8 }}>
+                Pre-set variables for <code>tp run --profile &lt;name&gt;</code>. Choose/prompt steps for these variables are skipped.
+              </p>
+              {(workflow.profiles ?? []).map((profile, pIndex) => (
+                <div key={pIndex} className="profile-block">
+                  <div className="profile-header">
+                    <input
+                      type="text"
+                      value={profile.name}
+                      onChange={(e) => {
+                        const next = [...(workflow.profiles ?? [])];
+                        next[pIndex] = { ...profile, name: e.target.value };
+                        updateWorkflow({ profiles: next });
+                      }}
+                      placeholder="Profile name (e.g. Test)"
+                      className="profile-name-input"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = (workflow.profiles ?? []).filter((_, i) => i !== pIndex);
+                        updateWorkflow({ profiles: next.length > 0 ? next : undefined });
+                      }}
+                      className="remove-profile-btn"
+                      title="Remove profile"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <div className="profile-vars">
+                    {Object.entries(profile.var).map(([k, v], vIndex) => (
+                      <div key={vIndex} className="profile-var-row">
+                        <input
+                          type="text"
+                          value={k}
+                          onChange={(e) => {
+                            const next = [...(workflow.profiles ?? [])];
+                            const newVar = { ...profile.var };
+                            delete newVar[k];
+                            newVar[e.target.value] = v;
+                            next[pIndex] = { ...profile, var: newVar };
+                            updateWorkflow({ profiles: next });
+                          }}
+                          placeholder="Variable name"
+                          className="profile-var-key"
+                        />
+                        <input
+                          type="text"
+                          value={v}
+                          onChange={(e) => {
+                            const next = [...(workflow.profiles ?? [])];
+                            const newVar = { ...profile.var, [k]: e.target.value };
+                            next[pIndex] = { ...profile, var: newVar };
+                            updateWorkflow({ profiles: next });
+                          }}
+                          placeholder="Value"
+                          className="profile-var-value"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = [...(workflow.profiles ?? [])];
+                            const newVar = { ...profile.var };
+                            delete newVar[k];
+                            next[pIndex] = { ...profile, var: newVar };
+                            updateWorkflow({ profiles: next });
+                          }}
+                          title="Remove variable"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = [...(workflow.profiles ?? [])];
+                        const newVar = { ...profile.var, '': '' };
+                        next[pIndex] = { ...profile, var: newVar };
+                        updateWorkflow({ profiles: next });
+                      }}
+                      className="add-var-btn"
+                    >
+                      + Add variable
+                    </button>
+                  </div>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => {
+                  const next = [...(workflow.profiles ?? []), { name: '', var: {} }];
+                  updateWorkflow({ profiles: next });
+                }}
+                className="add-profile-btn"
+              >
+                + Add profile
+              </button>
             </div>
           </div>
 

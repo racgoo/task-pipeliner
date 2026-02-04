@@ -25,6 +25,8 @@
 
 - **변수 치환** - 워크플로우 전반에서 `{{variables}}` 사용
 
+- **프로필** - 미리 정의한 변수로 비대화형 실행 (`tp run --profile <name>`); 프로필에 설정된 변수에 대해서는 choose/prompt 단계 생략
+
 - **실행 히스토리** - 상세한 단계별 기록으로 과거 워크플로우 실행 추적 및 검토
 
 ## 리소스
@@ -47,6 +49,8 @@
 ```bash
 tp run workflow.yaml        # 워크플로우 실행
 tp run                      # 가장 가까운 tp 디렉토리에서 워크플로우 선택하여 실행
+tp run workflow.yaml --profile Test   # 프로필로 실행 (프로필에 설정된 변수는 choose/prompt 생략)
+tp run workflow.yaml -p Test         # 프로필 짧은 형식
 tp run workflow.yaml --silent  # 사일런트 모드로 실행 (모든 콘솔 출력 억제)
 tp run workflow.yaml -s     # 사일런트 모드 짧은 형식
 ```
@@ -297,6 +301,11 @@ shell:                                 # 선택사항: 모든 run 명령의 전�
   - bash                               #   - 첫 번째 요소: 쉘 프로그램 (bash, zsh, sh 등)
   - -lc                                #   - 나머지: 쉘 인자 (-c, -lc 등)
                                       #   - 생략 시: 플랫폼 기본 쉘 사용
+profiles:                              # 선택사항: tp run --profile <name>용 미리 설정된 변수
+  - name: Test                         #   - name: 프로필 이름
+    var:                               #   - var: 키-값 맵 ({{variable}} 치환 및 choose/prompt 생략에 사용)
+      mode: "dev"
+      label: "test-label"
 
 steps:                                 # 필수: 실행할 단계 배열
   - some-step-1
@@ -317,6 +326,9 @@ steps:                                 # 필수: 실행할 단계 배열
                                        //   - 첫 번째 요소: 쉘 프로그램
                                        //   - 나머지: 쉘 인자
                                        //   - 생략 시: 플랫폼 기본 쉘 사용
+  "profiles": [                        // 선택사항: tp run --profile <name>용 미리 설정된 변수
+    { "name": "Test", "var": { "mode": "dev", "label": "test-label" } }
+  ],
   "steps": [                           // 필수: 실행할 단계 배열
     { /* some-step-1 */ },
     { /* some-step-2 */ }
@@ -368,6 +380,26 @@ steps:                                 # 필수: 실행할 단계 배열
   - **Windows**: `[cmd, /c]`, `[powershell, -Command]`, `[pwsh, -Command]`
   - **Git Bash (Windows)**: `[bash, -c]`
   - **WSL**: `[wsl, bash, -c]` 또는 `wsl` 명령 직접 사용
+
+#### `profiles` (선택)
+- **타입**: `{ name: string, var: Record<string, string> }` 의 `array`
+- **설명**: 비대화형 실행을 위한 이름 붙은 변수 세트. `tp run --profile <name>` 과 함께 사용.
+- **동작**: 프로필을 사용하면, 프로필에 이미 설정된 변수에 값을 저장하는 **choose** 또는 **prompt** 단계는 생략되고, 프로필 값이 `{{variable}}` 치환 및 조건에 사용됩니다.
+- **예제**:
+  ```yaml
+  profiles:
+    - name: Test
+      var:
+        mode: "dev"
+        label: "test-label"
+    - name: Prod
+      var:
+        mode: "prod"
+        label: "prod-label"
+  ```
+  ```bash
+  tp run workflow.yaml --profile Test   # Test 프로필 변수 사용; mode, label에 대한 choose/prompt 생략
+  ```
 
 #### `steps` (필수)
 - **타입**: `Step` 객체의 `array`
@@ -1307,6 +1339,7 @@ tp history remove-all -y  # 확인 건너뛰기
 - **`file-checks.yaml`** - 파일 존재 확인
 - **`prompt.yaml`** - 사용자 입력 프롬프트
 - **`variables.yaml`** - 변수 치환 예제
+- **`profiles-example.yaml`** - 비대화형 실행용 프로필 (`tp run --profile <name>`)
 
 ### JSON 예제
 
@@ -1318,6 +1351,7 @@ tp history remove-all -y  # 확인 건너뛰기
 - **`conditions.json`** - 조건 평가 예제
 - **`prompt.json`** - 사용자 입력 프롬프트
 - **`variables.json`** - 변수 치환 예제
+- **`profiles-example.json`** - 비대화형 실행용 프로필 (`tp run --profile <name>`)
 
 **참고:** YAML과 JSON 형식 모두 완전히 지원됩니다. 선호하는 형식을 선택하세요 - 가독성을 위해 YAML, 프로그래밍 방식 생성을 위해 JSON.
 - **`variables.yaml`** - 변수 사용 예제

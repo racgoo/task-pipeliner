@@ -25,6 +25,8 @@
 
 - **Variable substitution** - Use `{{variables}}` throughout your workflows
 
+- **Profiles** - Run workflows non-interactively with pre-set variables (`tp run --profile <name>`); choose/prompt steps are skipped when the variable is set in the profile
+
 - **Execution history** - Track and review past workflow executions with detailed step-by-step records
 
 ## 🔗 Resources
@@ -47,6 +49,8 @@
 ```bash
 tp run workflow.yaml        # Run a workflow
 tp run                      # Select and run a workflow from nearest tp directory
+tp run workflow.yaml --profile Test   # Run with profile (skip choose/prompt for variables set in profile)
+tp run workflow.yaml -p Test         # Short form for profile
 tp run workflow.yaml --silent  # Run in silent mode (suppress all console output)
 tp run workflow.yaml -s     # Short form for silent mode
 ```
@@ -297,6 +301,11 @@ shell:                                 # Optional: Global shell configuration fo
   - bash                               #   - First element: shell program (bash, zsh, sh, etc.)
   - -lc                                #   - Rest: shell arguments (-c, -lc, etc.)
                                       #   - If omitted: uses platform default shell
+profiles:                              # Optional: Pre-set variables for tp run --profile <name>
+  - name: Test                         #   - name: profile name
+    var:                               #   - var: key-value map (used for {{variable}} and to skip choose/prompt)
+      mode: "dev"
+      label: "test-label"
 
 steps:                                 # Required: Array of steps to execute
   - some-step-1
@@ -317,6 +326,9 @@ steps:                                 # Required: Array of steps to execute
                                        //   - First element: shell program
                                        //   - Rest: shell arguments
                                        //   - If omitted: uses platform default shell
+  "profiles": [                        // Optional: Pre-set variables for tp run --profile <name>
+    { "name": "Test", "var": { "mode": "dev", "label": "test-label" } }
+  ],
   "steps": [                           // Required: Array of steps to execute
     { /* some-step-1 */ },
     { /* some-step-2 */ }
@@ -368,6 +380,26 @@ steps:                                 # Required: Array of steps to execute
   - **Windows**: `[cmd, /c]`, `[powershell, -Command]`, `[pwsh, -Command]`
   - **Git Bash (Windows)**: `[bash, -c]`
   - **WSL**: `[wsl, bash, -c]` or use `wsl` command directly
+
+#### `profiles` (optional)
+- **Type**: `array` of `{ name: string, var: Record<string, string> }`
+- **Description**: Named sets of variables for non-interactive runs. Use with `tp run --profile <name>`.
+- **Behavior**: When a profile is used, any **choose** or **prompt** step that stores into a variable already set in the profile is skipped; the profile value is used for `{{variable}}` substitution and conditions.
+- **Example**:
+  ```yaml
+  profiles:
+    - name: Test
+      var:
+        mode: "dev"
+        label: "test-label"
+    - name: Prod
+      var:
+        mode: "prod"
+        label: "prod-label"
+  ```
+  ```bash
+  tp run workflow.yaml --profile Test   # Uses Test profile variables; choose/prompt for mode, label are skipped
+  ```
 
 #### `steps` (required)
 - **Type**: `array` of `Step` objects
@@ -1308,6 +1340,7 @@ Check out `examples/yaml-examples/` for YAML workflow examples:
 - **`file-checks.yaml`** - File existence checks
 - **`prompt.yaml`** - User input prompts
 - **`variables.yaml`** - Variable substitution examples
+- **`profiles-example.yaml`** - Profiles for non-interactive runs (`tp run --profile <name>`)
 
 ### JSON Examples
 
@@ -1319,6 +1352,7 @@ Check out `examples/json-examples/` for JSON workflow examples (equivalent to YA
 - **`conditions.json`** - Condition evaluation examples
 - **`prompt.json`** - User input prompts
 - **`variables.json`** - Variable substitution examples
+- **`profiles-example.json`** - Profiles for non-interactive runs (`tp run --profile <name>`)
 
 **Note:** Both YAML and JSON formats are fully supported. Choose the format that fits your preference - YAML for readability, JSON for programmatic generation.
 - **`variables.yaml`** - Variable usage examples
