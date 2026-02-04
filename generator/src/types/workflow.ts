@@ -127,12 +127,21 @@ export interface NotCondition {
 }
 
 /**
+ * Profile: named set of variables for tp run --profile <name>
+ */
+export interface Profile {
+  name: string;
+  var: Record<string, string>;
+}
+
+/**
  * Complete workflow
  */
 export interface Workflow {
   name?: string;
   baseDir?: string;
   shell?: string[];
+  profiles?: Profile[];
   steps: Step[];
 }
 

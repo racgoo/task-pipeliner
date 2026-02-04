@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { Step, RunStepOnError } from '../types/workflow';
 import VariableHighlightInput from './VariableHighlightInput';
 import './StepEditor.css';
@@ -123,6 +123,17 @@ function RunStepEditor({
   step: Extract<Step, { run: string }>;
   onUpdate: (step: Step) => void;
 }) {
+  const [shellInput, setShellInput] = useState(step.shell?.join(' ') ?? '');
+  const lastShellFromInputRef = useRef(step.shell?.join(' ') ?? '');
+
+  useEffect(() => {
+    const fromStep = step.shell?.join(' ') ?? '';
+    if (fromStep !== lastShellFromInputRef.current) {
+      setShellInput(fromStep);
+      lastShellFromInputRef.current = fromStep;
+    }
+  }, [step.shell]);
+
   const updateOnError = (changes: Partial<RunStepOnError>) => {
     const current: RunStepOnError = step.onError ?? { run: '' };
     const next: RunStepOnError = { ...current, ...changes };
@@ -180,10 +191,12 @@ function RunStepEditor({
         <label>Shell (optional)</label>
         <input
           type="text"
-          value={step.shell?.join(' ') || ''}
+          value={shellInput}
           onChange={(e) => {
             const value = e.target.value;
+            setShellInput(value);
             const trimmed = value.trim();
+            lastShellFromInputRef.current = trimmed;
             if (trimmed) {
               const shellArray = trimmed.split(/\s+/).filter((s) => s !== '');
               onUpdate({
