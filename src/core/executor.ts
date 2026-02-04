@@ -26,6 +26,17 @@ import { substituteVariables } from './template';
 import { Workspace } from './workspace';
 
 /**
+ * Options for workflow execution (e.g. profile variables for non-interactive runs)
+ */
+export interface ExecuteOptions {
+  /**
+   * Pre-set variables from --profile <name>. Choose/prompt steps that write to these
+   * variables are skipped and the profile value is used.
+   */
+  profileVars?: Record<string, string>;
+}
+
+/**
  * Workflow Executor
  *
  * This class executes workflow steps sequentially, handling:
@@ -153,13 +164,21 @@ export class Executor {
    * Execute workflow steps sequentially
    *
    * Main entry point for workflow execution:
-   * 1. Resolve baseDir for command execution
-   * 2. Loop through each step
-   * 3. Evaluate conditions (when clauses)
-   * 4. Execute step if condition passes
-   * 5. Check for failures and handle errors
+   * 1. Optionally seed workspace with profile variables
+   * 2. Resolve baseDir for command execution
+   * 3. Loop through each step
+   * 4. Evaluate conditions (when clauses)
+   * 5. Execute step if condition passes (choose/prompt skipped when variable already set)
+   * 6. Check for failures and handle errors
    */
-  async execute(workflow: Workflow): Promise<void> {
+  async execute(workflow: Workflow, options?: ExecuteOptions): Promise<void> {
+    // Seed workspace with profile variables when running with --profile
+    if (options?.profileVars && Object.keys(options.profileVars).length > 0) {
+      for (const [key, value] of Object.entries(options.profileVars)) {
+        this.workspace.setVariable(key, value);
+      }
+    }
+
     // Set up working directory for all commands
     this.resolveBaseDir(workflow);
 
@@ -565,6 +584,9 @@ export class Executor {
    * User selects from options, and the choice is stored:
    * - As a choice (for when: { choice: 'id' } conditions) - uses choice id
    * - As a variable (for {{variable}} substitution) - uses 'as' field if provided, otherwise choice id
+   *
+   * When running with --profile, if the variable (step.choose.as) is already set and matches
+   * an option id, the prompt is skipped and the profile value is used.
    */
   private async executeChooseStep(
     step: {
@@ -572,6 +594,19 @@ export class Executor {
     },
     context: ExecutionContext
   ): Promise<void> {
+    const variableName = step.choose.as;
+    const optionIds = step.choose.options.map((o) => o.id);
+
+    // Profile mode: variable already set and matches an option id -> skip prompt
+    if (variableName && this.workspace.hasVariable(variableName)) {
+      const value = this.workspace.getVariable(variableName) ?? '';
+      if (optionIds.includes(value)) {
+        this.workspace.setChoice(value, value);
+        this.workspace.setStepResult(context.stepIndex, true);
+        return;
+      }
+    }
+
     // Show choice menu to user
     const choice = await this.choicePrompt.prompt(step.choose.message, step.choose.options);
 
@@ -581,13 +616,13 @@ export class Executor {
     }
 
     // Determine variable name: use 'as' field if provided, otherwise use choice id
-    const variableName = step.choose.as ?? choice.id;
+    const resolvedVariableName = variableName ?? choice.id;
 
     // Store choice in workspace (for conditions - always uses choice id)
     this.workspace.setChoice(choice.id, choice.id);
 
     // Store as variable (for {{variable}} substitution - uses 'as' field if provided)
-    this.workspace.setVariable(variableName, choice.id);
+    this.workspace.setVariable(resolvedVariableName, choice.id);
 
     this.workspace.setStepResult(context.stepIndex, true);
   }
@@ -598,11 +633,24 @@ export class Executor {
    * User enters text, which is stored:
    * - As a variable (for {{variable}} substitution)
    * - As a fact (for when: { var: 'name' } conditions)
+   *
+   * When running with --profile, if the variable (step.prompt.as) is already set,
+   * the prompt is skipped and the profile value is used.
    */
   private async executePromptStep(
     step: { prompt: { message: string; as: string; default?: string } },
     context: ExecutionContext
   ): Promise<void> {
+    const varName = step.prompt.as;
+
+    // Profile mode: variable already set -> skip prompt
+    if (this.workspace.hasVariable(varName)) {
+      const value = this.workspace.getVariable(varName) ?? '';
+      this.workspace.setFact(varName, value);
+      this.workspace.setStepResult(context.stepIndex, true);
+      return;
+    }
+
     // Substitute variables in message and default value
     const message = substituteVariables(step.prompt.message, this.workspace);
     const defaultValue = step.prompt.default
@@ -613,8 +661,8 @@ export class Executor {
     const value = await this.textPrompt.prompt(message, defaultValue);
 
     // Store input in workspace (as both variable and fact)
-    this.workspace.setVariable(step.prompt.as, value);
-    this.workspace.setFact(step.prompt.as, value);
+    this.workspace.setVariable(varName, value);
+    this.workspace.setFact(varName, value);
     this.workspace.setStepResult(context.stepIndex, true);
   }
 

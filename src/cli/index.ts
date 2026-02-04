@@ -89,11 +89,12 @@ program
     'Path to the workflow file (YAML or JSON, relative or absolute). If omitted, will search for workflows in the nearest tp directory.'
   )
   .option('-s, --silent', 'Run in silent mode (suppress console output)')
+  .option('-p, --profile <name>', 'Run in profile mode (use profile name)')
   .addHelpText(
     'after',
     '\nExamples:\n  $ tp run workflow.yaml\n  $ tp run workflow.json\n  $ tp run ./my-workflow.yaml\n  $ tp run examples/simple-project/workflow.json\n  $ tp run                    # Select from workflows in nearest tp directory\n  $ tp run workflow.yaml --silent\n  $ tp run workflow.yaml -s\n\nWorkflow File Structure:\n  A workflow file must contain a "steps" array with step definitions.\n  Each step can be:\n  • run: Execute a shell command\n  • choose: Prompt user to select from options\n  • prompt: Ask user for text input\n  • parallel: Run multiple steps simultaneously\n  • fail: Stop workflow with error message\n\n  Steps can have "when" conditions to control execution:\n  • file: Check if file/directory exists\n  • var: Check variable value or existence\n  • all/any/not: Combine conditions\n\n  Supported formats: YAML (.yaml, .yml) and JSON (.json)\n  See README.md for complete DSL documentation.'
   )
-  .action(async (file: string | undefined, options: { silent?: boolean }) => {
+  .action(async (file: string | undefined, options: { silent?: boolean; profile?: string }) => {
     try {
       // If no file provided, find and select from tp directory
       // Note: File selection prompt should be visible even in silent mode
@@ -123,19 +124,36 @@ program
         throw new Error('Invalid workflow: steps array is required');
       }
 
-      // Step 4: Extract metadata for error reporting
+      // Step 4: Resolve profile if --profile <name> was given
+      let profileVars: Record<string, string> | undefined;
+      if (options.profile) {
+        const profileName = options.profile.trim();
+        if (!workflow.profiles?.length) {
+          throw new Error(
+            `Profile "${profileName}" requested but workflow has no "profiles" defined. Add a "profiles" section to your workflow file.`
+          );
+        }
+        const profile = workflow.profiles.find((p) => p.name === profileName);
+        if (!profile) {
+          const available = workflow.profiles.map((p) => p.name).join(', ');
+          throw new Error(`Profile "${profileName}" not found. Available profile(s): ${available}`);
+        }
+        profileVars = profile.var;
+      }
+
+      // Step 5: Extract metadata for error reporting
       workflow._lineNumbers = parser.extractStepLineNumbers(content); // Map step index -> line number
       workflow._fileName = extractFileName(selectedFile); // Just the filename, not full path
 
-      // Step 5: Store absolute file path (needed for resolving relative baseDir)
+      // Step 6: Store absolute file path (needed for resolving relative baseDir)
       workflow._filePath = resolve(selectedFile);
 
-      // Step 6: Execute workflow
+      // Step 7: Execute workflow
       console.log(chalk.green('Starting workflow execution...\n'));
       const executor = new Executor();
-      await executor.execute(workflow);
+      await executor.execute(workflow, profileVars ? { profileVars } : undefined);
 
-      // Step 7: Success message
+      // Step 8: Success message
       console.log(chalk.green('\n✓ Workflow completed successfully'));
     } catch (error) {
       // Handle errors: show simple message, no stack trace

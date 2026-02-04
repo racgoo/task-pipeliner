@@ -1,0 +1,34 @@
+name: Profiles Example
+
+# Pre-defined variable sets for non-interactive runs: tp run --profile <name>
+# When using a profile, choose/prompt steps that store into these variables are skipped.
+profiles:
+  - name: Test
+    var:
+      test: "hi"
+      test2: "hello"
+      mode: "dev"
+      label: "test-label"
+  - name: Prod
+    var:
+      test: "production"
+      test2: "live"
+      mode: "prod"
+      label: "prod-label"
+
+steps:
+  - run: echo "hi"
+  - choose:
+      message: "Select mode"
+      options:
+        - id: dev
+          label: Development
+        - id: prod
+          label: Production
+      as: mode
+  - run: 'echo "selected mode: {{ mode }}"'
+  - prompt:
+      message: "Enter label"
+      as: label
+      default: "default-label"
+  - run: 'echo "label is {{ label }}"'

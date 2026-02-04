@@ -21,6 +21,11 @@ baseDir: ./                            # 선택사항: 명령 실행 기본 디�
                                       #   - 상대 경로: YAML 파일 위치 기준으로 해석
                                       #   - 절대 경로: 그대로 사용
                                       #   - 생략 시: 현재 작업 디렉토리 사용
+profiles:                              # 선택사항: tp run --profile <name>용 미리 설정된 변수
+  - name: Test                         #   - name: 프로필 이름
+    var:                               #   - var: 키-값 맵 (변수가 설정되면 choose/prompt 생략)
+      mode: "dev"
+      label: "test-label"
 
 steps:                                 # 필수: 실행할 단계 배열
   - some-step-1
@@ -37,6 +42,9 @@ steps:                                 # 필수: 실행할 단계 배열
                                        //   - 상대 경로: JSON 파일 위치 기준으로 해석
                                        //   - 절대 경로: 그대로 사용
                                        //   - 생략 시: 현재 작업 디렉토리 사용
+  "profiles": [                        // 선택사항: tp run --profile <name>용 미리 설정된 변수
+    { "name": "Test", "var": { "mode": "dev", "label": "test-label" } }
+  ],
   "steps": [                           // 필수: 실행할 단계 배열
     { /* some-step-1 */ },
     { /* some-step-2 */ }
@@ -78,6 +86,25 @@ steps:                                 # 필수: 실행할 단계 배열
     "baseDir": "./frontend"
   }
   ```
+
+### `profiles` (선택사항)
+
+- **타입**: `{ name: string, var: object }` 의 `array`
+- **설명**: 비대화형 실행을 위한 이름 붙은 변수 세트. `tp run --profile <name>` 과 함께 사용.
+- **동작**: 프로필을 사용하면, 프로필에 이미 설정된 변수에 값을 저장하는 **choose** 또는 **prompt** 단계는 생략되고, 프로필 값이 `{{variable}}` 치환 및 조건에 사용됩니다.
+- **예제**:
+  ```yaml
+  profiles:
+    - name: Test
+      var:
+        mode: "dev"
+        label: "test-label"
+  ```
+  ```bash
+  tp run workflow.yaml --profile Test
+  ```
+
+자세한 내용과 예제는 [프로필](/docs/dsl-reference/profiles) 문서를 참조하세요.
 
 ### `steps` (필수)
 
@@ -183,4 +210,5 @@ steps:
 - **[단계 타입](/docs/dsl-reference/step-types)** - 사용 가능한 모든 단계 타입
 - **[조건](/docs/dsl-reference/conditions)** - 조건부 실행 방법
 - **[변수](/docs/dsl-reference/variables)** - 변수 사용법
+- **[프로필](/docs/dsl-reference/profiles)** - 미리 설정된 변수로 비대화형 실행
 - **[완전한 예제](/docs/dsl-reference/complete-example)** - 모든 기능을 포함한 예제

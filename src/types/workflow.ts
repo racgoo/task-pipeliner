@@ -105,12 +105,26 @@ export interface FailStep {
 }
 
 /**
+ * Profile: named set of variables used when running with --profile <name>.
+ * Skips choose/prompt steps and uses these values for {{variable}} substitution.
+ */
+export interface Profile {
+  name: string;
+  var: { [key: string]: string };
+}
+
+/**
  * Complete workflow
  */
 export interface Workflow {
   name?: string;
   baseDir?: string; // Base directory for command execution (relative or absolute path)
   shell?: string[]; // Global shell configuration (e.g., ["bash", "-lc"])
+  /**
+   * Optional profiles: pre-defined variable sets for non-interactive runs (tp run --profile <name>).
+   * When a profile is used, choose/prompt steps that store into these variables are skipped.
+   */
+  profiles?: Profile[];
   steps: Step[];
   _lineNumbers?: Map<number, number>; // step index -> line number
   _fileName?: string; // YAML file name (for display)

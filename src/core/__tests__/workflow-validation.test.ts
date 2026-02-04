@@ -152,6 +152,47 @@ steps:
       expect(() => parser.parse(yaml)).toThrow('Invalid workflow structure');
       expect(() => parser.parse(yaml)).toThrow(/shell.*cannot be empty/i);
     });
+
+    it('should accept workflow with profiles', () => {
+      const parser = new YAMLParser();
+      const yaml = `
+name: Profiles Example
+profiles:
+  - name: Test
+    var:
+      mode: "dev"
+      label: "test-label"
+  - name: Prod
+    var:
+      mode: "prod"
+      label: "prod-label"
+steps:
+  - run: echo "hi"
+`;
+      const workflow = parser.parse(yaml);
+      expect(workflow.name).toBe('Profiles Example');
+      expect(workflow.profiles).toHaveLength(2);
+      expect(workflow.profiles?.[0].name).toBe('Test');
+      expect(workflow.profiles?.[0].var).toEqual({ mode: 'dev', label: 'test-label' });
+      expect(workflow.profiles?.[1].name).toBe('Prod');
+      expect(workflow.profiles?.[1].var).toEqual({ mode: 'prod', label: 'prod-label' });
+      expect(workflow.steps).toHaveLength(1);
+    });
+
+    it('should reject workflow with profile with empty name', () => {
+      const parser = new YAMLParser();
+      const yaml = `
+name: test
+profiles:
+  - name: ""
+    var:
+      x: "y"
+steps:
+  - run: echo "hi"
+`;
+      expect(() => parser.parse(yaml)).toThrow('Invalid workflow structure');
+      expect(() => parser.parse(yaml)).toThrow(/Profile name|non-empty/i);
+    });
   });
 
   describe('JSONParser', () => {
@@ -281,6 +322,48 @@ steps:
       });
       expect(() => parser.parse(json)).toThrow('Invalid workflow structure');
       expect(() => parser.parse(json)).toThrow(/shell.*cannot be empty/i);
+    });
+
+    it('should accept workflow with profiles', () => {
+      const parser = new JSONParser();
+      const json = JSON.stringify({
+        name: 'Profiles Example',
+        profiles: [
+          { name: 'Test', var: { mode: 'dev', label: 'test-label' } },
+          { name: 'Prod', var: { mode: 'prod', label: 'prod-label' } },
+        ],
+        steps: [{ run: 'echo "hi"' }],
+      });
+      const workflow = parser.parse(json);
+      expect(workflow.name).toBe('Profiles Example');
+      expect(workflow.profiles).toHaveLength(2);
+      expect(workflow.profiles?.[0].name).toBe('Test');
+      expect(workflow.profiles?.[0].var).toEqual({ mode: 'dev', label: 'test-label' });
+      expect(workflow.profiles?.[1].name).toBe('Prod');
+      expect(workflow.steps).toHaveLength(1);
+    });
+
+    it('should coerce profile var values to string', () => {
+      const parser = new JSONParser();
+      const json = JSON.stringify({
+        name: 'test',
+        profiles: [{ name: 'Numeric', var: { count: 42, flag: true } }],
+        steps: [{ run: 'echo "hi"' }],
+      });
+      const workflow = parser.parse(json);
+      expect(workflow.profiles?.[0].var.count).toBe('42');
+      expect(workflow.profiles?.[0].var.flag).toBe('true');
+    });
+
+    it('should reject workflow with profile with empty name', () => {
+      const parser = new JSONParser();
+      const json = JSON.stringify({
+        name: 'test',
+        profiles: [{ name: '', var: { x: 'y' } }],
+        steps: [{ run: 'echo "hi"' }],
+      });
+      expect(() => parser.parse(json)).toThrow('Invalid workflow structure');
+      expect(() => parser.parse(json)).toThrow(/Profile name|non-empty/i);
     });
   });
 });

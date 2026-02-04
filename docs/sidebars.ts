@@ -24,6 +24,7 @@ const sidebars: SidebarsConfig = {
         'dsl-reference/step-types',
         'dsl-reference/conditions',
         'dsl-reference/variables',
+        'dsl-reference/profiles',
         'dsl-reference/complete-example',
       ],
     },
