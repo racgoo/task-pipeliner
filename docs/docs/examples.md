@@ -55,6 +55,37 @@ Check out `examples/json-examples/` for JSON workflow examples (equivalent to YA
 
 **Note:** Both YAML and JSON formats are fully supported. Choose the format that fits your preference - YAML for readability, JSON for programmatic generation.
 
+## Schedule Examples
+
+Check out `examples/schedule-examples/` for schedule file examples. Use them with `tp schedule add <file>`.
+
+- **`daily-build.yaml`** - YAML schedule file (multiple schedules, silent, profile, baseDir)
+- **`daily-build.json`** - JSON schedule file (same content)
+- **`README.md`** - Schedule file format and cron expression reference
+
+### Schedule File Example
+
+```yaml
+schedules:
+  - name: Daily Build
+    cron: "0 9 * * *"
+    workflow: ./build.yaml
+
+  - name: Nightly Test
+    cron: "0 2 * * *"
+    workflow: ./test.yaml
+    silent: true
+
+  - name: Production Deploy
+    cron: "0 18 * * 5"
+    workflow: ./deploy.yaml
+    profile: Production
+```
+
+Then run: `tp schedule add schedules.yaml`
+
+See **[Workflow Scheduling](/docs/schedule)** for full documentation.
+
 ## Quick Examples
 
 ### Basic Workflow
@@ -149,4 +180,5 @@ steps:
 
 - **[Getting Started](/docs/getting-started)** - From installation to your first workflow
 - **[DSL Reference](/docs/dsl-reference/workflow-structure)** - Complete syntax guide
+- **[Workflow Scheduling](/docs/schedule)** - Schedule workflows with cron
 
