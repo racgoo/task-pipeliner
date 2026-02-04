@@ -17,6 +17,7 @@
 - **강력한 조건 처리**: 파일 존재, 변수 값, 사용자 입력에 따른 분기 처리
 - **아름다운 출력**: 실시간으로 색상과 포맷팅이 적용된 터미널 출력
 - **대화형 실행**: 실행 중 사용자에게 입력을 요청하고 선택을 받을 수 있습니다
+- **프로필**: 미리 정의한 변수로 비대화형 실행(`tp run --profile <name>`); 프로필에 설정된 변수에 대해서는 choose/prompt 단계 생략
 - **병렬 처리**: 여러 작업을 동시에 실행하여 시간을 절약합니다
 - **실행 히스토리**: 과거 실행 내역을 추적하고 검토할 수 있습니다
 
@@ -145,6 +146,11 @@ task-pipeliner run workflow.json
 tp run workflow.yaml
 tp run workflow.json
 
+# 프로필로 실행 (프로필에 설정된 변수는 choose/prompt 생략)
+tp run workflow.yaml --profile Test
+# 또는 짧은 형식 사용
+tp run workflow.yaml -p Test
+
 # 사일런트 모드로 실행 (모든 콘솔 출력 억제)
 tp run workflow.yaml --silent
 # 또는 짧은 형식 사용
@@ -178,6 +184,10 @@ tp run workflow.yaml -s
 ### 변수 (Variables)
 
 사용자 입력이나 선택한 값을 변수로 저장하고, 명령에서 `{{variable}}` 문법으로 사용할 수 있습니다.
+
+### 프로필 (Profiles)
+
+워크플로우에 이름 붙은 변수 세트를 정의하고 `tp run --profile <name>` 으로 실행할 수 있습니다. 해당 변수에 대한 choose·prompt 단계는 생략되므로, 같은 워크플로우를 CI 등에서 비대화형으로 실행할 수 있습니다.
 
 ### 실행 히스토리 (History)
 

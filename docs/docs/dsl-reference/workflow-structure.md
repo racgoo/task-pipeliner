@@ -27,6 +27,11 @@ shell:                                 # Optional: Global shell configuration
                                       #   - If omitted: uses user's current shell ($SHELL or %COMSPEC%)
                                       #   - Unix: [bash, -c], [zsh, -c]
                                       #   - Windows: [cmd, /c], [powershell, -Command]
+profiles:                              # Optional: Pre-set variables for tp run --profile <name>
+  - name: Test                         #   - name: profile name
+    var:                               #   - var: key-value map (skips choose/prompt when variable is set)
+      mode: "dev"
+      label: "test-label"
 
 steps:                                 # Required: Array of steps to execute
   - some-step-1
@@ -47,6 +52,9 @@ steps:                                 # Required: Array of steps to execute
                                        //   - First element: shell program
                                        //   - Rest: shell arguments
                                        //   - If omitted: uses platform default shell
+  "profiles": [                        // Optional: Pre-set variables for tp run --profile <name>
+    { "name": "Test", "var": { "mode": "dev", "label": "test-label" } }
+  ],
   "steps": [                           // Required: Array of steps to execute
     { /* some-step-1 */ },
     { /* some-step-2 */ }
@@ -78,6 +86,25 @@ steps:                                 # Required: Array of steps to execute
   baseDir: ./frontend        # Relative to workflow file
   baseDir: /app/frontend     # Absolute path
   ```
+
+### `profiles` (Optional)
+
+- **Type**: `array` of `{ name: string, var: object }`
+- **Description**: Named sets of variables for non-interactive runs. Use with `tp run --profile <name>`.
+- **Behavior**: When a profile is used, any **choose** or **prompt** step that stores into a variable already set in the profile is skipped; the profile value is used for `{{variable}}` substitution and conditions.
+- **Example**:
+  ```yaml
+  profiles:
+    - name: Test
+      var:
+        mode: "dev"
+        label: "test-label"
+  ```
+  ```bash
+  tp run workflow.yaml --profile Test
+  ```
+
+See the [Profiles](/docs/dsl-reference/profiles) documentation for full details and examples.
 
 ### `steps` (Required)
 
@@ -175,5 +202,6 @@ See the [Variables](/docs/dsl-reference/variables) documentation for detailed in
 - **[Step Types](/docs/dsl-reference/step-types)** - All available step types
 - **[Conditions](/docs/dsl-reference/conditions)** - Conditional execution
 - **[Variables](/docs/dsl-reference/variables)** - Using variables
+- **[Profiles](/docs/dsl-reference/profiles)** - Non-interactive runs with pre-set variables
 - **[Complete Example](/docs/dsl-reference/complete-example)** - Example with all features
 
