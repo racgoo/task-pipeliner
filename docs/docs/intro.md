@@ -20,6 +20,7 @@
 - **Profiles**: Run non-interactively with pre-set variables (`tp run --profile <name>`); skip choose/prompt when variables are set in the profile
 - **Parallel processing**: Execute multiple tasks simultaneously to save time
 - **Execution history**: Track and review past execution records
+- **Workflow scheduling**: Run workflows on a schedule (cron) via schedule files (YAML/JSON)
 
 ## Quick Start
 
@@ -200,12 +201,14 @@ All workflow executions are automatically recorded and saved to `~/.pipeliner/wo
   - `tp open generator` - Open generator
   - `tp open docs` - Open documentation
   - `tp history` - Manage execution history
+  - `tp schedule add` - Add workflows from a schedule file (YAML/JSON)
 
 ## Next Steps
 
 - **[Getting Started](/docs/getting-started)** - From installation to your first workflow
 - **[DSL Reference](/docs/dsl-reference/workflow-structure)** - Complete syntax guide
 - **[Execution History](/docs/history)** - Manage past execution records
+- **[Workflow Scheduling](/docs/schedule)** - Schedule workflows with cron
 - **[Examples](/docs/examples)** - Real-world use cases and examples
 
 ## Community

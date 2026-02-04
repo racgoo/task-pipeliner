@@ -55,6 +55,37 @@ task-pipeliner 사용 예제를 확인하세요.
 
 **참고:** YAML과 JSON 형식 모두 완전히 지원됩니다. 선호하는 형식을 선택하세요 - 가독성을 위해 YAML, 프로그래밍 방식 생성을 위해 JSON.
 
+## 스케줄 예제
+
+스케줄 파일 예제는 `examples/schedule-examples/`에서 확인하세요. `tp schedule add <파일>`로 등록할 수 있습니다.
+
+- **`daily-build.yaml`** - YAML 스케줄 파일 (여러 스케줄, silent, profile, baseDir)
+- **`daily-build.json`** - JSON 스케줄 파일 (동일 내용)
+- **`README.md`** - 스케줄 파일 형식 및 cron 표현식 참조
+
+### 스케줄 파일 예시
+
+```yaml
+schedules:
+  - name: Daily Build
+    cron: "0 9 * * *"
+    workflow: ./build.yaml
+
+  - name: Nightly Test
+    cron: "0 2 * * *"
+    workflow: ./test.yaml
+    silent: true
+
+  - name: Production Deploy
+    cron: "0 18 * * 5"
+    workflow: ./deploy.yaml
+    profile: Production
+```
+
+실행: `tp schedule add schedules.yaml`
+
+자세한 내용은 **[워크플로우 스케줄링](/docs/schedule)** 문서를 참조하세요.
+
 ## 빠른 예제
 
 ### 기본 워크플로우
@@ -137,3 +168,4 @@ steps:
 
 - **[시작하기](/docs/getting-started)** - 설치부터 첫 워크플로우까지
 - **[DSL 참조](/docs/dsl-reference/workflow-structure)** - 완전한 문법 가이드
+- **[워크플로우 스케줄링](/docs/schedule)** - cron으로 워크플로우 예약

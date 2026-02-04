@@ -29,6 +29,8 @@
 
 - **Execution history** - Track and review past workflow executions with detailed step-by-step records
 
+- **Workflow scheduling** - Schedule workflows to run automatically at specified times using cron expressions
+
 ## 🔗 Resources
 
 ### Documentation & Tools
@@ -67,6 +69,16 @@ tp history         # View workflow execution history
 tp history show    # Select and view a specific history
 tp history remove   # Remove a specific history
 tp history remove-all # Remove all histories
+```
+
+**Workflow Scheduling:**
+```bash
+tp schedule        # View all schedules
+tp schedule add schedules.yaml  # Add schedules from a schedule file
+tp schedule remove # Remove a schedule
+tp schedule remove-all # Remove all schedules
+tp schedule toggle # Enable/disable a schedule
+tp schedule start  # Start scheduler daemon
 ```
 
 ## 🚀 Quick Start
@@ -1316,6 +1328,154 @@ Each record contains:
 - **output**: Command output (stdout/stderr) and success status
 - **duration**: Execution time in milliseconds
 - **status**: `"success"` or `"failure"`
+
+---
+
+## ⏰ Workflow Scheduling
+
+Schedule workflows to run automatically at specified times using cron expressions.
+
+### Adding Schedules
+
+Create a schedule file (YAML or JSON) defining your schedules:
+
+**YAML (`schedules.yaml`):**
+```yaml
+schedules:
+  - name: Daily Build          # Schedule alias (for identification)
+    cron: "0 9 * * *"          # Cron expression
+    workflow: ./build.yaml     # Path relative to schedule file
+
+  - name: Nightly Test
+    cron: "0 2 * * *"
+    workflow: ./test.yaml
+    silent: true               # Optional: run in silent mode
+
+  - name: Production Deploy
+    cron: "0 18 * * 5"         # Every Friday at 6 PM
+    workflow: ./deploy.yaml
+    profile: Production        # Optional: use specific profile
+
+  - name: Hourly Check
+    cron: "0 * * * *"
+    workflow: simple.yaml
+    baseDir: /path/to/workflows  # Optional: base directory for workflow path
+```
+
+**Field Descriptions:**
+- `name`: Alias to identify the schedule
+- `cron`: Execution time (cron expression)
+- `workflow`: Path to workflow file (relative to schedule file or `baseDir`, or absolute)
+- `baseDir`: (Optional) Base directory for workflow path (defaults to schedule file's directory)
+- `silent`: (Optional) Run in silent mode, suppressing console output
+- `profile`: (Optional) Profile name to use (for workflows with profiles)
+
+**Path Resolution:**
+By default, relative workflow paths are resolved from the schedule file's directory. This means if your schedule file and workflow are in the same folder, you can simply use `./workflow.yaml`. Use `baseDir` to specify a different base directory if needed.
+
+**JSON (`schedules.json`):**
+```json
+{
+  "schedules": [
+    {
+      "name": "Daily Build",
+      "cron": "0 9 * * *",
+      "workflow": "./build.yaml"
+    },
+    {
+      "name": "Nightly Test",
+      "cron": "0 2 * * *",
+      "workflow": "./test.yaml",
+      "silent": true
+    },
+    {
+      "name": "Production Deploy",
+      "cron": "0 18 * * 5",
+      "workflow": "./deploy.yaml",
+      "profile": "Production"
+    }
+  ]
+}
+```
+
+Then add all schedules from the file:
+
+```bash
+tp schedule add schedules.yaml
+```
+
+You'll be prompted to confirm or override the alias for each schedule
+
+**Cron Expression Format:**
+
+5 fields (standard) or **6 fields with seconds** (node-cron extension):
+
+```
+# 6 fields (optional seconds)
+# ┌────────────── second (0-59, optional)
+# │ ┌──────────── minute (0-59)
+# │ │ ┌────────── hour (0-23)
+# │ │ │ ┌──────── day of month (1-31)
+# │ │ │ │ ┌────── month (1-12)
+# │ │ │ │ │ ┌──── day of week (0-7)
+# │ │ │ │ │ │
+* * * * * *
+```
+
+**Common Examples (5 fields):**
+- `0 9 * * *` - Daily at 9:00 AM
+- `0 0 * * 1` - Weekly on Monday at midnight
+- `*/15 * * * *` - Every 15 minutes
+- `0 */2 * * *` - Every 2 hours
+- `0 9 * * 1-5` - Weekdays at 9:00 AM
+
+**With seconds (6 fields):**
+- `* * * * * *` - Every second
+- `*/5 * * * * *` - Every 5 seconds
+- `0 * * * * *` - Every minute (same as `* * * * *`)
+
+### Managing Schedules
+
+```bash
+# List all schedules
+tp schedule list
+
+# Remove a schedule
+tp schedule remove
+
+# Remove all schedules
+tp schedule remove-all
+
+# Enable/disable a schedule
+tp schedule toggle
+```
+
+### Running the Scheduler
+
+Start the scheduler daemon to run workflows at their scheduled times:
+
+```bash
+tp schedule start
+```
+
+The scheduler will:
+- Run as a daemon process (stays running in the background)
+- Execute workflows at their scheduled times
+- Log all executions to `~/.pipeliner/workflow-history/`
+- Display real-time execution status
+
+**Press `Ctrl+C` to stop the scheduler**
+
+### Schedule Storage
+
+Schedules are stored in `~/.pipeliner/schedules/schedules.json`. Each schedule includes:
+- Unique ID
+- Workflow path
+- Cron expression
+- Enabled/disabled status
+- Last execution time
+
+All scheduled workflow executions are logged to the same history directory as manual runs (`~/.pipeliner/workflow-history/`), so you can review them using `tp history`.
 
 ---
 

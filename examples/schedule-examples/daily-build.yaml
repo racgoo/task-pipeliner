@@ -1,0 +1,23 @@
+schedules:
+  # Relative path from schedule file location
+  - name: Daily Build
+    cron: "0 9 * * *"
+    workflow: ../simple-project/workflow.yaml
+
+  # Silent mode
+  - name: Nightly Test (Silent)
+    cron: "0 2 * * *"
+    workflow: ../yaml-examples/basic.yaml
+    silent: true
+
+  # With profile
+  - name: Production Deploy
+    cron: "0 18 * * 5"
+    workflow: ../yaml-examples/profiles-example.yaml
+    profile: Production
+
+  # Using baseDir (optional)
+  - name: Hourly Check
+    cron: "0 * * * *"
+    workflow: simple.yaml
+    baseDir: ../yaml-examples

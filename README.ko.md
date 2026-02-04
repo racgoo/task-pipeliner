@@ -29,6 +29,8 @@
 
 - **실행 히스토리** - 상세한 단계별 기록으로 과거 워크플로우 실행 추적 및 검토
 
+- **워크플로우 스케줄링** - cron 표현식을 사용하여 지정된 시간에 워크플로우 자동 실행
+
 ## 리소스
 
 ### 문서 및 도구
@@ -67,6 +69,16 @@ tp history         # 워크플로우 실행 히스토리 보기
 tp history show    # 특정 히스토리 선택하여 보기
 tp history remove   # 특정 히스토리 삭제
 tp history remove-all # 모든 히스토리 삭제
+```
+
+**워크플로우 스케줄링:**
+```bash
+tp schedule        # 모든 스케줄 보기
+tp schedule add schedules.yaml  # 스케줄 파일에서 스케줄 추가
+tp schedule remove # 스케줄 삭제
+tp schedule remove-all # 모든 스케줄 삭제
+tp schedule toggle # 스케줄 활성화/비활성화
+tp schedule start  # 스케줄러 데몬 시작
 ```
 
 ## 🚀 빠른 시작
@@ -1315,6 +1327,154 @@ tp history remove-all -y  # 확인 건너뛰기
 - **output**: 명령 출력 (stdout/stderr) 및 성공 상태
 - **duration**: 밀리초 단위의 실행 시간
 - **status**: `"success"` 또는 `"failure"`
+
+---
+
+## ⏰ 워크플로우 스케줄링
+
+cron 표현식을 사용하여 지정된 시간에 워크플로우를 자동으로 실행하도록 예약할 수 있습니다.
+
+### 스케줄 추가
+
+스케줄을 정의하는 스케줄 파일(YAML 또는 JSON)을 생성하세요:
+
+**YAML (`schedules.yaml`):**
+```yaml
+schedules:
+  - name: Daily Build          # 스케줄 별칭 (구분용)
+    cron: "0 9 * * *"          # Cron 표현식
+    workflow: ./build.yaml     # 스케줄 파일 기준 상대 경로
+
+  - name: Nightly Test
+    cron: "0 2 * * *"
+    workflow: ./test.yaml
+    silent: true               # 선택사항: 무음 모드로 실행
+
+  - name: Production Deploy
+    cron: "0 18 * * 5"         # 매주 금요일 오후 6시
+    workflow: ./deploy.yaml
+    profile: Production        # 선택사항: 특정 프로필 사용
+
+  - name: Hourly Check
+    cron: "0 * * * *"
+    workflow: simple.yaml
+    baseDir: /path/to/workflows  # 선택사항: 워크플로우 경로의 기준 디렉토리
+```
+
+**필드 설명:**
+- `name`: 스케줄을 구분하기 위한 별칭
+- `cron`: 실행 시간 (cron 표현식)
+- `workflow`: 워크플로우 파일 경로 (스케줄 파일 또는 `baseDir` 기준 상대 경로, 또는 절대 경로)
+- `baseDir`: (선택사항) 워크플로우 경로의 기준 디렉토리 (기본값: 스케줄 파일 디렉토리)
+- `silent`: (선택사항) 무음 모드로 실행 (콘솔 출력 억제)
+- `profile`: (선택사항) 사용할 프로필 이름 (프로필이 있는 워크플로우용)
+
+**경로 해석 방식:**
+기본적으로 상대 워크플로우 경로는 스케줄 파일의 디렉토리를 기준으로 해석됩니다. 즉, 스케줄 파일과 워크플로우가 같은 폴더에 있으면 `./workflow.yaml`만 쓰면 됩니다. 다른 기준 디렉토리가 필요하면 `baseDir`을 사용하세요.
+
+**JSON (`schedules.json`):**
+```json
+{
+  "schedules": [
+    {
+      "name": "Daily Build",
+      "cron": "0 9 * * *",
+      "workflow": "./build.yaml"
+    },
+    {
+      "name": "Nightly Test",
+      "cron": "0 2 * * *",
+      "workflow": "./test.yaml",
+      "silent": true
+    },
+    {
+      "name": "Production Deploy",
+      "cron": "0 18 * * 5",
+      "workflow": "./deploy.yaml",
+      "profile": "Production"
+    }
+  ]
+}
+```
+
+파일에서 모든 스케줄을 추가:
+
+```bash
+tp schedule add schedules.yaml
+```
+
+각 스케줄에 대해 별칭을 확인하거나 변경할 수 있습니다
+
+**Cron 표현식 형식:**
+
+5자리(표준) 또는 **6자리(초 포함, node-cron 확장)** 지원:
+
+```
+# 6자리 (초 선택사항)
+# ┌────────────── 초 (0-59, 선택)
+# │ ┌──────────── 분 (0-59)
+# │ │ ┌────────── 시 (0-23)
+# │ │ │ ┌──────── 일 (1-31)
+# │ │ │ │ ┌────── 월 (1-12)
+# │ │ │ │ │ ┌──── 요일 (0-7)
+# │ │ │ │ │ │
+* * * * * *
+```
+
+**일반적인 예시 (5자리):**
+- `0 9 * * *` - 매일 오전 9시
+- `0 0 * * 1` - 매주 월요일 자정
+- `*/15 * * * *` - 15분마다
+- `0 */2 * * *` - 2시간마다
+
+**초 포함 (6자리):**
+- `* * * * * *` - 매초
+- `*/5 * * * * *` - 5초마다
+- `0 * * * * *` - 매분 (5자리 `* * * * *`와 동일)
+- `0 9 * * 1-5` - 평일 오전 9시
+
+### 스케줄 관리
+
+```bash
+# 모든 스케줄 목록 보기
+tp schedule list
+
+# 스케줄 삭제
+tp schedule remove
+
+# 모든 스케줄 삭제
+tp schedule remove-all
+
+# 스케줄 활성화/비활성화
+tp schedule toggle
+```
+
+### 스케줄러 실행
+
+예약된 시간에 워크플로우를 실행하려면 스케줄러 데몬을 시작하세요:
+
+```bash
+tp schedule start
+```
+
+스케줄러는:
+- 데몬 프로세스로 실행됩니다 (백그라운드에서 계속 실행)
+- 예약된 시간에 워크플로우를 실행합니다
+- 모든 실행을 `~/.pipeliner/workflow-history/`에 기록합니다
+- 실시간 실행 상태를 표시합니다
+
+**`Ctrl+C`를 눌러 스케줄러를 중지하세요**
+
+### 스케줄 저장
+
+스케줄은 `~/.pipeliner/schedules/schedules.json`에 저장됩니다. 각 스케줄은 다음을 포함합니다:
+- 고유 ID
+- 워크플로우 경로
+- Cron 표현식
+- 활성화/비활성화 상태
+- 마지막 실행 시간
+
+예약된 모든 워크플로우 실행은 수동 실행과 동일한 히스토리 디렉토리(`~/.pipeliner/workflow-history/`)에 기록되므로, `tp history`를 사용하여 검토할 수 있습니다.
 
 ---
 
