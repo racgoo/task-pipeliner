@@ -20,6 +20,7 @@
 - **프로필**: 미리 정의한 변수로 비대화형 실행(`tp run --profile <name>`); 프로필에 설정된 변수에 대해서는 choose/prompt 단계 생략
 - **병렬 처리**: 여러 작업을 동시에 실행하여 시간을 절약합니다
 - **실행 히스토리**: 과거 실행 내역을 추적하고 검토할 수 있습니다
+- **워크플로우 스케줄링**: 스케줄 파일(YAML/JSON)로 cron에 따라 워크플로우 자동 실행
 
 ## 빠른 시작
 
@@ -200,12 +201,14 @@ tp run workflow.yaml -s
   - `tp open generator` - 생성기 열기
   - `tp open docs` - 문서 열기
   - `tp history` - 실행 히스토리 관리
+  - `tp schedule add` - 스케줄 파일(YAML/JSON)에서 워크플로우 추가
 
 ## 다음 단계
 
 - **[시작하기](/docs/getting-started)** - 설치부터 첫 워크플로우까지
 - **[DSL 참조](/docs/dsl-reference/workflow-structure)** - 완전한 문법 가이드
 - **[실행 히스토리](/docs/history)** - 과거 실행 내역 관리하기
+- **[워크플로우 스케줄링](/docs/schedule)** - cron으로 워크플로우 예약
 - **[예제](/docs/examples)** - 실제 사용 사례와 예제
 
 ## 커뮤니티

@@ -29,6 +29,7 @@ const sidebars: SidebarsConfig = {
       ],
     },
     'history',
+    'schedule',
     'examples',
   ],
 };
