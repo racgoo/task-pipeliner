@@ -180,6 +180,15 @@ const StepSchema: z.ZodTypeAny = z.lazy(() =>
 );
 
 /**
+ * Profile schema: name + var (string-to-string map).
+ * Values are coerced to string so YAML numbers/booleans become strings.
+ */
+const ProfileSchema = z.object({
+  name: z.string().min(1, 'Profile name must be non-empty'),
+  var: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()]).transform(String)),
+});
+
+/**
  * Workflow schema
  * Note: Internal fields (_lineNumbers, _fileName, _filePath) are not validated
  * as they are added by the parser, not from the source file
@@ -188,6 +197,7 @@ export const WorkflowSchema = z.object({
   name: z.string().optional(),
   baseDir: z.string().optional(),
   shell: z.array(z.string()).min(1, 'shell must have at least one element').optional(),
+  profiles: z.array(ProfileSchema).optional(),
   steps: z.array(StepSchema).min(1, 'Workflow must have at least one step'),
 });
 

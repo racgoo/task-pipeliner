@@ -79,6 +79,10 @@ These are workflow definitions only - no project files included.
   - WSL (Windows Subsystem for Linux)
   - Cross-platform shell tips
 
+- **`profiles-example.yaml`** - Profile-based non-interactive runs
+  - Pre-defined variable sets for `tp run --profile <name>`
+  - Skips choose/prompt when variable is set in the profile
+
 ### Advanced Examples
 
 - **`advanced.yaml`** - Advanced workflow patterns

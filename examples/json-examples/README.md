@@ -41,6 +41,9 @@ task-pipeliner run basic.json
   - Default: uses your current shell (`$SHELL`)
 - **shell-windows-example.json** - Windows shell configuration
   - cmd.exe, PowerShell, pwsh, Git Bash, WSL examples
+- **profiles-example.json** - Profile-based non-interactive runs
+  - Pre-defined variable sets for `tp run --profile <name>`
+  - Skips choose/prompt when variable is set in the profile
 
 ### Advanced Examples
 
