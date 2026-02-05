@@ -319,8 +319,35 @@ steps:
 
 Run multiple tests simultaneously to save time.
 
+## Additional Commands
+
+### Opening Resources
+
+You can quickly open the visual generator or documentation in your browser:
+
+```bash
+tp open generator  # Open visual workflow generator
+tp open docs       # Open documentation site
+```
+
+### Cleaning Data
+
+If you encounter compatibility issues after upgrading (e.g. schedules or daemon not working), you can reset all local data:
+
+```bash
+tp clean
+```
+
+This command:
+- Prompts for confirmation before deleting
+- Stops the scheduler daemon if it's running
+- Removes all data in `~/.pipeliner` (schedules, daemon state, workflow history)
+
+**When to use:** After upgrading to a new version, if you see compatibility issues, run `tp clean` to reset local data and start fresh.
+
 ## Next Steps
 
+- **[CLI Commands Reference](/docs/cli-reference)** - Complete reference for all CLI commands
 - **[Workflow Structure](/docs/dsl-reference/workflow-structure)** - Understanding workflow file structure
 - **[Step Types](/docs/dsl-reference/step-types)** - All available step types
 - **[Conditions](/docs/dsl-reference/conditions)** - Conditional execution

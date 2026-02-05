@@ -197,12 +197,12 @@ tp run workflow.yaml -s
 ## 도구
 
 - 🎨 **[시각적 생성기](https://task-pipeliner-generator.racgoo.com/)** - 브라우저에서 워크플로우를 시각적으로 생성하고 YAML/JSON으로 다운로드
-- 💻 **CLI 명령어**: 
-  - `tp open generator` - 생성기 열기
-  - `tp open docs` - 문서 열기
+- 💻 **[CLI 명령어 참조](/docs/cli-reference)** - 모든 CLI 명령어에 대한 완전한 참조
+  - `tp run` - 워크플로우 실행
+  - `tp open generator/docs` - 리소스 열기
   - `tp history` - 실행 히스토리 관리
-  - `tp schedule add/list/start/status` - cron으로 워크플로우 스케줄; `tp schedule status -n`으로 한 번만 표시 후 종료
-  - `tp clean` - `~/.pipeliner` 데이터 전체 삭제(스케줄, 데몬, 히스토리); 업그레이드 후 호환 문제 시 권장
+  - `tp schedule` - cron으로 워크플로우 스케줄링
+  - `tp clean` - 모든 로컬 데이터 삭제
 
 ## 다음 단계
 

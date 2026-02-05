@@ -242,6 +242,8 @@ tp clean
 
 **When to use:** After upgrading to a new version, if you see compatibility issues (e.g. schedules or daemon not working correctly), run `tp clean` to reset local data and start fresh.
 
+> 💡 **See also:** [CLI Commands Reference](/docs/cli-reference) for complete command documentation.
+
 ## Next Steps
 
 - **[DSL Reference](/docs/dsl-reference/workflow-structure)** - Workflow syntax

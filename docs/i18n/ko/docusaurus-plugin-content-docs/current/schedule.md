@@ -242,6 +242,8 @@ tp clean
 
 **언제 쓰나요:** 버전 업그레이드 후 호환이 맞지 않을 때(스케줄/데몬 오류 등) `tp clean`으로 로컬 데이터를 초기화한 뒤 다시 사용하면 됩니다.
 
+> 💡 **참고:** 모든 명령어에 대한 완전한 문서는 [CLI 명령어 참조](/docs/cli-reference)를 확인하세요.
+
 ## 다음 단계
 
 - **[DSL 참조](/docs/dsl-reference/workflow-structure)** - 워크플로우 문법

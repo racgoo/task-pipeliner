@@ -16,6 +16,7 @@ const sidebars: SidebarsConfig = {
   tutorialSidebar: [
     'intro',
     'getting-started',
+    'cli-reference',
     {
       type: 'category',
       label: 'DLS',

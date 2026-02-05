@@ -79,6 +79,18 @@ schedules:
 | `silent`   | `boolean` | No       | Run in silent mode (suppress console output)                                |
 | `profile`  | `string`  | No       | Profile name to use (for workflows with profiles)                           |
 
+## Timezone
+
+The **cron expression is interpreted in the given timezone**. Use the local time you want (hour/minute) in that timezone.
+
+- **Korea (UTC+9), run at 11:33 AM every day:**
+  ```yaml
+  cron: '33 11 * * *'
+  timezone: '9'
+  ```
+- **UTC+8, run at 12:33:** use `timezone: '8'` and `cron: '33 12 * * *'` (that is 13:33 in Korea).
+- Omit `timezone` to use the server's local time.
+
 ## Path Resolution
 
 - **Relative paths** are resolved from the **schedule file's directory**. If your schedule file and workflow are in the same folder, use `./workflow.yaml`.
@@ -235,6 +247,8 @@ tp clean
 - Removes: schedules, daemon state (PID, start time), and workflow execution history.
 
 **When to use:** After upgrading to a new version, if you see compatibility issues (e.g. schedules or daemon not working correctly), run `tp clean` to reset local data and start fresh.
+
+> 💡 **See also:** [CLI Commands Reference](/docs/cli-reference) for complete command documentation.
 
 ## Next Steps
 
