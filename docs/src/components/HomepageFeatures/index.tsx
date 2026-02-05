@@ -148,26 +148,26 @@ export default function HomepageFeatures(): ReactNode {
           </div>
           <div className={styles.feature}>
             <div className={styles.featureHeader}>
-              <span className={styles.featureEmoji}>📁</span>
+              <span className={styles.featureEmoji}>⏰</span>
               <Heading as="h3" className={styles.featureTitle}>
-                <Translate id="homepage.features.baseDir.title">기본 디렉토리</Translate>
+                <Translate id="homepage.features.scheduling.title">워크플로우 스케줄링</Translate>
               </Heading>
             </div>
             <p className={styles.featureDescription}>
-              <Translate id="homepage.features.baseDir.description">모든 명령 실행을 위한 기본 디렉토리 설정</Translate>
+              <Translate id="homepage.features.scheduling.description">크론 표현식을 사용한 자동 워크플로우 실행</Translate>
             </p>
             <ul className={styles.featureDetails}>
               <li>
-                <Translate id="homepage.features.baseDir.detail1">상대 또는 절대 경로</Translate>
+                <Translate id="homepage.features.scheduling.detail1">크론 기반 스케줄링</Translate>
               </li>
               <li>
-                <Translate id="homepage.features.baseDir.detail2">워크플로우 파일 위치 기준으로 해석</Translate>
+                <Translate id="homepage.features.scheduling.detail2">데몬 모드로 백그라운드 실행</Translate>
               </li>
               <li>
-                <Translate id="homepage.features.baseDir.detail3">모든 명령이 baseDir에서 실행</Translate>
+                <Translate id="homepage.features.scheduling.detail3">실시간 상태 모니터링</Translate>
               </li>
               <li>
-                <Translate id="homepage.features.baseDir.detail4">선택사항 - 기본값은 현재 디렉토리</Translate>
+                <Translate id="homepage.features.scheduling.detail4">타임존 지원</Translate>
               </li>
             </ul>
           </div>

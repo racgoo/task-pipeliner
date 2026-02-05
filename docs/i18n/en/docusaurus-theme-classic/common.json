@@ -4,7 +4,7 @@
     "description": "The homepage tagline"
   },
   "homepage.hero.description": {
-    "message": "A modern workflow automation tool that lets you define complex task pipelines using simple YAML or JSON files. With conditional execution, parallel tasks, interactive prompts, and beautiful terminal output.",
+    "message": "A modern workflow orchestration tool that lets you define, coordinate, and execute complex workflows using simple YAML or JSON files. Supports conditional execution, parallel processing, interactive prompts, cron-based scheduling, and beautiful terminal output.",
     "description": "The homepage hero description"
   },
   "homepage.hero.quickStart": {
@@ -155,29 +155,29 @@
     "message": "Case-sensitive variable names",
     "description": "Variable substitution detail 4"
   },
-  "homepage.features.baseDir.title": {
-    "message": "Base Directory",
-    "description": "The base directory feature title"
+  "homepage.features.scheduling.title": {
+    "message": "Workflow Scheduling",
+    "description": "The workflow scheduling feature title"
   },
-  "homepage.features.baseDir.description": {
-    "message": "Set a base directory for all command executions",
-    "description": "The base directory feature description"
+  "homepage.features.scheduling.description": {
+    "message": "Automatically execute workflows using cron expressions",
+    "description": "The workflow scheduling feature description"
   },
-  "homepage.features.baseDir.detail1": {
-    "message": "Relative or absolute paths",
-    "description": "Base directory detail 1"
+  "homepage.features.scheduling.detail1": {
+    "message": "Cron-based scheduling",
+    "description": "Workflow scheduling detail 1"
   },
-  "homepage.features.baseDir.detail2": {
-    "message": "Resolved from workflow file location",
-    "description": "Base directory detail 2"
+  "homepage.features.scheduling.detail2": {
+    "message": "Background daemon mode",
+    "description": "Workflow scheduling detail 2"
   },
-  "homepage.features.baseDir.detail3": {
-    "message": "All commands run in baseDir",
-    "description": "Base directory detail 3"
+  "homepage.features.scheduling.detail3": {
+    "message": "Real-time status monitoring",
+    "description": "Workflow scheduling detail 3"
   },
-  "homepage.features.baseDir.detail4": {
-    "message": "Optional - defaults to current directory",
-    "description": "Base directory detail 4"
+  "homepage.features.scheduling.detail4": {
+    "message": "Timezone support",
+    "description": "Workflow scheduling detail 4"
   },
   "homepage.useCases.title": {
     "message": "Use Cases",

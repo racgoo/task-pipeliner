@@ -4,7 +4,7 @@
     "description": "The homepage tagline"
   },
   "homepage.hero.description": {
-    "message": "간단한 YAML 또는 JSON 파일로 복잡한 작업 파이프라인을 정의할 수 있는 현대적인 워크플로우 자동화 도구. 조건부 실행, 병렬 작업, 대화형 프롬프트, 그리고 아름다운 터미널 출력을 제공합니다.",
+    "message": "간단한 YAML 또는 JSON 파일로 복잡한 워크플로우를 정의, 조율, 실행하는 현대적인 오케스트레이션 도구. 조건부 실행, 병렬 작업, 대화형 프롬프트, 크론 기반 스케줄링, 그리고 아름다운 터미널 출력을 제공합니다.",
     "description": "The homepage hero description"
   },
   "homepage.hero.quickStart": {
@@ -155,29 +155,29 @@
     "message": "대소문자 구분 변수 이름",
     "description": "Variable substitution detail 4"
   },
-  "homepage.features.baseDir.title": {
-    "message": "기본 디렉토리",
-    "description": "The base directory feature title"
+  "homepage.features.scheduling.title": {
+    "message": "워크플로우 스케줄링",
+    "description": "The workflow scheduling feature title"
   },
-  "homepage.features.baseDir.description": {
-    "message": "모든 명령 실행을 위한 기본 디렉토리 설정",
-    "description": "The base directory feature description"
+  "homepage.features.scheduling.description": {
+    "message": "크론 표현식을 사용한 자동 워크플로우 실행",
+    "description": "The workflow scheduling feature description"
   },
-  "homepage.features.baseDir.detail1": {
-    "message": "상대 또는 절대 경로",
-    "description": "Base directory detail 1"
+  "homepage.features.scheduling.detail1": {
+    "message": "크론 기반 스케줄링",
+    "description": "Workflow scheduling detail 1"
   },
-  "homepage.features.baseDir.detail2": {
-    "message": "워크플로우 파일 위치 기준으로 해석",
-    "description": "Base directory detail 2"
+  "homepage.features.scheduling.detail2": {
+    "message": "데몬 모드로 백그라운드 실행",
+    "description": "Workflow scheduling detail 2"
   },
-  "homepage.features.baseDir.detail3": {
-    "message": "모든 명령이 baseDir에서 실행",
-    "description": "Base directory detail 3"
+  "homepage.features.scheduling.detail3": {
+    "message": "실시간 상태 모니터링",
+    "description": "Workflow scheduling detail 3"
   },
-  "homepage.features.baseDir.detail4": {
-    "message": "선택사항 - 기본값은 현재 디렉토리",
-    "description": "Base directory detail 4"
+  "homepage.features.scheduling.detail4": {
+    "message": "타임존 지원",
+    "description": "Workflow scheduling detail 4"
   },
   "homepage.useCases.title": {
     "message": "사용 사례",
