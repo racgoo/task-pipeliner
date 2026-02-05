@@ -15,7 +15,7 @@ export default function HomepageFeatures(): ReactNode {
             </h2>
             <p className={styles.sectionSubtitle}>
               <Translate id="homepage.features.subtitle">
-                task-pipeliner가 제공하는 강력한 기능들을 확인하세요
+                워크플로우 오케스트레이션을 위한 강력한 기능들을 확인하세요
               </Translate>
             </p>
           </div>
