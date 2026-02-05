@@ -141,6 +141,9 @@ tp schedule list
 tp schedule ls
 ```
 
+- **통일된 카드 레이아웃**으로 모든 스케줄을 표시합니다 (각 카드: 이름, active/inactive 배지, Enabled, Cron+사람이 읽기 쉬운 설명, Timezone, Workflow 경로, Profile, Last run, Next run).
+- `tp schedule status`, `tp schedule start`에서도 같은 카드 레이아웃을 사용해 UI가 일관됩니다.
+
 ### 스케줄 삭제
 
 ```bash
@@ -195,18 +198,12 @@ tp schedule start -d
 ### 데몬 상태 확인
 
 ```bash
-tp schedule status
+tp schedule status      # 실시간 보기 (1초마다 갱신); Ctrl+C는 화면만 종료, 데몬은 유지
+tp schedule status -n   # 한 번만 표시 후 종료 (갱신 없음)
 ```
 
-- systemctl 스타일의 실시간 데몬 상태를 표시합니다
-- 다음 정보를 표시합니다:
-  - 데몬 상태 (active/inactive)
-  - 프로세스 ID (PID)
-  - 시작 시간 및 업타임
-  - 모든 스케줄과 상태 (active/inactive)
-  - 각 스케줄의 마지막 실행 시간
-- 1초마다 자동으로 업데이트됩니다
-- `Ctrl+C`를 눌러 종료합니다 (데몬은 계속 실행됩니다)
+- `tp schedule list`, `tp schedule start`와 **동일한 카드 레이아웃**으로 표시: 데몬 상태(active/inactive), PID, 시작 시각·업타임, 각 스케줄의 Enabled, Cron(사람이 읽기 쉬운 설명), Timezone, Workflow, Profile, Last run, Next run.
+- `Ctrl+C`는 상태 화면만 종료하며, 데몬은 `tp schedule start -d`로 띄웠다면 계속 실행됩니다.
 
 ### 데몬 종료
 
@@ -230,6 +227,20 @@ tp schedule stop
 - **스케줄**: `~/.pipeliner/schedules/schedules.json`에 저장
 - **데몬 PID**: `~/.pipeliner/daemon/scheduler.pid`에 저장
 - **데몬 시작 시간**: `~/.pipeliner/daemon/scheduler.started`에 저장
+
+## 데이터 초기화 (`tp clean`)
+
+스케줄·데몬 데이터는 모두 `~/.pipeliner` 아래에 있습니다. 전부 삭제하려면:
+
+```bash
+tp clean
+```
+
+- 삭제 전 확인 메시지가 표시됩니다.
+- 스케줄러 데몬이 실행 중이면 먼저 종료한 뒤 디렉터리를 삭제합니다.
+- 삭제 대상: 스케줄, 데몬 상태(PID, 시작 시각), 워크플로우 실행 히스토리.
+
+**언제 쓰나요:** 버전 업그레이드 후 호환이 맞지 않을 때(스케줄/데몬 오류 등) `tp clean`으로 로컬 데이터를 초기화한 뒤 다시 사용하면 됩니다.
 
 ## 다음 단계
 

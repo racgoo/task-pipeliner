@@ -201,7 +201,8 @@ tp run workflow.yaml -s
   - `tp open generator` - 생성기 열기
   - `tp open docs` - 문서 열기
   - `tp history` - 실행 히스토리 관리
-  - `tp schedule add` - 스케줄 파일(YAML/JSON)에서 워크플로우 추가
+  - `tp schedule add/list/start/status` - cron으로 워크플로우 스케줄; `tp schedule status -n`으로 한 번만 표시 후 종료
+  - `tp clean` - `~/.pipeliner` 데이터 전체 삭제(스케줄, 데몬, 히스토리); 업그레이드 후 호환 문제 시 권장
 
 ## 다음 단계
 

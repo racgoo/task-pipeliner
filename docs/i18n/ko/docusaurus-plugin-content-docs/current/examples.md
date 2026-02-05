@@ -84,7 +84,7 @@ schedules:
 
 실행: `tp schedule add schedules.yaml`
 
-자세한 내용은 **[워크플로우 스케줄링](/docs/schedule)** 문서를 참조하세요.
+`tp schedule list`, `tp schedule status`(한 번만 보려면 `tp schedule status -n`)로 통일된 카드 레이아웃의 스케줄을 볼 수 있습니다. 업그레이드 후 호환 문제가 있으면 `tp clean`으로 `~/.pipeliner` 데이터를 초기화하세요. 자세한 내용은 **[워크플로우 스케줄링](/docs/schedule)** 문서와 [데이터 초기화 (`tp clean`)](/docs/schedule#데이터-초기화-tp-clean)를 참조하세요.
 
 ## 빠른 예제
 

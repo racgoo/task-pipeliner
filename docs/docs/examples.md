@@ -84,7 +84,7 @@ schedules:
 
 Then run: `tp schedule add schedules.yaml`
 
-See **[Workflow Scheduling](/docs/schedule)** for full documentation.
+Use `tp schedule list` and `tp schedule status` (or `tp schedule status -n` to show once and exit) to view schedules in a unified card layout. After upgrading, if you see compatibility issues, run `tp clean` to reset `~/.pipeliner` data. See **[Workflow Scheduling](/docs/schedule)** for full documentation, including [Resetting Data (`tp clean`)](/docs/schedule#resetting-data-tp-clean).
 
 ## Quick Examples
 
