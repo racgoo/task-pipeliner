@@ -92,6 +92,21 @@ export async function saveDaemonPid(): Promise<void> {
   await writeFile(START_TIME_FILE, startTime, 'utf-8');
 }
 
+const ERROR_LOG_FILE = join(DAEMON_DIR, 'error.log');
+
+/**
+ * Write daemon startup error to log file (for debugging when daemon fails to start)
+ */
+export async function writeDaemonError(err: Error): Promise<void> {
+  try {
+    await mkdir(DAEMON_DIR, { recursive: true });
+    const line = `${new Date().toISOString()} ${err.message}\n${err.stack ?? ''}\n`;
+    await writeFile(ERROR_LOG_FILE, line, 'utf-8');
+  } catch {
+    // Ignore write errors
+  }
+}
+
 /**
  * Remove PID file and start time file
  */
@@ -132,6 +147,26 @@ export async function getDaemonStartTime(): Promise<string | null> {
     }
 
     return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Path to daemon error log (for user-facing messages)
+ */
+export function getDaemonErrorLogPath(): string {
+  return ERROR_LOG_FILE;
+}
+
+/**
+ * Read daemon error log content if it exists (for showing on start failure)
+ */
+export async function readDaemonErrorLog(): Promise<string | null> {
+  try {
+    if (!existsSync(ERROR_LOG_FILE)) return null;
+    const content = await readFile(ERROR_LOG_FILE, 'utf-8');
+    return content.trim() || null;
   } catch {
     return null;
   }

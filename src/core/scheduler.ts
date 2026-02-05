@@ -2,7 +2,6 @@ import { readFile } from 'fs/promises';
 import { resolve } from 'path';
 import boxen from 'boxen';
 import chalk from 'chalk';
-import cronstrue from 'cronstrue';
 import cron, { ScheduledTask } from 'node-cron';
 import { Schedule } from '../types/schedule';
 import { getDaemonStatus, isDaemonRunning, removeDaemonPid } from './daemon-manager';
@@ -11,12 +10,9 @@ import { getParser } from './parser';
 import { ScheduleManager } from './schedule-manager';
 import { resolveTimezone } from './timezone-offset';
 
-function getCronDescription(cronExpr: string): string | null {
-  try {
-    return cronstrue.toString(cronExpr);
-  } catch {
-    return null;
-  }
+export interface SchedulerStartOptions {
+  /** Called when a schedule is started (e.g. to print a card in the CLI). */
+  onScheduleStarted?: (schedule: Schedule) => void;
 }
 
 /**
@@ -28,6 +24,7 @@ function getCronDescription(cronExpr: string): string | null {
 export class WorkflowScheduler {
   private scheduleManager: ScheduleManager;
   private tasks: Map<string, ScheduledTask> = new Map();
+  private startOptions: SchedulerStartOptions | undefined;
 
   constructor() {
     this.scheduleManager = new ScheduleManager();
@@ -37,10 +34,12 @@ export class WorkflowScheduler {
    * Start the scheduler daemon
    * Loads schedules and starts cron jobs
    * @param daemonMode - If true, run in background daemon mode
+   * @param options - Optional callbacks (e.g. onScheduleStarted for CLI to render cards)
    */
-  async start(daemonMode: boolean = false): Promise<void> {
-    // Check if daemon is already running
-    if (await isDaemonRunning()) {
+  async start(daemonMode: boolean = false, options?: SchedulerStartOptions): Promise<void> {
+    this.startOptions = options;
+    // When we are the daemon child (TP_DAEMON_MODE), we already wrote our PID; don't check "already running"
+    if (!daemonMode && (await isDaemonRunning())) {
       const status = await getDaemonStatus();
       throw new Error(
         `Scheduler daemon is already running (PID: ${status.pid}). Use "tp schedule stop" to stop it first.`
@@ -52,12 +51,12 @@ export class WorkflowScheduler {
     } else {
       const header = chalk.bold('🚀 Starting workflow scheduler...');
       console.log(
-        `\n${boxen(header, {
+        boxen(header, {
           borderStyle: 'round',
           padding: { top: 0, bottom: 0, left: 1, right: 1 },
-          margin: { top: 0, bottom: 1, left: 0, right: 0 },
+          margin: { top: 0, bottom: 0, left: 0, right: 0 },
           borderColor: 'cyan',
-        })}\n`
+        })
       );
     }
 
@@ -84,16 +83,15 @@ export class WorkflowScheduler {
     } else {
       const footer = [
         chalk.green('✓ Scheduler is running'),
-        '',
         chalk.dim('  Press Ctrl+C to stop'),
       ].join('\n');
       console.log(
-        `${boxen(footer, {
+        boxen(footer, {
           borderStyle: 'round',
-          padding: { top: 1, bottom: 1, left: 2, right: 2 },
+          padding: { top: 0, bottom: 0, left: 2, right: 2 },
           margin: { top: 0, bottom: 0, left: 0, right: 0 },
           borderColor: 'green',
-        })}\n`
+        })
       );
     }
 
@@ -181,34 +179,7 @@ export class WorkflowScheduler {
 
     this.tasks.set(schedule.id, task);
 
-    const name = schedule.name ?? schedule.workflowPath;
-    const cronDesc = getCronDescription(schedule.cron);
-    const tzStr = schedule.timezone
-      ? schedule.timezone.startsWith('+') || schedule.timezone.startsWith('-')
-        ? `UTC${schedule.timezone}`
-        : `UTC+${schedule.timezone}`
-      : null;
-
-    const rows = [
-      [chalk.gray('Cron'), schedule.cron],
-      ...(cronDesc ? ([[chalk.gray(''), chalk.dim(`→ ${cronDesc}`)]] as [string, string][]) : []),
-      ...(tzStr ? ([[chalk.gray('Timezone'), tzStr]] as [string, string][]) : []),
-      [chalk.gray('Workflow'), schedule.workflowPath],
-    ];
-    const content = [
-      `${chalk.green('✓')} ${chalk.bold(name)}`,
-      '',
-      ...rows.map(([label, value]) => `  ${label.padEnd(10)} ${value}`),
-    ].join('\n');
-
-    console.log(
-      boxen(content, {
-        borderStyle: 'round',
-        padding: { top: 0, bottom: 0, left: 1, right: 1 },
-        margin: { top: 0, bottom: 1, left: 0, right: 0 },
-        borderColor: 'green',
-      })
-    );
+    this.startOptions?.onScheduleStarted?.(schedule);
   }
 
   /**
