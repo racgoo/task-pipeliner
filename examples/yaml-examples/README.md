@@ -108,8 +108,9 @@ These are workflow definitions only - no project files included.
   - Environment-specific builds
 
 - **`base-dir-example.yaml`** - baseDir configuration example
-  - Setting working directory
+  - Setting working directory explicitly
   - Relative and absolute paths
+  - **Note**: If `baseDir` is omitted, commands run in the workflow file's directory (same as schedule files)
 
 ## Running Examples
 

@@ -373,11 +373,12 @@ steps:                                 # Required: Array of steps to execute
 - **Resolution**:
   - **Relative path** (e.g., `./`, `../frontend`): Resolved relative to the workflow file's directory
   - **Absolute path** (e.g., `/home/user/project`): Used as-is
-  - **If omitted**: Uses `process.cwd()` (current working directory)
+  - **If omitted**: Workflow file's directory is used (same as schedule files)
 - **Example**:
   ```yaml
   baseDir: ./frontend        # Relative to workflow file
   baseDir: /app/frontend     # Absolute path
+  # If omitted, commands run in the workflow file's directory
   ```
 
 #### `shell` (optional)

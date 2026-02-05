@@ -127,7 +127,8 @@ tp run  # Shows interactive menu with all workflows in tp/ directory
 
 - **Project Examples** (monorepo-example, simple-project, react-app):
   - Include actual project files
-  - Use `baseDir` to run commands in project directory
+  - Commands run in workflow file's directory by default (same as schedule files)
+  - `baseDir` is optional - use it to override the default directory
   - Demonstrate real-world usage
   - Can be executed immediately
 
