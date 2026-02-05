@@ -8,6 +8,7 @@
 boxen@5.1.2: MIT
 chalk@4.1.2: MIT
 commander@11.1.0: MIT
+cronstrue@3.11.0: MIT
 dayjs@1.11.19: MIT
 eslint-config-prettier@10.1.8: MIT
 eslint-plugin-import@2.32.0: MIT

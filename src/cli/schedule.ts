@@ -4,6 +4,7 @@ import { dirname, isAbsolute, resolve } from 'path';
 import boxen from 'boxen';
 import chalk from 'chalk';
 import { Command } from 'commander';
+import cronstrue from 'cronstrue';
 import dayjs from 'dayjs';
 import inquirer from 'inquirer';
 import logUpdate from 'log-update';
@@ -12,6 +13,7 @@ import { getDaemonStatus, isDaemonRunning } from '../core/daemon-manager';
 import { parseScheduleFile } from '../core/schedule-file-parser';
 import { ScheduleManager } from '../core/schedule-manager';
 import { WorkflowScheduler } from '../core/scheduler';
+import { resolveTimezone } from '../core/timezone-offset';
 import { Schedule } from '../types/schedule';
 import { ScheduleDefinition } from '../types/schedule-file';
 
@@ -213,8 +215,10 @@ async function addSchedules(scheduleFilePath?: string): Promise<void> {
 
   console.log(`\n✓ Added ${addedSchedules.length} schedule(s) successfully\n`);
   for (const s of addedSchedules) {
+    const cronDesc = getCronDescription(s.cron);
     console.log(`  - ${s.name ?? 'N/A'}`);
     console.log(`    Cron: ${s.cron}`);
+    if (cronDesc) console.log(`    ${chalk.dim(`→ ${cronDesc}`)}`);
     if (s.timezone) console.log(`    Timezone: ${s.timezone}`);
     console.log(`    Workflow: ${s.workflowPath}`);
     if (s.silent) console.log(`    Silent: Yes`);
@@ -276,37 +280,126 @@ async function removeSchedule(): Promise<void> {
 }
 
 /**
- * List all schedules
+ * Get human-readable description of a cron expression (e.g. "At 12:07 PM every day")
+ */
+function getCronDescription(cronExpr: string): string | null {
+  try {
+    return cronstrue.toString(cronExpr);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get next run time for a schedule (without starting the task)
+ */
+function getNextRunForSchedule(schedule: Schedule): Date | null {
+  if (!cron.validate(schedule.cron)) return null;
+  try {
+    const options: { timezone?: string } = {};
+    const resolvedTz = resolveTimezone(schedule.timezone);
+    if (resolvedTz) options.timezone = resolvedTz;
+    const task = cron.createTask(schedule.cron, () => {}, options);
+    const next = task.getNextRun();
+    task.destroy();
+    return next;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * List all schedules (rich table-style UI)
  */
 async function listSchedules(): Promise<void> {
   const manager = new ScheduleManager();
   const schedules = await manager.loadSchedules();
 
   if (schedules.length === 0) {
-    console.log('No schedules found');
-    console.log('\nRun "tp schedule add" to create a new schedule');
+    const emptyMsg = [
+      chalk.gray('No schedules registered.'),
+      '',
+      chalk.dim('  tp schedule add <schedule.yaml>   add from a schedule file'),
+    ].join('\n');
+    console.log(
+      `\n${boxen(emptyMsg, {
+        borderStyle: 'round',
+        padding: { top: 1, bottom: 1, left: 2, right: 2 },
+        margin: { top: 0, bottom: 0, left: 0, right: 0 },
+        borderColor: 'gray',
+      })}\n`
+    );
     return;
   }
 
-  console.log('\n📅 Workflow Schedules\n');
+  const daemonStatus = await getDaemonStatus();
+  const daemonBadge = daemonStatus.running ? chalk.green('● running') : chalk.gray('○ stopped');
+  const enabledCount = schedules.filter((s) => s.enabled).length;
+  const title = chalk.bold('📅 Workflow Schedules');
+  console.log(`\n${title}`);
+  console.log(
+    [
+      chalk.gray('  Daemon: '),
+      daemonBadge,
+      chalk.gray(`  ·  Schedules: ${enabledCount}/${schedules.length} enabled`),
+      '\n',
+    ].join('')
+  );
 
-  for (const schedule of schedules) {
-    const status = schedule.enabled ? '✓ Enabled' : '✗ Disabled';
-    const name = schedule.name ?? schedule.workflowPath;
-    const lastRun = schedule.lastRun
-      ? dayjs(schedule.lastRun).format('YYYY-MM-DD HH:mm:ss')
-      : 'Never';
+  for (let i = 0; i < schedules.length; i++) {
+    const s = schedules[i];
+    const nextRun = getNextRunForSchedule(s);
+    const nextRunStr = nextRun ? dayjs(nextRun).format('YYYY-MM-DD HH:mm:ss') : chalk.dim('—');
+    const lastRunStr = s.lastRun
+      ? dayjs(s.lastRun).format('YYYY-MM-DD HH:mm:ss')
+      : chalk.dim('never');
+    const toggleBadge = s.enabled ? chalk.green('● enabled') : chalk.gray('○ disabled');
+    const name = chalk.bold(s.name ?? s.workflowPath);
+    const cronDesc = getCronDescription(s.cron);
 
-    console.log(`  ${status} ${name}`);
-    console.log(`    ID: ${schedule.id}`);
-    console.log(`    Cron: ${schedule.cron}`);
-    if (schedule.timezone) {
-      console.log(`    Timezone: ${schedule.timezone}`);
-    }
-    console.log(`    Workflow: ${schedule.workflowPath}`);
-    console.log(`    Last run: ${lastRun}`);
-    console.log();
+    const rows = [
+      [chalk.gray('Toggle'), toggleBadge],
+      [chalk.gray('Cron'), s.cron],
+      ...(cronDesc ? ([[chalk.gray(''), chalk.dim(`→ ${cronDesc}`)]] as [string, string][]) : []),
+      ...(s.timezone
+        ? ([
+            [
+              chalk.gray('Timezone'),
+              s.timezone.startsWith('+') || s.timezone.startsWith('-')
+                ? `UTC${s.timezone}`
+                : `UTC+${s.timezone}`,
+            ],
+          ] as [string, string][])
+        : []),
+      [chalk.gray('Workflow'), s.workflowPath],
+      ...(s.profile
+        ? ([[chalk.gray('Profile'), chalk.cyan(s.profile)]] as [string, string][])
+        : []),
+      ...(s.silent ? ([[chalk.gray('Silent'), chalk.yellow('yes')]] as [string, string][]) : []),
+      [chalk.gray('Last run'), lastRunStr],
+      [chalk.gray('Next run'), nextRunStr],
+    ];
+
+    const content = [
+      `${name}  ${toggleBadge}`,
+      '',
+      ...rows.map(([label, value]) => `  ${label.padEnd(10)} ${value}`),
+    ].join('\n');
+
+    const borderColor = s.enabled ? 'green' : 'gray';
+    console.log(
+      boxen(content, {
+        borderStyle: 'round',
+        padding: { top: 0, bottom: 0, left: 1, right: 1 },
+        margin: { top: 0, bottom: 1, left: 0, right: 0 },
+        borderColor,
+      })
+    );
   }
+
+  console.log(
+    chalk.dim('  tp schedule start   start daemon  ·  tp schedule status   live status\n')
+  );
 }
 
 /**
@@ -427,16 +520,18 @@ function formatUptime(startTime: string | null): string {
  */
 function formatScheduleStatus(schedule: Schedule): string {
   const name = schedule.name ?? schedule.workflowPath;
-  const status = schedule.enabled ? chalk.green('● active') : chalk.gray('○ inactive');
+  const toggle = schedule.enabled ? chalk.green('● enabled') : chalk.gray('○ disabled');
   const lastRun = schedule.lastRun
     ? dayjs(schedule.lastRun).format('YYYY-MM-DD HH:mm:ss')
     : chalk.gray('never');
   const profile = schedule.profile ? chalk.cyan(` [profile: ${schedule.profile}]`) : '';
   const silent = schedule.silent ? chalk.gray(' [silent]') : '';
 
+  const cronDesc = getCronDescription(schedule.cron);
   const lines = [
-    `${status} ${chalk.bold(name)}${profile}${silent}`,
+    `${toggle} ${chalk.bold(name)}${profile}${silent}`,
     `${chalk.gray('Cron:')} ${schedule.cron}`,
+    ...(cronDesc ? [chalk.dim(`  → ${cronDesc}`)] : []),
   ];
   if (schedule.timezone) {
     lines.push(`${chalk.gray('Timezone:')} ${schedule.timezone}`);
