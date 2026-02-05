@@ -33,6 +33,7 @@ Check out `examples/yaml-examples/` for YAML workflow examples:
 - **`choice-as-example.yaml`** - Using `as` keyword in choices
 - **`base-dir-example.yaml`** - baseDir configuration example
 - **`timeout-retry-example.yaml`** - Timeout and retry features
+- **`pm2-like-example.yaml`** - PM2-like process manager using infinite retry to keep services running
 
 ### CI/CD Pipeline {#cicd-pipeline}
 

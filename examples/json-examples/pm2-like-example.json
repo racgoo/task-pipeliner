@@ -1,0 +1,27 @@
+{
+  "name": "PM2-like Process Manager Example",
+  "steps": [
+    {
+      "run": "echo \"Starting server...\"\n# Simulate a server that might crash\n# In real usage, replace with: node server.js, python app.py, etc.\nnode -e \"setTimeout(() => { console.log('Server crashed!'); process.exit(1); }, 5000)\"",
+      "retry": "Infinity"
+    },
+    {
+      "run": "echo \"Starting API server on port 3000...\"\n# In real usage: node api/server.js\n# This simulates a server that might crash\nnode -e \"\n  const http = require('http');\n  const server = http.createServer((req, res) => {\n    res.writeHead(200);\n    res.end('OK');\n  });\n  server.listen(3000, () => {\n    console.log('Server running on http://localhost:3000');\n    // Simulate crash after 10 seconds\n    setTimeout(() => {\n      console.log('Server crashed!');\n      process.exit(1);\n    }, 10000);\n  });\n\"",
+      "retry": "Infinity"
+    },
+    {
+      "run": "echo \"Starting background worker...\"\n# In real usage: python worker.py, node worker.js, etc.\nnode -e \"\n  setInterval(() => {\n    console.log('Processing job...');\n  }, 1000);\n  // Simulate crash after 15 seconds\n  setTimeout(() => {\n    console.log('Worker crashed!');\n    process.exit(1);\n  }, 15000);\n\"",
+      "retry": "Infinity"
+    },
+    {
+      "run": "echo \"Connecting to database...\"\n# In real usage: your database connection command\nnode -e \"\n  // Simulate database connection that might fail\n  const connected = Math.random() > 0.3;\n  if (!connected) {\n    console.log('Database connection failed!');\n    process.exit(1);\n  }\n  console.log('Database connected successfully!');\n\"",
+      "retry": "Infinity",
+      "timeout": 30
+    },
+    {
+      "run": "echo \"Starting service with graceful shutdown support...\"\n# In real usage, handle SIGTERM/SIGINT for graceful shutdown\nnode -e \"\n  let running = true;\n  process.on('SIGTERM', () => {\n    console.log('Received SIGTERM, shutting down gracefully...');\n    running = false;\n    process.exit(0);\n  });\n  process.on('SIGINT', () => {\n    console.log('Received SIGINT, shutting down gracefully...');\n    running = false;\n    process.exit(0);\n  });\n  const interval = setInterval(() => {\n    if (!running) {\n      clearInterval(interval);\n      return;\n    }\n    console.log('Service running...');\n  }, 2000);\n  // Simulate unexpected crash after 20 seconds\n  setTimeout(() => {\n    if (running) {\n      console.log('Unexpected crash!');\n      process.exit(1);\n    }\n  }, 20000);\n\"",
+      "retry": "Infinity"
+    }
+  ]
+}
+

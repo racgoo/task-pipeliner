@@ -73,6 +73,10 @@ Execute a shell command.
 - run: npm install
   retry: Infinity
 
+# PM2-like process manager: auto-restart crashed server
+- run: node server.js
+  retry: Infinity
+
 # Command with fallback on error
 - run: pnpm lint
   onError:

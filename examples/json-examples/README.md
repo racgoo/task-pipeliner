@@ -32,6 +32,12 @@ task-pipeliner run basic.json
 - **timeout-retry-example.json** - Timeout and retry features
   - Command timeout and automatic retry with exponential backoff
   - Infinite retry with `retry: "Infinity"` (retry until success)
+
+- **pm2-like-example.json** - PM2-like process manager using infinite retry
+  - Auto-restart crashed servers and processes
+  - Keep services running indefinitely
+  - Database connection retry until successful
+  - Graceful shutdown handling
 - **multi-choice.json** - Multiple sequential choice steps
 - **searchable-choice-example.json** - Real-time search in choice prompts
   - Demonstrates search functionality when you have many options

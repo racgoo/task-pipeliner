@@ -80,6 +80,10 @@ steps:
 - run: npm install
   retry: 3
 
+# PM2처럼 프로세스 관리: 서버가 죽으면 자동 재시작
+- run: node server.js
+  retry: Infinity
+
 # 타임아웃과 재시도 모두 사용
 - run: npm install
   timeout: 60

@@ -509,6 +509,10 @@ steps:
   - run: npm install
     retry: Infinity
 
+  # PM2-like process manager: auto-restart crashed server
+  - run: node server.js
+    retry: Infinity
+
   # Using both timeout and retry
   - run: npm install
     timeout: 60

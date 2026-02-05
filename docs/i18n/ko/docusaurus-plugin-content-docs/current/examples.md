@@ -33,6 +33,7 @@ task-pipeliner 사용 예제를 확인하세요.
 - **`choice-as-example.yaml`** - 선택에서 `as` 키워드 사용
 - **`base-dir-example.yaml`** - baseDir 설정 예제
 - **`timeout-retry-example.yaml`** - 타임아웃 및 재시도 기능
+- **`pm2-like-example.yaml`** - 무한 재시도를 사용한 PM2 같은 프로세스 관리자로 서비스 유지
 
 ### CI/CD 파이프라인 {#cicd-파이프라인}
 

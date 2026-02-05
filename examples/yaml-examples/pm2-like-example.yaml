@@ -1,0 +1,108 @@
+name: PM2-like Process Manager Example
+
+# This example demonstrates how to use retry: Infinity to create
+# a process manager that automatically restarts a process if it crashes,
+# similar to PM2 or systemd.
+
+steps:
+  # Example 1: Simple server with auto-restart
+  # If the server crashes, it will automatically restart (infinite retry)
+  - run: |
+      echo "Starting server..."
+      # Simulate a server that might crash
+      # In real usage, replace with: node server.js, python app.py, etc.
+      node -e "setTimeout(() => { console.log('Server crashed!'); process.exit(1); }, 5000)"
+    retry: Infinity
+
+  # Example 2: API server with health check and auto-restart
+  # The server will restart automatically if it fails
+  - run: |
+      echo "Starting API server on port 3000..."
+      # In real usage: node api/server.js
+      # This simulates a server that might crash
+      node -e "
+        const http = require('http');
+        const server = http.createServer((req, res) => {
+          res.writeHead(200);
+          res.end('OK');
+        });
+        server.listen(3000, () => {
+          console.log('Server running on http://localhost:3000');
+          // Simulate crash after 10 seconds
+          setTimeout(() => {
+            console.log('Server crashed!');
+            process.exit(1);
+          }, 10000);
+        });
+      "
+    retry: Infinity
+
+  # Example 3: Background worker with auto-restart
+  # Workers that process jobs will restart if they crash
+  - run: |
+      echo "Starting background worker..."
+      # In real usage: python worker.py, node worker.js, etc.
+      node -e "
+        setInterval(() => {
+          console.log('Processing job...');
+        }, 1000);
+        // Simulate crash after 15 seconds
+        setTimeout(() => {
+          console.log('Worker crashed!');
+          process.exit(1);
+        }, 15000);
+      "
+    retry: Infinity
+
+  # Example 4: Database connection with retry
+  # Keep trying to connect to database until successful
+  - run: |
+      echo "Connecting to database..."
+      # In real usage: your database connection command
+      node -e "
+        // Simulate database connection that might fail
+        const connected = Math.random() > 0.3;
+        if (!connected) {
+          console.log('Database connection failed!');
+          process.exit(1);
+        }
+        console.log('Database connected successfully!');
+      "
+    retry: Infinity
+    timeout: 30  # Each attempt has 30 second timeout
+
+  # Example 5: Service with graceful shutdown detection
+  # Note: This is a simplified example. In production, you might want
+  # to handle graceful shutdown signals (SIGTERM, SIGINT) properly
+  - run: |
+      echo "Starting service with graceful shutdown support..."
+      # In real usage, handle SIGTERM/SIGINT for graceful shutdown
+      node -e "
+        let running = true;
+        process.on('SIGTERM', () => {
+          console.log('Received SIGTERM, shutting down gracefully...');
+          running = false;
+          process.exit(0);
+        });
+        process.on('SIGINT', () => {
+          console.log('Received SIGINT, shutting down gracefully...');
+          running = false;
+          process.exit(0);
+        });
+        const interval = setInterval(() => {
+          if (!running) {
+            clearInterval(interval);
+            return;
+          }
+          console.log('Service running...');
+        }, 2000);
+        // Simulate unexpected crash after 20 seconds
+        setTimeout(() => {
+          if (running) {
+            console.log('Unexpected crash!');
+            process.exit(1);
+          }
+        }, 20000);
+      "
+    retry: Infinity
+
