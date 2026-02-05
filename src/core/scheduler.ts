@@ -1,5 +1,8 @@
 import { readFile } from 'fs/promises';
 import { resolve } from 'path';
+import boxen from 'boxen';
+import chalk from 'chalk';
+import cronstrue from 'cronstrue';
 import cron, { ScheduledTask } from 'node-cron';
 import { Schedule } from '../types/schedule';
 import { getDaemonStatus, isDaemonRunning, removeDaemonPid } from './daemon-manager';
@@ -7,6 +10,14 @@ import { Executor } from './executor';
 import { getParser } from './parser';
 import { ScheduleManager } from './schedule-manager';
 import { resolveTimezone } from './timezone-offset';
+
+function getCronDescription(cronExpr: string): string | null {
+  try {
+    return cronstrue.toString(cronExpr);
+  } catch {
+    return null;
+  }
+}
 
 /**
  * WorkflowScheduler
@@ -37,27 +48,53 @@ export class WorkflowScheduler {
     }
 
     if (daemonMode) {
-      // Save PID before forking (will be updated after fork)
-      // Note: In daemon mode, the parent process will save the child PID
       console.log('🚀 Starting scheduler daemon in background...');
     } else {
-      console.log('🚀 Starting workflow scheduler...');
+      const header = chalk.bold('🚀 Starting workflow scheduler...');
+      console.log(
+        `\n${boxen(header, {
+          borderStyle: 'round',
+          padding: { top: 0, bottom: 0, left: 1, right: 1 },
+          margin: { top: 0, bottom: 1, left: 0, right: 0 },
+          borderColor: 'cyan',
+        })}\n`
+      );
     }
 
     // Load and start all schedules
     await this.reload();
 
     if (daemonMode) {
-      // PID and start time are already saved in startScheduler() before this is called
-      // Only log if not in daemon mode (when TP_DAEMON_MODE is not set)
       if (!process.env.TP_DAEMON_MODE) {
-        console.log(`✓ Scheduler daemon started (PID: ${process.pid})`);
-        console.log('  Run "tp schedule stop" to stop the daemon');
-        console.log('  Run "tp schedule status" to check daemon status');
+        const msg = [
+          chalk.green('✓ Scheduler daemon started'),
+          '',
+          chalk.gray(`PID: ${process.pid}`),
+          chalk.dim('  tp schedule stop    stop daemon'),
+          chalk.dim('  tp schedule status check status'),
+        ].join('\n');
+        console.log(
+          `${boxen(msg, {
+            borderStyle: 'round',
+            padding: { top: 1, bottom: 1, left: 2, right: 2 },
+            borderColor: 'green',
+          })}\n`
+        );
       }
     } else {
-      console.log('✓ Scheduler is running');
-      console.log('  Press Ctrl+C to stop');
+      const footer = [
+        chalk.green('✓ Scheduler is running'),
+        '',
+        chalk.dim('  Press Ctrl+C to stop'),
+      ].join('\n');
+      console.log(
+        `${boxen(footer, {
+          borderStyle: 'round',
+          padding: { top: 1, bottom: 1, left: 2, right: 2 },
+          margin: { top: 0, bottom: 0, left: 0, right: 0 },
+          borderColor: 'green',
+        })}\n`
+      );
     }
 
     // Setup cleanup handlers
@@ -96,18 +133,16 @@ export class WorkflowScheduler {
     const enabledSchedules = schedules.filter((s) => s.enabled);
 
     if (enabledSchedules.length === 0) {
-      console.log('  No active schedules found');
+      console.log(chalk.gray('  No enabled schedules to load.\n'));
       return;
     }
-
-    console.log(`  Loading ${enabledSchedules.length} schedule(s)...`);
 
     // Start cron jobs for each enabled schedule
     for (const schedule of enabledSchedules) {
       try {
         this.startSchedule(schedule);
       } catch (error) {
-        console.error(`  ✗ Failed to start schedule ${schedule.id}:`, error);
+        console.error(chalk.red(`  ✗ Failed to start schedule ${schedule.id}:`), error);
       }
     }
   }
@@ -147,12 +182,33 @@ export class WorkflowScheduler {
     this.tasks.set(schedule.id, task);
 
     const name = schedule.name ?? schedule.workflowPath;
-    console.log(`  ✓ Scheduled: ${name}`);
-    console.log(`    Cron: ${schedule.cron}`);
-    if (schedule.timezone) {
-      console.log(`    Timezone: ${schedule.timezone}${resolvedTz ? ` (${resolvedTz})` : ''}`);
-    }
-    console.log(`    Workflow: ${schedule.workflowPath}`);
+    const cronDesc = getCronDescription(schedule.cron);
+    const tzStr = schedule.timezone
+      ? schedule.timezone.startsWith('+') || schedule.timezone.startsWith('-')
+        ? `UTC${schedule.timezone}`
+        : `UTC+${schedule.timezone}`
+      : null;
+
+    const rows = [
+      [chalk.gray('Cron'), schedule.cron],
+      ...(cronDesc ? ([[chalk.gray(''), chalk.dim(`→ ${cronDesc}`)]] as [string, string][]) : []),
+      ...(tzStr ? ([[chalk.gray('Timezone'), tzStr]] as [string, string][]) : []),
+      [chalk.gray('Workflow'), schedule.workflowPath],
+    ];
+    const content = [
+      `${chalk.green('✓')} ${chalk.bold(name)}`,
+      '',
+      ...rows.map(([label, value]) => `  ${label.padEnd(10)} ${value}`),
+    ].join('\n');
+
+    console.log(
+      boxen(content, {
+        borderStyle: 'round',
+        padding: { top: 0, bottom: 0, left: 1, right: 1 },
+        margin: { top: 0, bottom: 1, left: 0, right: 0 },
+        borderColor: 'green',
+      })
+    );
   }
 
   /**
