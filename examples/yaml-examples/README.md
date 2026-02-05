@@ -55,6 +55,7 @@ These are workflow definitions only - no project files included.
   - Command timeout to prevent long-running commands
   - Automatic retry on failure with exponential backoff
   - Combining timeout and retry
+  - Infinite retry with `retry: Infinity` (retry until success)
 
 - **`multi-choice.yaml`** - Multiple choice steps
   - Sequential choices

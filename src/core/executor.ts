@@ -439,14 +439,16 @@ export class Executor {
     const shellConfig = step.shell || this.globalShell;
 
     // Get retry count (default: 0, meaning no retry)
-    const retryCount = step.retry ?? 0;
+    const retryValue = step.retry ?? 0;
+    const isInfiniteRetry = retryValue === 'Infinity' || retryValue === Infinity;
+    const retryCount = typeof retryValue === 'number' ? retryValue : 0;
     const timeoutSeconds = step.timeout;
 
     // Execute with retry logic
     let lastResult: boolean | TaskRunResult = false;
     let attempt = 0;
 
-    while (attempt <= retryCount) {
+    while (isInfiniteRetry || attempt <= retryCount) {
       // Execute the command
       const result = await this.taskRunner.run(
         command,
@@ -466,14 +468,19 @@ export class Executor {
       const success = typeof result === 'boolean' ? result : result.success;
       lastResult = result;
 
-      // If successful or no more retries, break
-      if (success || attempt >= retryCount) {
+      // If successful, break (even for infinite retry)
+      if (success) {
+        break;
+      }
+
+      // If not infinite retry and no more retries, break
+      if (!isInfiniteRetry && attempt >= retryCount) {
         break;
       }
 
       // If failed and retries remaining, wait a bit before retrying
       attempt++;
-      if (attempt <= retryCount) {
+      if (isInfiniteRetry || attempt <= retryCount) {
         // Small delay before retry (exponential backoff: 1s, 2s, 4s...)
         const delayMs = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // Max 10 seconds
         await new Promise((resolve) => setTimeout(resolve, delayMs));

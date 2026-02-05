@@ -30,6 +30,8 @@ task-pipeliner run basic.json
 - **choice-as-example.json** - Using 'as' keyword in choose steps
 - **file-checks.json** - File existence check examples
 - **timeout-retry-example.json** - Timeout and retry features
+  - Command timeout and automatic retry with exponential backoff
+  - Infinite retry with `retry: "Infinity"` (retry until success)
 - **multi-choice.json** - Multiple sequential choice steps
 - **searchable-choice-example.json** - Real-time search in choice prompts
   - Demonstrates search functionality when you have many options
