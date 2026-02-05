@@ -12,20 +12,36 @@ export default function WorkflowBuilder() {
     profiles: undefined,
     steps: [],
   });
+  const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set());
   const [shellInput, setShellInput] = useState('');
   const [outputFormat, setOutputFormat] = useState<'yaml' | 'json'>('yaml');
   const [preview, setPreview] = useState('');
   const [previewError, setPreviewError] = useState<string | null>(null);
+
+  const toggleStep = (index: number) => {
+    setExpandedSteps((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  };
+
+  const collapseAllSteps = () => setExpandedSteps(new Set());
+  const expandAllSteps = () =>
+    setExpandedSteps(new Set(workflow.steps.map((_, i) => i)));
 
   const updateWorkflow = (updates: Partial<Workflow>) => {
     setWorkflow((prev) => ({ ...prev, ...updates }));
   };
 
   const addStep = (step: Step) => {
+    const newIndex = workflow.steps.length;
     setWorkflow((prev) => ({
       ...prev,
       steps: [...prev.steps, step],
     }));
+    setExpandedSteps((prev) => new Set([...prev, newIndex]));
   };
 
   const updateStep = (index: number, step: Step) => {
@@ -40,6 +56,14 @@ export default function WorkflowBuilder() {
       ...prev,
       steps: prev.steps.filter((_, i) => i !== index),
     }));
+    setExpandedSteps((prev) => {
+      const next = new Set<number>();
+      prev.forEach((i) => {
+        if (i < index) next.add(i);
+        else if (i > index) next.add(i - 1);
+      });
+      return next;
+    });
   };
 
   const moveStep = (index: number, direction: 'up' | 'down') => {
@@ -95,6 +119,7 @@ export default function WorkflowBuilder() {
         steps: parsed.steps || [],
       });
       setShellInput(parsed.shell?.join(' ') ?? '');
+      setExpandedSteps(new Set()); // collapse all after load so user can open what they need
       setPreviewError(null);
     } catch (error) {
       setPreviewError(error instanceof Error ? error.message : 'Failed to parse');
@@ -294,14 +319,32 @@ export default function WorkflowBuilder() {
           <div className="steps-section">
             <div className="section-header">
               <h3 className="section-title">Steps</h3>
-              <button 
-                onClick={generatePreview} 
-                className="sync-button sync-to-code" 
-                title="Convert the current workflow from the visual editor to YAML or JSON code and display it in the code editor on the right. Use this when you want to export changes made in the visual editor as code."
-              >
-                <span className="button-icon">→</span>
-                <span className="button-text">→ Code</span>
-              </button>
+              <div className="section-header-actions">
+                <button
+                  type="button"
+                  onClick={collapseAllSteps}
+                  className="collapse-all-btn"
+                  title="Collapse all step blocks"
+                >
+                  Collapse all
+                </button>
+                <button
+                  type="button"
+                  onClick={expandAllSteps}
+                  className="expand-all-btn"
+                  title="Expand all step blocks"
+                >
+                  Expand all
+                </button>
+                <button 
+                  onClick={generatePreview} 
+                  className="sync-button sync-to-code" 
+                  title="Convert the current workflow from the visual editor to YAML or JSON code and display it in the code editor on the right. Use this when you want to export changes made in the visual editor as code."
+                >
+                  <span className="button-icon">→</span>
+                  <span className="button-text">→ Code</span>
+                </button>
+              </div>
             </div>
             <div className="step-type-buttons">
               <button onClick={() => addStep({ run: '' })}>+ Run</button>
@@ -327,6 +370,8 @@ export default function WorkflowBuilder() {
                   onMoveDown={() => moveStep(index, 'down')}
                   canMoveUp={index > 0}
                   canMoveDown={index < workflow.steps.length - 1}
+                  isExpanded={expandedSteps.has(index)}
+                  onToggle={() => toggleStep(index)}
                 />
               ))}
               {workflow.steps.length === 0 && (

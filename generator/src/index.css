@@ -3,19 +3,26 @@
 }
 
 :root {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  --app-bg: #f0f2f6;
+  --app-surface: #ffffff;
+  --app-tab-bar-bg: rgba(255, 255, 255, 0.85);
+  --app-tab-bar-border: rgba(0, 0, 0, 0.06);
+  --app-tab-inactive: #64748b;
+  --app-tab-active-bg: #6366f1;
+  --app-tab-active-text: #fff;
+  --app-brand: #334155;
 }
 
 body {
   margin: 0;
   padding: 0;
+  background: var(--app-bg);
+  color: #1e293b;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 }

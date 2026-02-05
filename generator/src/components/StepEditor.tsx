@@ -12,6 +12,9 @@ interface StepEditorProps {
   onMoveDown: () => void;
   canMoveUp: boolean;
   canMoveDown: boolean;
+  /** When provided, expand/collapse is controlled by parent (e.g. for "Collapse all") */
+  isExpanded?: boolean;
+  onToggle?: () => void;
 }
 
 export default function StepEditor({
@@ -23,8 +26,13 @@ export default function StepEditor({
   onMoveDown,
   canMoveUp,
   canMoveDown,
+  isExpanded: controlledExpanded,
+  onToggle,
 }: StepEditorProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [internalExpanded, setInternalExpanded] = useState(true);
+  const isControlled = controlledExpanded !== undefined && onToggle !== undefined;
+  const isExpanded = isControlled ? controlledExpanded : internalExpanded;
+  const handleToggle = isControlled ? onToggle! : () => setInternalExpanded((v) => !v);
 
   const getStepType = (): string => {
     if ('run' in step) return 'run';
@@ -39,8 +47,9 @@ export default function StepEditor({
 
   return (
     <div className={`step-editor step-${stepType}`}>
-      <div className="step-header" onClick={() => setIsExpanded(!isExpanded)}>
+      <div className="step-header" onClick={() => handleToggle()}>
         <div className="step-info">
+          <span className="step-chevron" aria-hidden>{isExpanded ? '▼' : '▶'}</span>
           <span className="step-number">{index + 1}</span>
           <span className="step-type">{stepType.toUpperCase()}</span>
           {stepType === 'run' && 'run' in step && (

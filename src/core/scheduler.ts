@@ -1,11 +1,19 @@
 import { readFile } from 'fs/promises';
 import { resolve } from 'path';
+import boxen from 'boxen';
+import chalk from 'chalk';
 import cron, { ScheduledTask } from 'node-cron';
 import { Schedule } from '../types/schedule';
 import { getDaemonStatus, isDaemonRunning, removeDaemonPid } from './daemon-manager';
 import { Executor } from './executor';
 import { getParser } from './parser';
 import { ScheduleManager } from './schedule-manager';
+import { resolveTimezone } from './timezone-offset';
+
+export interface SchedulerStartOptions {
+  /** Called when a schedule is started (e.g. to print a card in the CLI). */
+  onScheduleStarted?: (schedule: Schedule) => void;
+}
 
 /**
  * WorkflowScheduler
@@ -16,6 +24,7 @@ import { ScheduleManager } from './schedule-manager';
 export class WorkflowScheduler {
   private scheduleManager: ScheduleManager;
   private tasks: Map<string, ScheduledTask> = new Map();
+  private startOptions: SchedulerStartOptions | undefined;
 
   constructor() {
     this.scheduleManager = new ScheduleManager();
@@ -25,10 +34,12 @@ export class WorkflowScheduler {
    * Start the scheduler daemon
    * Loads schedules and starts cron jobs
    * @param daemonMode - If true, run in background daemon mode
+   * @param options - Optional callbacks (e.g. onScheduleStarted for CLI to render cards)
    */
-  async start(daemonMode: boolean = false): Promise<void> {
-    // Check if daemon is already running
-    if (await isDaemonRunning()) {
+  async start(daemonMode: boolean = false, options?: SchedulerStartOptions): Promise<void> {
+    this.startOptions = options;
+    // When we are the daemon child (TP_DAEMON_MODE), we already wrote our PID; don't check "already running"
+    if (!daemonMode && (await isDaemonRunning())) {
       const status = await getDaemonStatus();
       throw new Error(
         `Scheduler daemon is already running (PID: ${status.pid}). Use "tp schedule stop" to stop it first.`
@@ -36,27 +47,52 @@ export class WorkflowScheduler {
     }
 
     if (daemonMode) {
-      // Save PID before forking (will be updated after fork)
-      // Note: In daemon mode, the parent process will save the child PID
       console.log('🚀 Starting scheduler daemon in background...');
     } else {
-      console.log('🚀 Starting workflow scheduler...');
+      const header = chalk.bold('🚀 Starting workflow scheduler...');
+      console.log(
+        boxen(header, {
+          borderStyle: 'round',
+          padding: { top: 0, bottom: 0, left: 1, right: 1 },
+          margin: { top: 0, bottom: 0, left: 0, right: 0 },
+          borderColor: 'cyan',
+        })
+      );
     }
 
     // Load and start all schedules
     await this.reload();
 
     if (daemonMode) {
-      // PID and start time are already saved in startScheduler() before this is called
-      // Only log if not in daemon mode (when TP_DAEMON_MODE is not set)
       if (!process.env.TP_DAEMON_MODE) {
-        console.log(`✓ Scheduler daemon started (PID: ${process.pid})`);
-        console.log('  Run "tp schedule stop" to stop the daemon');
-        console.log('  Run "tp schedule status" to check daemon status');
+        const msg = [
+          chalk.green('✓ Scheduler daemon started'),
+          '',
+          chalk.gray(`PID: ${process.pid}`),
+          chalk.dim('  tp schedule stop    stop daemon'),
+          chalk.dim('  tp schedule status check status'),
+        ].join('\n');
+        console.log(
+          `${boxen(msg, {
+            borderStyle: 'round',
+            padding: { top: 1, bottom: 1, left: 2, right: 2 },
+            borderColor: 'green',
+          })}\n`
+        );
       }
     } else {
-      console.log('✓ Scheduler is running');
-      console.log('  Press Ctrl+C to stop');
+      const footer = [
+        chalk.green('✓ Scheduler is running'),
+        chalk.dim('  Press Ctrl+C to stop'),
+      ].join('\n');
+      console.log(
+        boxen(footer, {
+          borderStyle: 'round',
+          padding: { top: 0, bottom: 0, left: 2, right: 2 },
+          margin: { top: 0, bottom: 0, left: 0, right: 0 },
+          borderColor: 'green',
+        })
+      );
     }
 
     // Setup cleanup handlers
@@ -95,18 +131,16 @@ export class WorkflowScheduler {
     const enabledSchedules = schedules.filter((s) => s.enabled);
 
     if (enabledSchedules.length === 0) {
-      console.log('  No active schedules found');
+      console.log(chalk.gray('  No enabled schedules to load.\n'));
       return;
     }
-
-    console.log(`  Loading ${enabledSchedules.length} schedule(s)...`);
 
     // Start cron jobs for each enabled schedule
     for (const schedule of enabledSchedules) {
       try {
         this.startSchedule(schedule);
       } catch (error) {
-        console.error(`  ✗ Failed to start schedule ${schedule.id}:`, error);
+        console.error(chalk.red(`  ✗ Failed to start schedule ${schedule.id}:`), error);
       }
     }
   }
@@ -120,16 +154,32 @@ export class WorkflowScheduler {
       return;
     }
 
-    const task = cron.schedule(schedule.cron, async () => {
-      await this.executeSchedule(schedule);
-    });
+    const options: { timezone?: string } = {};
+    const resolvedTz = resolveTimezone(schedule.timezone);
+    if (resolvedTz) {
+      options.timezone = resolvedTz;
+    }
+
+    let task: ScheduledTask;
+    try {
+      task = cron.schedule(
+        schedule.cron,
+        async () => {
+          await this.executeSchedule(schedule);
+        },
+        options
+      );
+    } catch (err) {
+      console.error(
+        `  ✗ Cron schedule failed for ${schedule.id} (timezone: ${resolvedTz ?? 'local'}).`,
+        err instanceof Error ? err.message : err
+      );
+      throw err;
+    }
 
     this.tasks.set(schedule.id, task);
 
-    const name = schedule.name ?? schedule.workflowPath;
-    console.log(`  ✓ Scheduled: ${name}`);
-    console.log(`    Cron: ${schedule.cron}`);
-    console.log(`    Workflow: ${schedule.workflowPath}`);
+    this.startOptions?.onScheduleStarted?.(schedule);
   }
 
   /**

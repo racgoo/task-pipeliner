@@ -39,6 +39,8 @@ brew update
 brew upgrade task-pipeliner
 ```
 
+업그레이드 후 호환 문제(스케줄/데몬 오류 등)가 있으면 `tp clean`으로 `~/.pipeliner` 데이터(스케줄, 데몬 상태, 히스토리)를 초기화하세요. 자세한 내용은 [워크플로우 스케줄링](/docs/schedule#데이터-초기화-tp-clean)을 참조하세요.
+
 ### Scoop (Windows)
 
 Windows에서 Scoop을 사용하여 설치:
@@ -69,6 +71,8 @@ tp --version
 ```bash
 scoop update task-pipeliner
 ```
+
+업그레이드 후 문제가 있으면 `tp clean`으로 `~/.pipeliner` 데이터를 초기화하세요. 자세한 내용은 [워크플로우 스케줄링](/docs/schedule#데이터-초기화-tp-clean)을 참조하세요.
 
 ### 전역 설치 (npm)
 

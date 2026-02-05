@@ -8,12 +8,19 @@ import dayjs from 'dayjs';
 import inquirer from 'inquirer';
 import logUpdate from 'log-update';
 import cron from 'node-cron';
-import { getDaemonStatus, isDaemonRunning } from '../core/daemon-manager';
+import {
+  getDaemonErrorLogPath,
+  getDaemonStatus,
+  isDaemonRunning,
+  readDaemonErrorLog,
+  writeDaemonError,
+} from '../core/daemon-manager';
 import { parseScheduleFile } from '../core/schedule-file-parser';
 import { ScheduleManager } from '../core/schedule-manager';
 import { WorkflowScheduler } from '../core/scheduler';
 import { Schedule } from '../types/schedule';
 import { ScheduleDefinition } from '../types/schedule-file';
+import { formatScheduleCard, getCronDescription } from './schedule-card-format';
 
 /**
  * Create schedule command
@@ -77,12 +84,16 @@ export function createScheduleCommand(): Command {
       await stopScheduler();
     });
 
-  // Status subcommand
+  // Status subcommand (view only; does not start the daemon)
   scheduleCmd
     .command('status')
-    .description('Check scheduler daemon status (real-time mode, press Ctrl+C to exit)')
-    .action(async () => {
-      await showSchedulerStatus(true);
+    .description(
+      'View daemon and schedule status (does not start the daemon). In live mode, Ctrl+C only exits the status view; the daemon keeps running if it was started with "tp schedule start -d".'
+    )
+    .option('-n, --no-follow', 'Show status once and exit (no live refresh)')
+    .action(async (options: { follow?: boolean }) => {
+      const follow = options.follow !== false;
+      await showSchedulerStatus(follow);
     });
 
   // Enable/disable subcommand
@@ -203,6 +214,7 @@ async function addSchedules(scheduleFilePath?: string): Promise<void> {
       workflowPath: resolveWorkflowPath(resolvedPath, scheduleDef),
       cron: scheduleDef.cron,
       enabled: true, // Always enabled by default
+      timezone: scheduleDef.timezone,
       silent: scheduleDef.silent,
       profile: scheduleDef.profile,
     });
@@ -212,8 +224,11 @@ async function addSchedules(scheduleFilePath?: string): Promise<void> {
 
   console.log(`\n✓ Added ${addedSchedules.length} schedule(s) successfully\n`);
   for (const s of addedSchedules) {
+    const cronDesc = getCronDescription(s.cron);
     console.log(`  - ${s.name ?? 'N/A'}`);
     console.log(`    Cron: ${s.cron}`);
+    if (cronDesc) console.log(`    ${chalk.dim(`→ ${cronDesc}`)}`);
+    if (s.timezone) console.log(`    Timezone: ${s.timezone}`);
     console.log(`    Workflow: ${s.workflowPath}`);
     if (s.silent) console.log(`    Silent: Yes`);
     if (s.profile) console.log(`    Profile: ${s.profile}`);
@@ -274,34 +289,51 @@ async function removeSchedule(): Promise<void> {
 }
 
 /**
- * List all schedules
+ * List all schedules (rich table-style UI)
  */
 async function listSchedules(): Promise<void> {
   const manager = new ScheduleManager();
   const schedules = await manager.loadSchedules();
 
   if (schedules.length === 0) {
-    console.log('No schedules found');
-    console.log('\nRun "tp schedule add" to create a new schedule');
+    const emptyMsg = [
+      chalk.gray('No schedules registered.'),
+      '',
+      chalk.dim('  tp schedule add <schedule.yaml>   add from a schedule file'),
+    ].join('\n');
+    console.log(
+      `\n${boxen(emptyMsg, {
+        borderStyle: 'round',
+        padding: { top: 1, bottom: 1, left: 2, right: 2 },
+        margin: { top: 0, bottom: 0, left: 0, right: 0 },
+        borderColor: 'gray',
+      })}\n`
+    );
     return;
   }
 
-  console.log('\n📅 Workflow Schedules\n');
+  const daemonStatus = await getDaemonStatus();
+  const daemonBadge = daemonStatus.running ? chalk.green('● running') : chalk.gray('○ stopped');
+  const enabledCount = schedules.filter((s) => s.enabled).length;
+  const title = chalk.bold('📅 Workflow Schedules');
+  console.log(title);
+  console.log(
+    [
+      chalk.gray('  Daemon: '),
+      daemonBadge,
+      chalk.gray(`  ·  Schedules: ${enabledCount}/${schedules.length} enabled`),
+    ].join('')
+  );
 
-  for (const schedule of schedules) {
-    const status = schedule.enabled ? '✓ Enabled' : '✗ Disabled';
-    const name = schedule.name ?? schedule.workflowPath;
-    const lastRun = schedule.lastRun
-      ? dayjs(schedule.lastRun).format('YYYY-MM-DD HH:mm:ss')
-      : 'Never';
-
-    console.log(`  ${status} ${name}`);
-    console.log(`    ID: ${schedule.id}`);
-    console.log(`    Cron: ${schedule.cron}`);
-    console.log(`    Workflow: ${schedule.workflowPath}`);
-    console.log(`    Last run: ${lastRun}`);
-    console.log();
+  for (const s of schedules) {
+    console.log(formatScheduleCard(s, { daemonRunning: daemonStatus.running }));
   }
+
+  console.log(
+    chalk.dim(
+      '  Tip: tp schedule start — run scheduler daemon; tp schedule status — view live status'
+    )
+  );
 }
 
 /**
@@ -320,15 +352,19 @@ async function startScheduler(daemonMode: boolean): Promise<void> {
     // Check if we're already in daemon mode (via environment variable)
     if (process.env.TP_DAEMON_MODE === 'true') {
       // We're the daemon process, start normally
-      // Save PID and start time immediately (before scheduler starts)
-      const { saveDaemonPid } = await import('../core/daemon-manager');
-      await saveDaemonPid();
+      try {
+        const { saveDaemonPid } = await import('../core/daemon-manager');
+        await saveDaemonPid();
 
-      const scheduler = new WorkflowScheduler();
-      await scheduler.start(true);
+        const scheduler = new WorkflowScheduler();
+        await scheduler.start(true);
 
-      // Keep process alive
-      await new Promise(() => {}); // Infinite promise
+        // Keep process alive
+        await new Promise(() => {}); // Infinite promise
+      } catch (err) {
+        await writeDaemonError(err instanceof Error ? err : new Error(String(err)));
+        process.exit(1);
+      }
     } else {
       // Spawn a new daemon process
       const args = process.argv.slice(1); // Remove node/script path, keep rest
@@ -344,17 +380,39 @@ async function startScheduler(daemonMode: boolean): Promise<void> {
       // Unref the child process so parent can exit
       child.unref();
 
-      // Give it a moment to start and save PID
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Retry a few times: child may need a moment to write PID file
+      const maxAttempts = 3;
+      const delayMs = 800;
+      let running = false;
+      for (let i = 0; i < maxAttempts; i++) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        if (await isDaemonRunning()) {
+          running = true;
+          break;
+        }
+      }
 
-      // Check if it started successfully
-      if (await isDaemonRunning()) {
+      if (running) {
         const status = await getDaemonStatus();
         console.log(`✓ Scheduler daemon started in background (PID: ${status.pid})`);
         console.log('  Run "tp schedule stop" to stop the daemon');
         console.log('  Run "tp schedule status" to check daemon status');
       } else {
         console.error('✗ Failed to start scheduler daemon');
+        const errLog = await readDaemonErrorLog();
+        if (errLog) {
+          console.error(chalk.dim('  Last error from daemon:'));
+          console.error(
+            chalk.red(
+              errLog
+                .split('\n')
+                .map((l) => `  ${l}`)
+                .join('\n')
+            )
+          );
+        } else {
+          console.error(chalk.dim(`  Check ${getDaemonErrorLogPath()} for details`));
+        }
         process.exit(1);
       }
 
@@ -362,9 +420,11 @@ async function startScheduler(daemonMode: boolean): Promise<void> {
       process.exit(0);
     }
   } else {
-    // Foreground mode
+    // Foreground mode: pass callback so CLI renders schedule cards (same format as list/status)
     const scheduler = new WorkflowScheduler();
-    await scheduler.start(false);
+    await scheduler.start(false, {
+      onScheduleStarted: (s) => console.log(formatScheduleCard(s, { daemonRunning: true })),
+    });
 
     // Keep process alive
     await new Promise(() => {}); // Infinite promise
@@ -417,30 +477,9 @@ function formatUptime(startTime: string | null): string {
   return parts.join(' ');
 }
 
-/**
- * Format schedule status for display
- */
-function formatScheduleStatus(schedule: Schedule): string {
-  const name = schedule.name ?? schedule.workflowPath;
-  const status = schedule.enabled ? chalk.green('● active') : chalk.gray('○ inactive');
-  const lastRun = schedule.lastRun
-    ? dayjs(schedule.lastRun).format('YYYY-MM-DD HH:mm:ss')
-    : chalk.gray('never');
-  const profile = schedule.profile ? chalk.cyan(` [profile: ${schedule.profile}]`) : '';
-  const silent = schedule.silent ? chalk.gray(' [silent]') : '';
-
-  const content = [
-    `${status} ${chalk.bold(name)}${profile}${silent}`,
-    `${chalk.gray('Cron:')} ${schedule.cron}`,
-    `${chalk.gray('Last run:')} ${lastRun}`,
-  ].join('\n');
-
-  return boxen(content, {
-    borderStyle: 'round',
-    padding: { top: 0, bottom: 0, left: 1, right: 1 },
-    margin: { top: 0, bottom: 1, left: 0, right: 0 },
-    borderColor: schedule.enabled ? 'green' : 'gray',
-  });
+/** Format schedule card for status view (same as list/start). */
+function formatScheduleStatus(schedule: Schedule, daemonRunning: boolean): string {
+  return formatScheduleCard(schedule, { daemonRunning });
 }
 
 /**
@@ -483,7 +522,7 @@ async function generateStatusDisplay(): Promise<string> {
     titleAlignment: 'left',
     borderStyle: 'round',
     padding: { top: 1, bottom: 1, left: 2, right: 2 },
-    margin: { top: 0, bottom: 1, left: 0, right: 0 },
+    margin: { top: 0, bottom: 0, left: 0, right: 0 },
     borderColor: status.running ? 'green' : 'red',
   });
 
@@ -492,12 +531,11 @@ async function generateStatusDisplay(): Promise<string> {
   // Schedules section
   if (schedules.length > 0) {
     const enabledCount = schedules.filter((s) => s.enabled).length;
-    const schedulesHeader = chalk.bold(`Schedules: ${enabledCount}/${schedules.length} active`);
+    const schedulesHeader = chalk.bold(`Schedules: ${enabledCount}/${schedules.length} enabled`);
     sections.push(schedulesHeader);
-    sections.push('');
 
     for (const schedule of schedules) {
-      sections.push(formatScheduleStatus(schedule));
+      sections.push(formatScheduleStatus(schedule, status.running));
     }
   } else {
     const noSchedulesBox = boxen(chalk.gray('No schedules configured'), {
@@ -510,6 +548,11 @@ async function generateStatusDisplay(): Promise<string> {
   }
 
   return sections.join('\n');
+}
+
+/** Clear screen and move cursor to top so status always draws from top (avoids top being cut off with many schedules) */
+function clearScreenToTop(): void {
+  process.stdout.write('\x1b[2J\x1b[H');
 }
 
 /**
@@ -529,7 +572,7 @@ async function showSchedulerStatus(follow: boolean): Promise<void> {
     process.on('SIGINT', cleanup);
     process.on('SIGTERM', cleanup);
 
-    // Update every second
+    // Update every second; logUpdate overwrites in place (no clear = no scroll jump)
     const updateInterval = setInterval(async () => {
       if (!running) {
         clearInterval(updateInterval);
@@ -540,8 +583,10 @@ async function showSchedulerStatus(follow: boolean): Promise<void> {
         const display = await generateStatusDisplay();
         const status = await getDaemonStatus();
         const footer = status.running
-          ? chalk.gray('\nPress Ctrl+C to exit (daemon will continue running)')
-          : chalk.gray('\nRun "tp schedule start -d" to start the daemon');
+          ? chalk.gray('\nPress Ctrl+C to exit this view (daemon keeps running in background)')
+          : chalk.gray(
+              '\nTip: To start the daemon, run: tp schedule start -d. Press Ctrl+C to exit this view.'
+            );
         logUpdate(`${display}${footer}`);
       } catch (error) {
         logUpdate.done();
@@ -551,24 +596,28 @@ async function showSchedulerStatus(follow: boolean): Promise<void> {
       }
     }, 1000);
 
-    // Initial display
+    // Draw from top so the first box is never cut off (clear then initial paint)
+    clearScreenToTop();
     const initialDisplay = await generateStatusDisplay();
     const status = await getDaemonStatus();
     const footer = status.running
-      ? chalk.gray('\nPress Ctrl+C to exit (daemon will continue running)')
-      : chalk.gray('\nRun "tp schedule start -d" to start the daemon');
+      ? chalk.gray('\nPress Ctrl+C to exit this view (daemon keeps running in background)')
+      : chalk.gray(
+          '\nTip: To start the daemon, run: tp schedule start -d. Press Ctrl+C to exit this view.'
+        );
     logUpdate(`${initialDisplay}${footer}`);
 
     // Keep running until interrupted
     await new Promise(() => {});
   } else {
-    // One-time display
+    // One-time display: clear then draw so content starts from top
+    clearScreenToTop();
     const display = await generateStatusDisplay();
     const status = await getDaemonStatus();
     const footer = status.running
       ? ''
-      : chalk.gray('\nRun "tp schedule start -d" to start the daemon');
-    console.log(`\n${display}${footer}\n`);
+      : chalk.gray('\nTip: To start the daemon, run: tp schedule start -d');
+    console.log(`${display}${footer}\n`);
   }
 }
 

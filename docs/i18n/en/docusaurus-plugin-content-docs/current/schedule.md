@@ -69,8 +69,21 @@ schedules:
 | `cron`     | `string`  | Yes      | Cron expression (5 or 6 fields)                                            |
 | `workflow` | `string`  | Yes      | Path to workflow file (relative to schedule file or `baseDir`, or absolute) |
 | `baseDir`  | `string`  | No       | Base directory for workflow path (default: schedule file's directory)     |
-| `silent`   | `boolean` | No       | Run in silent mode (suppress console output)                              |
-| `profile`  | `string`  | No       | Profile name to use (for workflows with profiles)                         |
+| `timezone` | `string` or number | No | UTC offset in hours (e.g. `+9`, `-5`, `0`). Omit = system local |
+| `silent`   | `boolean` | No       | Run in silent mode (suppress console output)                                |
+| `profile`  | `string`  | No       | Profile name to use (for workflows with profiles)                           |
+
+## Timezone
+
+The **cron expression is interpreted in the given timezone**. Use the local time you want (hour/minute) in that timezone.
+
+- **Korea (UTC+9), run at 11:33 AM every day:**
+  ```yaml
+  cron: '33 11 * * *'
+  timezone: '9'
+  ```
+- **UTC+8, run at 12:33:** use `timezone: '8'` and `cron: '33 12 * * *'` (that is 13:33 in Korea).
+- Omit `timezone` to use the server’s local time.
 
 ## Path Resolution
 
@@ -128,6 +141,9 @@ tp schedule list
 tp schedule ls
 ```
 
+- Shows all schedules in a **unified card layout** (each card: name, active/inactive badge, Enabled, Cron with human-readable description, Timezone, Workflow path, Profile, Last run, Next run).
+- The same card layout is used by `tp schedule status` and `tp schedule start`, so the UI is consistent everywhere.
+
 ### Remove a Schedule
 
 ```bash
@@ -182,18 +198,12 @@ tp schedule start -d
 ### Checking Daemon Status
 
 ```bash
-tp schedule status
+tp schedule status      # Live view (updates every second); Ctrl+C exits the view only, daemon keeps running
+tp schedule status -n   # Show status once and exit (no live refresh)
 ```
 
-- Shows real-time daemon status with systemctl-style display
-- Displays:
-  - Daemon state (active/inactive)
-  - Process ID (PID)
-  - Start time and uptime
-  - All schedules with their status (active/inactive)
-  - Last run time for each schedule
-- Updates every second automatically
-- Press `Ctrl+C` to exit (daemon continues running)
+- Uses the **same card layout** as `tp schedule list` and `tp schedule start`: daemon state (active/inactive), PID, start time and uptime, then each schedule with Enabled, Cron (with human-readable description), Timezone, Workflow, Profile, Last run, Next run.
+- Press `Ctrl+C` to exit the status view only; the daemon keeps running if it was started with `tp schedule start -d`.
 
 ### Stopping the Daemon
 
@@ -217,6 +227,20 @@ The scheduler will:
 - **Schedules**: Stored in `~/.pipeliner/schedules/schedules.json`
 - **Daemon PID**: Stored in `~/.pipeliner/daemon/scheduler.pid`
 - **Daemon start time**: Stored in `~/.pipeliner/daemon/scheduler.started`
+
+## Resetting Data (`tp clean`)
+
+All schedule and daemon data lives under `~/.pipeliner`. To remove it:
+
+```bash
+tp clean
+```
+
+- Prompts for confirmation before deleting.
+- If the scheduler daemon is running, it is stopped first, then the directory is removed.
+- Removes: schedules, daemon state (PID, start time), and workflow execution history.
+
+**When to use:** After upgrading to a new version, if you see compatibility issues (e.g. schedules or daemon not working correctly), run `tp clean` to reset local data and start fresh.
 
 ## Next Steps
 

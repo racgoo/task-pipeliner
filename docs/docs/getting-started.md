@@ -39,6 +39,8 @@ brew update
 brew upgrade task-pipeliner
 ```
 
+If you see compatibility issues after an upgrade (e.g. schedules or daemon not working), run `tp clean` to reset `~/.pipeliner` data (schedules, daemon state, history). See [Workflow Scheduling](/docs/schedule#resetting-data-tp-clean) for details.
+
 ### Scoop (Windows)
 
 Install using Scoop on Windows:
@@ -69,6 +71,8 @@ tp --version
 ```bash
 scoop update task-pipeliner
 ```
+
+If you see compatibility issues after an upgrade, run `tp clean` to reset `~/.pipeliner` data. See [Workflow Scheduling](/docs/schedule#resetting-data-tp-clean) for details.
 
 ### Global Installation (npm)
 

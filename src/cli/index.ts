@@ -18,22 +18,27 @@
  */
 
 import { exec } from 'child_process';
-import { readFileSync } from 'fs';
-import { readdir } from 'fs/promises';
+import { existsSync, readFileSync } from 'fs';
+import { readdir, rm } from 'fs/promises';
+import { homedir } from 'os';
 import { resolve, join, extname } from 'path';
 import { promisify } from 'util';
 import boxen from 'boxen';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import dayjs from 'dayjs';
+import { getDaemonStatus, isDaemonRunning } from '../core/daemon-manager';
 import { Executor } from '../core/executor';
 import { WorkflowHistoryManager } from '../core/history';
 import { getParser } from '../core/parser';
+import { WorkflowScheduler } from '../core/scheduler';
 import type { History, Record as WorkflowRecord, Step } from '../types/workflow';
 import { ChoicePrompt } from './prompts';
 import { createScheduleCommand } from './schedule';
 import { formatDuration } from './ui';
 import { findNearestTpDirectory, getVersion, setSilentMode } from './utils';
+
+const PIPELINER_ROOT = join(homedir(), '.pipeliner');
 
 const execAsync = promisify(exec);
 
@@ -44,12 +49,14 @@ program
   .description(
     'A powerful task pipeline runner with condition-based workflow execution.\n\n' +
       'Define workflows in YAML or JSON files with conditional execution, parallel tasks,\n' +
-      'interactive prompts, and variable substitution.\n\n' +
+      'interactive prompts, variable substitution, and cron-based scheduling.\n\n' +
       'Features:\n' +
       '  • Condition-based execution (file checks, variable comparisons)\n' +
       '  • Parallel task execution\n' +
       '  • Interactive prompts and choices\n' +
       '  • Variable substitution with {{variables}}\n' +
+      '  • Profiles: run the same workflow with different variable sets (--profile)\n' +
+      '  • Schedule: run workflows on a cron schedule (tp schedule add/list/start/status)\n' +
       '  • Beautiful terminal output\n' +
       '  • Supports both YAML (.yaml, .yml) and JSON (.json) formats\n\n' +
       'Quick Start:\n' +
@@ -73,12 +80,38 @@ program
       '     tp history           # Interactive menu to view/remove histories\n' +
       '     tp history show      # View a specific history\n' +
       '     tp history remove    # Remove a specific history\n' +
-      '     tp history remove-all # Remove all histories\n\n'
+      '     tp history remove-all # Remove all histories\n\n' +
+      '  4. Schedule workflows (cron):\n' +
+      '     tp schedule add schedule.yaml   # Add schedules from a file\n' +
+      '     tp schedule list                # List schedules\n' +
+      '     tp schedule start -d            # Start daemon in background\n' +
+      '     tp schedule status              # View daemon and schedule status\n\n' +
+      '  5. Other commands:\n' +
+      '     tp open docs       # Open documentation in browser\n' +
+      '     tp open generator  # Open visual workflow generator\n' +
+      '     tp clean            # Remove ~/.pipeliner data (schedules, daemon, history)\n\n' +
+      '  Note: After upgrading to a new version, if you see compatibility issues (e.g. schedules or daemon), run "tp clean" to reset ~/.pipeliner data.\n\n'
   )
   .version(getVersion())
   .addHelpText(
     'after',
-    '\nExamples:\n  $ tp run workflow.yaml\n  $ tp run examples/simple-project/workflow.yaml\n  $ tp open docs       # Open documentation\n  $ tp open generator  # Open visual generator\n  $ tp history         # View workflow execution history\n  $ tp history show    # Select and view a specific history\n\nResources:\n  📚 Documentation: https://task-pipeliner.racgoo.com/\n  🎨 Visual Generator: https://task-pipeliner-generator.racgoo.com/\n\nSee README.md for complete DSL reference.'
+    '\nExamples:\n' +
+      '  $ tp run workflow.yaml\n' +
+      '  $ tp run workflow.yaml --profile Production\n' +
+      '  $ tp schedule add schedule.yaml\n' +
+      '  $ tp schedule list\n' +
+      '  $ tp schedule start -d\n' +
+      '  $ tp schedule status\n' +
+      '  $ tp open docs\n' +
+      '  $ tp open generator\n' +
+      '  $ tp history\n' +
+      '  $ tp history show\n' +
+      '  $ tp clean\n\n' +
+      'After upgrading: if schedules or daemon misbehave, run "tp clean" to reset ~/.pipeliner.\n\n' +
+      'Resources:\n' +
+      '  📚 Documentation: https://task-pipeliner.racgoo.com/\n' +
+      '  🎨 Visual Generator: https://task-pipeliner-generator.racgoo.com/\n\n' +
+      'See README.md for complete DSL reference.'
   );
 
 program
@@ -550,5 +583,51 @@ function displayTaskOutput(output: { success: boolean; stdout: string[]; stderr:
     console.log(stderrContent);
   }
 }
+
+/**
+ * Clean command - Remove ~/.pipeliner data (schedules, daemon state, workflow history)
+ * Useful after upgrades when data may be incompatible.
+ */
+program
+  .command('clean')
+  .description(
+    'Remove all data in ~/.pipeliner (schedules, daemon state, workflow history). Use after upgrades if data is incompatible.'
+  )
+  .action(async () => {
+    const choicePrompt = new ChoicePrompt();
+    const confirmChoice = await choicePrompt.prompt(
+      `This will remove all data in ${chalk.yellow(PIPELINER_ROOT)} (schedules, daemon PID, workflow history). Continue?`,
+      [
+        { id: 'yes', label: 'Yes, remove all' },
+        { id: 'no', label: 'No, cancel' },
+      ]
+    );
+
+    if (confirmChoice?.id !== 'yes') {
+      console.log(chalk.yellow('\n✗ Cancelled'));
+      return;
+    }
+
+    try {
+      if (await isDaemonRunning()) {
+        const status = await getDaemonStatus();
+        console.log(chalk.gray(`Stopping scheduler daemon (PID: ${status.pid})...`));
+        const scheduler = new WorkflowScheduler();
+        await scheduler.stopDaemon();
+        console.log(chalk.gray('  Daemon stopped'));
+      }
+
+      if (existsSync(PIPELINER_ROOT)) {
+        await rm(PIPELINER_ROOT, { recursive: true });
+        console.log(chalk.green(`\n✓ Removed ${PIPELINER_ROOT}`));
+      } else {
+        console.log(chalk.gray(`\n  ${PIPELINER_ROOT} does not exist (already clean)`));
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(chalk.red(`\n✗ Clean failed: ${errorMessage}`));
+      process.exit(1);
+    }
+  });
 
 program.parse();

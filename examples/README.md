@@ -81,14 +81,21 @@ See [schedule-examples/README.md](schedule-examples/README.md) for schedule file
 # Add schedules from example file
 tp schedule add examples/schedule-examples/daily-build.yaml
 
+# List schedules (same card layout as status and start)
+tp schedule list
+
 # Start scheduler in daemon mode (background)
 tp schedule start -d
 
-# Check daemon status (real-time)
+# Check daemon status (live; use -n to show once and exit)
 tp schedule status
+tp schedule status -n
 
 # Stop daemon
 tp schedule stop
+
+# Reset all ~/.pipeliner data (schedules, daemon, history) — use after upgrade if you see compatibility issues
+tp clean
 ```
 
 ## Running Examples
