@@ -89,7 +89,8 @@ program
       '  5. Other commands:\n' +
       '     tp open docs       # Open documentation in browser\n' +
       '     tp open generator  # Open visual workflow generator\n' +
-      '     tp clean            # Remove ~/.pipeliner data (schedules, daemon, history)\n\n'
+      '     tp clean            # Remove ~/.pipeliner data (schedules, daemon, history)\n\n' +
+      '  Note: After upgrading to a new version, if you see compatibility issues (e.g. schedules or daemon), run "tp clean" to reset ~/.pipeliner data.\n\n'
   )
   .version(getVersion())
   .addHelpText(
@@ -106,6 +107,7 @@ program
       '  $ tp history\n' +
       '  $ tp history show\n' +
       '  $ tp clean\n\n' +
+      'After upgrading: if schedules or daemon misbehave, run "tp clean" to reset ~/.pipeliner.\n\n' +
       'Resources:\n' +
       '  📚 Documentation: https://task-pipeliner.racgoo.com/\n' +
       '  🎨 Visual Generator: https://task-pipeliner-generator.racgoo.com/\n\n' +

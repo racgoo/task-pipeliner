@@ -73,7 +73,8 @@ tp history remove-all # Remove all histories
 
 **Workflow Scheduling:**
 ```bash
-tp schedule        # View all schedules
+tp schedule        # View all schedules (same as tp schedule list)
+tp schedule list   # List schedules with daemon status
 tp schedule add schedules.yaml  # Add schedules from a schedule file
 tp schedule remove # Remove a schedule
 tp schedule remove-all # Remove all schedules
@@ -81,8 +82,14 @@ tp schedule toggle # Enable/disable a schedule
 tp schedule start  # Start scheduler in foreground mode
 tp schedule start -d  # Start scheduler daemon in background
 tp schedule stop   # Stop the scheduler daemon
-tp schedule status # Check daemon status (real-time mode, press Ctrl+C to exit)
+tp schedule status # Check daemon status (real-time mode; Ctrl+C exits the view only, daemon keeps running)
 ```
+
+**Data & upgrades:**
+```bash
+tp clean   # Remove all data in ~/.pipeliner (schedules, daemon state, workflow history)
+```
+After upgrading to a new version, if you see compatibility issues (e.g. schedules or daemon not working), run `tp clean` to reset local data. The daemon is stopped first if it is running.
 
 ## 🚀 Quick Start
 
@@ -116,6 +123,8 @@ brew update
 brew upgrade task-pipeliner
 ```
 
+If you see compatibility issues after an upgrade (e.g. schedules or daemon), run `tp clean` to reset `~/.pipeliner` data (schedules, daemon state, history).
+
 #### Scoop (Windows)
 
 Install using Scoop on Windows:
@@ -139,6 +148,8 @@ tp run workflow.yaml
 ```bash
 scoop update task-pipeliner
 ```
+
+If you see compatibility issues after an upgrade, run `tp clean` to reset `~/.pipeliner` data.
 
 #### Global Installation (npm)
 
@@ -1482,17 +1493,12 @@ tp schedule start -d
 
 **Checking Daemon Status:**
 ```bash
-tp schedule status
+tp schedule status      # Live view (updates every second); Ctrl+C exits the view only, daemon keeps running
+tp schedule status -n   # Show status once and exit (no live refresh)
 ```
-- Shows real-time daemon status with systemctl-style display
-- Displays:
-  - Daemon state (active/inactive)
-  - Process ID (PID)
-  - Start time and uptime
-  - All schedules with their status (active/inactive)
-  - Last run time for each schedule
-- Updates every second automatically
-- Press `Ctrl+C` to exit (daemon continues running)
+- Shows daemon and schedule status in a unified card layout (same as `tp schedule list` and `tp schedule start`)
+- Displays: daemon state (active/inactive), PID, start time and uptime, all schedules with Enabled/Cron/Timezone/Workflow/Profile/Last run/Next run
+- Press `Ctrl+C` to exit the status view (daemon continues running if it was started with `tp schedule start -d`)
 
 The scheduler will:
 - Execute workflows at their scheduled times

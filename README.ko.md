@@ -73,7 +73,8 @@ tp history remove-all # 모든 히스토리 삭제
 
 **워크플로우 스케줄링:**
 ```bash
-tp schedule        # 모든 스케줄 보기
+tp schedule        # 모든 스케줄 보기 (tp schedule list와 동일)
+tp schedule list   # 스케줄 목록 및 데몬 상태 보기
 tp schedule add schedules.yaml  # 스케줄 파일에서 스케줄 추가
 tp schedule remove # 스케줄 삭제
 tp schedule remove-all # 모든 스케줄 삭제
@@ -81,8 +82,14 @@ tp schedule toggle # 스케줄 활성화/비활성화
 tp schedule start  # 포그라운드 모드로 스케줄러 시작
 tp schedule start -d  # 백그라운드 데몬 모드로 스케줄러 시작
 tp schedule stop   # 스케줄러 데몬 종료
-tp schedule status # 데몬 상태 확인 (실시간 모드, Ctrl+C로 종료)
+tp schedule status # 데몬·스케줄 상태 확인 (실시간 모드; Ctrl+C는 화면만 종료, 데몬은 계속 실행)
 ```
+
+**데이터 및 업그레이드:**
+```bash
+tp clean   # ~/.pipeliner 전체 삭제 (스케줄, 데몬 상태, 워크플로우 히스토리)
+```
+버전 업그레이드 후 호환이 맞지 않을 때(스케줄/데몬 오류 등)는 `tp clean`으로 로컬 데이터를 초기화하면 됩니다. 실행 중인 데몬이 있으면 먼저 종료된 뒤 삭제됩니다.
 
 ## 🚀 빠른 시작
 
@@ -116,6 +123,8 @@ brew update
 brew upgrade task-pipeliner
 ```
 
+업그레이드 후 호환 문제(스케줄/데몬 오류 등)가 있으면 `tp clean`으로 `~/.pipeliner` 데이터(스케줄, 데몬 상태, 히스토리)를 초기화하세요.
+
 #### Scoop (Windows)
 
 Windows에서 Scoop을 사용하여 설치:
@@ -139,6 +148,8 @@ tp run workflow.yaml
 ```bash
 scoop update task-pipeliner
 ```
+
+업그레이드 후 문제가 있으면 `tp clean`으로 `~/.pipeliner` 데이터를 초기화하세요.
 
 #### 전역 설치 (npm)
 
@@ -1481,17 +1492,12 @@ tp schedule start -d
 
 **데몬 상태 확인:**
 ```bash
-tp schedule status
+tp schedule status      # 실시간 보기 (1초마다 갱신); Ctrl+C는 화면만 종료, 데몬은 유지
+tp schedule status -n   # 한 번만 표시 후 종료 (갱신 없음)
 ```
-- systemctl 스타일의 실시간 데몬 상태를 표시합니다
-- 다음 정보를 표시합니다:
-  - 데몬 상태 (active/inactive)
-  - 프로세스 ID (PID)
-  - 시작 시간 및 업타임
-  - 모든 스케줄과 상태 (active/inactive)
-  - 각 스케줄의 마지막 실행 시간
-- 1초마다 자동으로 업데이트됩니다
-- `Ctrl+C`를 눌러 종료합니다 (데몬은 계속 실행됩니다)
+- 데몬·스케줄 상태를 `tp schedule list`, `tp schedule start`와 동일한 카드 레이아웃으로 표시
+- 표시 내용: 데몬 상태(active/inactive), PID, 시작 시각·업타임, 각 스케줄의 Enabled/Cron/Timezone/Workflow/Profile/Last run/Next run
+- `Ctrl+C`로 상태 화면만 종료 (데몬은 `tp schedule start -d`로 띄웠다면 계속 실행됨)
 
 스케줄러는:
 - 예약된 시간에 워크플로우를 실행합니다
