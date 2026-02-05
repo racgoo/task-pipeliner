@@ -2,7 +2,7 @@
 
 > A powerful workflow orchestration tool with condition-based execution and beautiful CLI output
 
-**Version:** 0.3.1
+**Version:** 0.3.2
 
 ![fox2](https://github.com/user-attachments/assets/fdf8d786-6a91-4d2d-9dc1-72be6f3ccd98)
 
