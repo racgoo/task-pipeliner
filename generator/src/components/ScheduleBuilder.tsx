@@ -31,6 +31,7 @@ export default function ScheduleBuilder() {
         cron: s.cron.trim(),
         workflow: s.workflow.trim(),
         ...(s.baseDir?.trim() ? { baseDir: s.baseDir.trim() } : {}),
+        ...(s.timezone?.trim() ? { timezone: s.timezone.trim() } : {}),
         ...(s.silent ? { silent: true } : {}),
         ...(s.profile?.trim() ? { profile: s.profile.trim() } : {}),
       }));
@@ -66,6 +67,7 @@ export default function ScheduleBuilder() {
               cron: s.cron,
               workflow: s.workflow,
               baseDir: s.baseDir ?? '',
+              timezone: s.timezone ?? '',
               silent: s.silent ?? false,
               profile: s.profile ?? '',
             }))
@@ -209,6 +211,19 @@ export default function ScheduleBuilder() {
                         onChange={(e) => updateSchedule(index, { baseDir: e.target.value })}
                         placeholder="e.g. /path/to/workflows"
                       />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Timezone (optional)</label>
+                      <input
+                        type="text"
+                        value={schedule.timezone ?? ''}
+                        onChange={(e) => updateSchedule(index, { timezone: e.target.value })}
+                        placeholder="e.g. +9, -5, 0 (UTC offset in hours)"
+                      />
+                      <div className="field-hint">
+                        UTC offset in hours. Omit to use system local time
+                      </div>
                     </div>
 
                     <div className="form-group schedule-options">

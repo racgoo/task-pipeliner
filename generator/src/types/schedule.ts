@@ -7,6 +7,7 @@ export interface ScheduleDefinition {
   cron: string;
   workflow: string;
   baseDir?: string;
+  timezone?: string;
   silent?: boolean;
   profile?: string;
 }

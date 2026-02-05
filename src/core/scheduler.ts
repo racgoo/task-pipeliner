@@ -6,6 +6,7 @@ import { getDaemonStatus, isDaemonRunning, removeDaemonPid } from './daemon-mana
 import { Executor } from './executor';
 import { getParser } from './parser';
 import { ScheduleManager } from './schedule-manager';
+import { resolveTimezone } from './timezone-offset';
 
 /**
  * WorkflowScheduler
@@ -120,15 +121,37 @@ export class WorkflowScheduler {
       return;
     }
 
-    const task = cron.schedule(schedule.cron, async () => {
-      await this.executeSchedule(schedule);
-    });
+    const options: { timezone?: string } = {};
+    const resolvedTz = resolveTimezone(schedule.timezone);
+    if (resolvedTz) {
+      options.timezone = resolvedTz;
+    }
+
+    let task: ScheduledTask;
+    try {
+      task = cron.schedule(
+        schedule.cron,
+        async () => {
+          await this.executeSchedule(schedule);
+        },
+        options
+      );
+    } catch (err) {
+      console.error(
+        `  ✗ Cron schedule failed for ${schedule.id} (timezone: ${resolvedTz ?? 'local'}).`,
+        err instanceof Error ? err.message : err
+      );
+      throw err;
+    }
 
     this.tasks.set(schedule.id, task);
 
     const name = schedule.name ?? schedule.workflowPath;
     console.log(`  ✓ Scheduled: ${name}`);
     console.log(`    Cron: ${schedule.cron}`);
+    if (schedule.timezone) {
+      console.log(`    Timezone: ${schedule.timezone}${resolvedTz ? ` (${resolvedTz})` : ''}`);
+    }
     console.log(`    Workflow: ${schedule.workflowPath}`);
   }
 

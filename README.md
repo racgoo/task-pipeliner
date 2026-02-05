@@ -1363,6 +1363,11 @@ schedules:
     cron: "0 * * * *"
     workflow: simple.yaml
     baseDir: /path/to/workflows  # Optional: base directory for workflow path
+
+  - name: Daily UTC
+    cron: "0 9 * * *"
+    workflow: ./daily.yaml
+    timezone: 0                   # Optional: UTC offset (hours). +9, -5, 0. Omit = system local
 ```
 
 **Field Descriptions:**
@@ -1370,6 +1375,7 @@ schedules:
 - `cron`: Execution time (cron expression)
 - `workflow`: Path to workflow file (relative to schedule file or `baseDir`, or absolute)
 - `baseDir`: (Optional) Base directory for workflow path (defaults to schedule file's directory)
+- `timezone`: (Optional) UTC offset in hours: number or string (e.g. `+9`, `-5`, `0`). Omit = system local
 - `silent`: (Optional) Run in silent mode, suppressing console output
 - `profile`: (Optional) Profile name to use (for workflows with profiles)
 

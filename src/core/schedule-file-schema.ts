@@ -12,6 +12,7 @@ export const ScheduleDefinitionSchema = z.object({
   cron: z.string().min(1, 'Cron expression is required'),
   workflow: z.string().min(1, 'Workflow path is required'),
   baseDir: z.string().optional(),
+  timezone: z.union([z.string(), z.number()]).transform(String).optional(),
   silent: z.boolean().optional(),
   profile: z.string().optional(),
 });

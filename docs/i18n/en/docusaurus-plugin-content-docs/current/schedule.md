@@ -69,8 +69,21 @@ schedules:
 | `cron`     | `string`  | Yes      | Cron expression (5 or 6 fields)                                            |
 | `workflow` | `string`  | Yes      | Path to workflow file (relative to schedule file or `baseDir`, or absolute) |
 | `baseDir`  | `string`  | No       | Base directory for workflow path (default: schedule file's directory)     |
-| `silent`   | `boolean` | No       | Run in silent mode (suppress console output)                              |
-| `profile`  | `string`  | No       | Profile name to use (for workflows with profiles)                         |
+| `timezone` | `string` or number | No | UTC offset in hours (e.g. `+9`, `-5`, `0`). Omit = system local |
+| `silent`   | `boolean` | No       | Run in silent mode (suppress console output)                                |
+| `profile`  | `string`  | No       | Profile name to use (for workflows with profiles)                           |
+
+## Timezone
+
+The **cron expression is interpreted in the given timezone**. Use the local time you want (hour/minute) in that timezone.
+
+- **Korea (UTC+9), run at 11:33 AM every day:**
+  ```yaml
+  cron: '33 11 * * *'
+  timezone: '9'
+  ```
+- **UTC+8, run at 12:33:** use `timezone: '8'` and `cron: '33 12 * * *'` (that is 13:33 in Korea).
+- Omit `timezone` to use the server’s local time.
 
 ## Path Resolution
 

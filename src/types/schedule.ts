@@ -8,6 +8,7 @@ export interface Schedule {
   workflowPath: string;
   cron: string;
   enabled: boolean;
+  timezone?: string; // UTC offset: number e.g. +9, -5, 0 (hours). Omit = system local
   silent?: boolean;
   profile?: string;
   createdAt: string;

@@ -6,6 +6,7 @@ Schedule workflows to run automatically at specified times using cron expression
 
 - **Schedule file**: Define multiple schedules in one YAML or JSON file
 - **Path resolution**: Workflow paths are relative to the schedule file's directory (or `baseDir`)
+- **Timezone**: Optional `timezone` as UTC offset in hours (e.g. `+9`, `-5`, `0`). Omit = system local
 - **Options**: Support `silent` mode and `profile` per schedule
 - **Cron**: 5-field (minute granularity) or 6-field (second granularity) expressions
 
@@ -33,6 +34,11 @@ schedules:
     cron: "0 * * * *"
     workflow: simple.yaml
     baseDir: /path/to/workflows
+
+  - name: Daily UTC
+    cron: "0 9 * * *"
+    workflow: ./daily.yaml
+    timezone: UTC
 ```
 
 ### JSON Example
@@ -69,8 +75,9 @@ schedules:
 | `cron`     | `string`  | Yes      | Cron expression (5 or 6 fields)                                            |
 | `workflow` | `string`  | Yes      | Path to workflow file (relative to schedule file or `baseDir`, or absolute) |
 | `baseDir`  | `string`  | No       | Base directory for workflow path (default: schedule file's directory)     |
-| `silent`   | `boolean` | No       | Run in silent mode (suppress console output)                              |
-| `profile`  | `string`  | No       | Profile name to use (for workflows with profiles)                         |
+| `timezone` | `string` or number | No | UTC offset in hours (e.g. `+9`, `-5`, `0`). Omit = system local |
+| `silent`   | `boolean` | No       | Run in silent mode (suppress console output)                                |
+| `profile`  | `string`  | No       | Profile name to use (for workflows with profiles)                           |
 
 ## Path Resolution
 

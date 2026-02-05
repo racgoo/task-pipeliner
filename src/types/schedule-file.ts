@@ -7,6 +7,7 @@ export interface ScheduleDefinition {
   cron: string; // Cron expression
   workflow: string; // Path to workflow file
   baseDir?: string; // Optional: base directory for workflow path
+  timezone?: string; // Optional: UTC offset as number, e.g. +9, -5, 0 (hours). Omit = system local
   silent?: boolean; // Optional: run in silent mode (-s)
   profile?: string; // Optional: profile name to use (-p)
 }

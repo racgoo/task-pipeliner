@@ -69,6 +69,7 @@ schedules:
 | `cron`     | `string`  | Yes      | Cron expression (e.g., "0 9 * * *")                                        |
 | `workflow` | `string`  | Yes      | Path to workflow file (relative to schedule file or baseDir, or absolute)   |
 | `baseDir`  | `string`  | No       | Base directory for workflow path (defaults to schedule file's directory)    |
+| `timezone` | `string` or number | No | UTC offset in hours (e.g. +9, -5, 0). Omit = system local |
 | `silent`   | `boolean` | No       | Run in silent mode (suppress console output)                                |
 | `profile`  | `string`  | No       | Profile name to use (for workflows with profiles)                           |
 

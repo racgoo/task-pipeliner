@@ -1362,6 +1362,11 @@ schedules:
     cron: "0 * * * *"
     workflow: simple.yaml
     baseDir: /path/to/workflows  # 선택사항: 워크플로우 경로의 기준 디렉토리
+
+  - name: Daily UTC
+    cron: "0 9 * * *"
+    workflow: ./daily.yaml
+    timezone: 0                   # 선택사항: UTC 오프셋(시간). +9, -5, 0. 생략 시 시스템 로컬
 ```
 
 **필드 설명:**
@@ -1369,6 +1374,7 @@ schedules:
 - `cron`: 실행 시간 (cron 표현식)
 - `workflow`: 워크플로우 파일 경로 (스케줄 파일 또는 `baseDir` 기준 상대 경로, 또는 절대 경로)
 - `baseDir`: (선택사항) 워크플로우 경로의 기준 디렉토리 (기본값: 스케줄 파일 디렉토리)
+- `timezone`: (선택사항) UTC 오프셋(시간). 숫자 또는 문자열 (예: `+9`, `-5`, `0`). 생략 시 시스템 로컬
 - `silent`: (선택사항) 무음 모드로 실행 (콘솔 출력 억제)
 - `profile`: (선택사항) 사용할 프로필 이름 (프로필이 있는 워크플로우용)
 

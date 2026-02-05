@@ -203,6 +203,7 @@ async function addSchedules(scheduleFilePath?: string): Promise<void> {
       workflowPath: resolveWorkflowPath(resolvedPath, scheduleDef),
       cron: scheduleDef.cron,
       enabled: true, // Always enabled by default
+      timezone: scheduleDef.timezone,
       silent: scheduleDef.silent,
       profile: scheduleDef.profile,
     });
@@ -214,6 +215,7 @@ async function addSchedules(scheduleFilePath?: string): Promise<void> {
   for (const s of addedSchedules) {
     console.log(`  - ${s.name ?? 'N/A'}`);
     console.log(`    Cron: ${s.cron}`);
+    if (s.timezone) console.log(`    Timezone: ${s.timezone}`);
     console.log(`    Workflow: ${s.workflowPath}`);
     if (s.silent) console.log(`    Silent: Yes`);
     if (s.profile) console.log(`    Profile: ${s.profile}`);
@@ -298,6 +300,9 @@ async function listSchedules(): Promise<void> {
     console.log(`  ${status} ${name}`);
     console.log(`    ID: ${schedule.id}`);
     console.log(`    Cron: ${schedule.cron}`);
+    if (schedule.timezone) {
+      console.log(`    Timezone: ${schedule.timezone}`);
+    }
     console.log(`    Workflow: ${schedule.workflowPath}`);
     console.log(`    Last run: ${lastRun}`);
     console.log();
@@ -429,11 +434,16 @@ function formatScheduleStatus(schedule: Schedule): string {
   const profile = schedule.profile ? chalk.cyan(` [profile: ${schedule.profile}]`) : '';
   const silent = schedule.silent ? chalk.gray(' [silent]') : '';
 
-  const content = [
+  const lines = [
     `${status} ${chalk.bold(name)}${profile}${silent}`,
     `${chalk.gray('Cron:')} ${schedule.cron}`,
-    `${chalk.gray('Last run:')} ${lastRun}`,
-  ].join('\n');
+  ];
+  if (schedule.timezone) {
+    lines.push(`${chalk.gray('Timezone:')} ${schedule.timezone}`);
+  }
+  lines.push(`${chalk.gray('Last run:')} ${lastRun}`);
+
+  const content = lines.join('\n');
 
   return boxen(content, {
     borderStyle: 'round',
