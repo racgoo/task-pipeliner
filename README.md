@@ -1,6 +1,6 @@
 # task-pipeliner
 
-> A powerful, condition-based task pipeline runner with beautiful CLI output
+> A powerful workflow orchestration tool with condition-based execution and beautiful CLI output
 
 **Version:** 0.3.0
 
@@ -9,7 +9,7 @@
 [![npm version](https://img.shields.io/npm/v/task-pipeliner)](https://www.npmjs.com/package/task-pipeliner)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**task-pipeliner** is a modern workflow automation tool that lets you define complex task pipelines using simple YAML or JSON files. With conditional execution, parallel tasks, interactive prompts, and beautiful terminal output, it's perfect for build scripts, deployment workflows, and CI/CD pipelines.
+**task-pipeliner** is a modern workflow orchestration tool that lets you define, coordinate, and execute complex workflows using simple YAML or JSON files. With conditional execution, parallel tasks, interactive prompts, and beautiful terminal output, it's perfect for build scripts, deployment workflows, and CI/CD pipelines.
 
 **README-Language-Map** [KR [한국어 버전]](https://github.com/racgoo/task-pipeliner/blob/main/README.ko.md) / [EN [English Version]](https://github.com/racgoo/task-pipeliner)
 
