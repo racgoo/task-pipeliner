@@ -20,7 +20,7 @@ log-update@4.0.0: MIT
 node-cron@4.2.1: ISC
 ora@5.4.1: MIT
 prettier@3.8.1: MIT
-task-pipeliner@0.2.18: MIT
+task-pipeliner@0.3.0: MIT
 tsup@8.5.1: MIT
 typescript-eslint@8.53.1: MIT
 typescript@5.9.3: Apache-2.0

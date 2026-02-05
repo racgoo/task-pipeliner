@@ -59,10 +59,11 @@ export function formatScheduleCard(schedule: Schedule, options: FormatScheduleCa
       : `UTC+${s.timezone}`
     : null;
 
+  const cronValue = cronDesc ? `${s.cron} ${chalk.dim(`→ ${cronDesc}`)}` : s.cron;
+
   const rows = [
     [chalk.gray('Enabled'), toggleLabel],
-    [chalk.gray('Cron'), s.cron],
-    ...(cronDesc ? ([[chalk.gray(''), chalk.dim(`→ ${cronDesc}`)]] as [string, string][]) : []),
+    [chalk.gray('Cron'), cronValue],
     ...(tzStr ? ([[chalk.gray('Timezone'), tzStr]] as [string, string][]) : []),
     [chalk.gray('Workflow'), s.workflowPath],
     ...(s.profile ? ([[chalk.gray('Profile'), chalk.cyan(s.profile)]] as [string, string][]) : []),
