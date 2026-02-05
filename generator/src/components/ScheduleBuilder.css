@@ -1,0 +1,97 @@
+.schedule-builder .schedule-config {
+  padding: 0;
+}
+
+.schedule-builder .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md, 1rem);
+  gap: var(--spacing-md, 1rem);
+  flex-wrap: wrap;
+}
+
+.schedule-builder .schedules-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 1.5rem);
+}
+
+.schedule-block {
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: var(--border-radius, 6px);
+  padding: var(--spacing-md, 1rem);
+  background: var(--color-bg-panel, #fff);
+}
+
+.schedule-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm, 0.75rem);
+}
+
+.schedule-block-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.remove-schedule-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--color-text-secondary, #666);
+  cursor: pointer;
+}
+
+.remove-schedule-btn:hover:not(:disabled) {
+  background: var(--color-error, #f44336);
+  color: #fff;
+  border-color: var(--color-error, #f44336);
+}
+
+.remove-schedule-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.schedule-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 0.75rem);
+}
+
+.schedule-fields .form-group {
+  margin-bottom: 0;
+}
+
+.schedule-options .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.schedule-options .checkbox-label input {
+  width: auto;
+}
+
+.add-schedule-btn {
+  margin-top: var(--spacing-md, 1rem);
+  padding: 8px 16px;
+  border: 1px dashed var(--color-border, #e0e0e0);
+  border-radius: var(--border-radius, 6px);
+  background: var(--color-bg, #f5f5f5);
+  color: var(--color-text-secondary, #666);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.add-schedule-btn:hover {
+  background: var(--color-bg-hover, #f9f9f9);
+  border-color: var(--color-primary, #667eea);
+  color: var(--color-primary, #667eea);
+}

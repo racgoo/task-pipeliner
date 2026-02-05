@@ -1,0 +1,168 @@
+.cron-builder {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cron-preset-row .cron-preset-select {
+  width: 100%;
+  max-width: 320px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: var(--border-radius, 6px);
+  font-size: 14px;
+  background: var(--color-bg-panel, #fff);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.cron-preset-row .cron-preset-select:focus {
+  outline: none;
+  border-color: var(--color-primary, #667eea);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+}
+
+.cron-custom-row .cron-custom-input {
+  width: 100%;
+  max-width: 320px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: var(--border-radius, 6px);
+  font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+  background: var(--color-bg-panel, #fff);
+}
+
+.cron-custom-row .cron-custom-input:focus {
+  outline: none;
+  border-color: var(--color-primary, #667eea);
+}
+
+.cron-helper-toggle {
+  padding: 8px 0;
+  background: none;
+  border: none;
+  color: var(--color-primary, #667eea);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  border-radius: 4px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.cron-helper-toggle:hover {
+  color: var(--color-primary-hover, #5568d3);
+  background: rgba(102, 126, 234, 0.06);
+}
+
+/* Calendar helper panel - card style */
+.cron-helper-panel {
+  padding: 16px 18px;
+  background: linear-gradient(145deg, #fafbff 0%, #f4f6fc 100%);
+  border-radius: var(--border-radius-lg, 8px);
+  border: 1px solid rgba(102, 126, 234, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.06);
+}
+
+.cron-helper-panel .cron-helper-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cron-helper-panel .cron-helper-field label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary, #666);
+}
+
+.cron-helper-panel .cron-helper-field select,
+.cron-helper-panel .cron-helper-field input[type='number'] {
+  max-width: 140px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+}
+
+.cron-helper-panel .cron-helper-field select:focus,
+.cron-helper-panel .cron-helper-field input[type='number']:focus {
+  outline: none;
+  border-color: var(--color-primary, #667eea);
+}
+
+.cron-helper-time {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+/* Weekday chips - pill style */
+.cron-weekdays .cron-weekday-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cron-weekday-chip {
+  padding: 8px 14px;
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 20px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.cron-weekday-chip:hover {
+  background: var(--color-bg-hover, #f9f9f9);
+  border-color: var(--color-primary, #667eea);
+  color: var(--color-primary, #667eea);
+}
+
+.cron-weekday-chip.active {
+  background: var(--color-primary, #667eea);
+  color: #fff;
+  border-color: var(--color-primary, #667eea);
+}
+
+.cron-weekday-chip.active:hover {
+  background: var(--color-primary-hover, #5568d3);
+  border-color: var(--color-primary-hover, #5568d3);
+}
+
+/* Result line */
+.cron-helper-result {
+  font-size: 13px;
+  margin-top: 6px;
+  padding: 10px 14px;
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid var(--color-border, #e0e0e0);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cron-helper-label {
+  color: var(--color-text-muted, #999);
+  font-weight: 500;
+}
+
+.cron-helper-result code {
+  padding: 4px 10px;
+  background: rgba(102, 126, 234, 0.08);
+  border-radius: 4px;
+  font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+  color: var(--color-primary, #667eea);
+  font-weight: 500;
+}
