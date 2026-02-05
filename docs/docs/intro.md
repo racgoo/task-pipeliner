@@ -1,6 +1,6 @@
 # Introduction to task-pipeliner
 
-**task-pipeliner** is a modern workflow automation tool that lets you define complex task pipelines using simple YAML or JSON files. Instead of complex build scripts or CI/CD configurations, you can write workflows using a simple and readable YAML or JSON syntax.
+**task-pipeliner** is a modern workflow orchestration tool that lets you define, coordinate, and execute complex workflows using simple YAML or JSON files. Instead of complex build scripts or CI/CD configurations, you can orchestrate your entire workflow lifecycle using a simple and readable YAML or JSON syntax.
 
 ## Why task-pipeliner?
 
@@ -13,6 +13,7 @@
 
 ### Advantages of task-pipeliner
 
+- **Workflow orchestration**: Define, coordinate, and execute complex workflows with ease
 - **Declarative syntax**: Define workflows clearly using YAML or JSON
 - **Powerful conditional logic**: Branch based on file existence, variable values, and user input
 - **Beautiful output**: Real-time terminal output with colors and formatting

@@ -7,7 +7,7 @@ import searchLocal from '@easyops-cn/docusaurus-search-local';
 
 const config = {
   title: 'task-pipeliner',
-  tagline: 'Condition-based Task Pipeline Runner',
+  tagline: 'Powerful Workflow Orchestration Tool',
   favicon: 'img/favicon.webp',
 
   // Search engine verification meta tags

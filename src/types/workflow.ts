@@ -33,7 +33,7 @@ export interface History {
 export interface RunStepOnError {
   run: string; // fallback command to run on failure
   timeout?: number; // timeout in seconds (optional)
-  retry?: number; // number of retries on failure (optional, default: 0)
+  retry?: number | 'Infinity'; // number of retries on failure (optional, default: 0). Use 'Infinity' for infinite retries
   onError?: RunStepOnError; // nested fallback chain
 }
 
@@ -41,7 +41,7 @@ export interface RunStep {
   run: string; // command to run
   when?: Condition; // mainly used for choice conditions
   timeout?: number; // timeout in seconds (optional)
-  retry?: number; // number of retries on failure (optional, default: 0)
+  retry?: number | 'Infinity'; // number of retries on failure (optional, default: 0). Use 'Infinity' for infinite retries
   shell?: string[]; // shell configuration (e.g., ["bash", "-lc"]) - overrides workflow.shell
   /**
    * If true, continue workflow even if this run step ultimately fails.

@@ -55,6 +55,14 @@ These are workflow definitions only - no project files included.
   - Command timeout to prevent long-running commands
   - Automatic retry on failure with exponential backoff
   - Combining timeout and retry
+  - Infinite retry with `retry: Infinity` (retry until success)
+
+- **`pm2-like-example.yaml`** - PM2-like process manager using infinite retry
+  - Auto-restart crashed servers and processes
+  - Keep services running indefinitely
+  - Database connection retry until successful
+  - Graceful shutdown handling
+  - Perfect for production services that need to stay alive
 
 - **`multi-choice.yaml`** - Multiple choice steps
   - Sequential choices

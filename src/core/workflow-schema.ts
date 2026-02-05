@@ -70,7 +70,7 @@ const RunStepOnErrorSchema: z.ZodTypeAny = z.lazy(() =>
   z.object({
     run: z.string(),
     timeout: z.number().optional(),
-    retry: z.number().optional(),
+    retry: z.union([z.number(), z.literal('Infinity')]).optional(),
     onError: RunStepOnErrorSchema.optional(),
   })
 );
@@ -79,7 +79,7 @@ const RunStepSchema = z.object({
   run: z.string(),
   when: ConditionSchema.optional(),
   timeout: z.number().optional(),
-  retry: z.number().optional(),
+  retry: z.union([z.number(), z.literal('Infinity')]).optional(),
   shell: z.array(z.string()).min(1, 'shell must have at least one element').optional(),
   continue: z.boolean().optional(),
   onError: RunStepOnErrorSchema.optional(),

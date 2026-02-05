@@ -20,7 +20,7 @@ import { ScheduleManager } from '../core/schedule-manager';
 import { WorkflowScheduler } from '../core/scheduler';
 import { Schedule } from '../types/schedule';
 import { ScheduleDefinition } from '../types/schedule-file';
-import { formatScheduleCard, getCronDescription } from './schedule-card-format';
+import { formatScheduleCard } from './schedule-card-format';
 
 /**
  * Create schedule command
@@ -222,20 +222,12 @@ async function addSchedules(scheduleFilePath?: string): Promise<void> {
     addedSchedules.push(schedule);
   }
 
+  const daemonStatus = await getDaemonStatus();
   console.log(`\n✓ Added ${addedSchedules.length} schedule(s) successfully\n`);
   for (const s of addedSchedules) {
-    const cronDesc = getCronDescription(s.cron);
-    console.log(`  - ${s.name ?? 'N/A'}`);
-    console.log(`    Cron: ${s.cron}`);
-    if (cronDesc) console.log(`    ${chalk.dim(`→ ${cronDesc}`)}`);
-    if (s.timezone) console.log(`    Timezone: ${s.timezone}`);
-    console.log(`    Workflow: ${s.workflowPath}`);
-    if (s.silent) console.log(`    Silent: Yes`);
-    if (s.profile) console.log(`    Profile: ${s.profile}`);
-    console.log(`    Status: ${s.enabled ? 'Enabled' : 'Disabled'}`);
-    console.log();
+    console.log(formatScheduleCard(s, { daemonRunning: daemonStatus.running }));
   }
-  console.log('Run "tp schedule start" to start the scheduler daemon');
+  console.log(chalk.dim('  Tip: Run "tp schedule start" to start the scheduler daemon'));
 }
 
 /**

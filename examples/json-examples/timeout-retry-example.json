@@ -38,6 +38,15 @@
       "run": "echo \"Critical deployment step (will retry up to 5 times)...\"",
       "retry": 5,
       "timeout": 180
+    },
+    {
+      "run": "echo \"This command will retry indefinitely until it succeeds\"",
+      "retry": "Infinity"
+    },
+    {
+      "run": "echo \"Network request that will retry until success (with timeout)...\"",
+      "retry": "Infinity",
+      "timeout": 60
     }
   ]
 }

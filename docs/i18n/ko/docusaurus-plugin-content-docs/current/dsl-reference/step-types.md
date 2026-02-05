@@ -22,13 +22,13 @@
 - run: <command>
   when?: <condition>  # 선택: 조건이 충족될 때만 실행
   timeout?: <number>  # 선택: 타임아웃 (초 단위)
-  retry?: <number>    # 선택: 실패 시 재시도 횟수 (기본값: 0)
+  retry?: <number> | "Infinity"  # 선택: 실패 시 재시도 횟수 (기본값: 0). "Infinity"로 무한 재시도 가능
   shell?: <array>     # 선택: 쉘 설정 (workflow.shell 오버라이드)
   continue?: <bool>   # 선택: 이 스텝 이후 다음 스텝으로 진행할지 여부 (성공/실패 무관)
   onError?:            # 선택: 에러 처리 동작
     run: <command>     # 메인 run 명령이 실패했을 때 실행할 대체 명령 (사이드 이펙트)
     timeout?: <number> # 선택: 이 fallback 명령의 타임아웃
-    retry?: <number>   # 선택: 이 fallback 명령의 재시도 횟수
+    retry?: <number> | "Infinity"  # 선택: 이 fallback 명령의 재시도 횟수. "Infinity"로 무한 재시도 가능
     onError?: ...      # 선택: 중첩 fallback (재귀 onError 체인)
 ```
 
@@ -47,7 +47,7 @@
 - `run` (필수): `string` - 실행할 셸 명령
 - `when` (선택): `Condition` - 실행 전 확인할 조건
 - `timeout` (선택): `number` - 최대 실행 시간 (초 단위). 이 시간을 초과하면 명령이 종료됩니다.
-- `retry` (선택): `number` - 실패 시 재시도 횟수 (기본값: 0, 재시도 없음)
+- `retry` (선택): `number | "Infinity"` - 실패 시 재시도 횟수 (기본값: 0, 재시도 없음). `"Infinity"`로 성공할 때까지 무한 재시도 가능
 - `shell` (선택): `string`의 `array` - 이 스텝의 쉘 설정. 워크플로우의 전역 `shell`을 오버라이드합니다. 형식: `[프로그램, ...인자]`. 예: `[bash, -lc]`.
 - `continue` (선택): `boolean` - 이 스텝 완료 후 다음 스텝으로 진행할지 여부를 제어합니다 (성공/실패와 무관).
   - `continue: true` - 항상 다음 스텝으로 진행 (이 스텝이 실패해도)
@@ -55,7 +55,7 @@
   - `continue` 미설정 (기본값) - 성공 시 진행, 실패 시 중단
 - `onError.run` (선택): `string` - 메인 `run` 명령이 (자신의 재시도 후에도) 실패했을 때 실행할 대체 명령. **`onError`는 단순히 사이드 이펙트(예: 정리 작업, 롤백, 로깅)를 수행하며, 이 스텝의 성공/실패 여부를 바꾸지 않습니다.** 메인 `run`이 실패하면 이 스텝은 항상 실패로 간주됩니다.
 - `onError.timeout` (선택): `number` - 이 fallback 명령의 타임아웃.
-- `onError.retry` (선택): `number` - 이 fallback 명령의 재시도 횟수.
+- `onError.retry` (선택): `number | "Infinity"` - 이 fallback 명령의 재시도 횟수. `"Infinity"`로 무한 재시도 가능.
 
 ### 예제
 
@@ -79,6 +79,10 @@ steps:
 # 재시도가 있는 명령 (최대 3번 재시도)
 - run: npm install
   retry: 3
+
+# PM2처럼 프로세스 관리: 서버가 죽으면 자동 재시작
+- run: node server.js
+  retry: Infinity
 
 # 타임아웃과 재시도 모두 사용
 - run: npm install

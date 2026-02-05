@@ -20,11 +20,11 @@ function HomepageHeader() {
           {siteConfig.title}
         </Heading>
         <p className="hero__subtitle">
-          <Translate id="homepage.tagline">조건 기반 작업 파이프라인 실행기</Translate>
+          <Translate id="homepage.tagline">강력한 워크플로우 오케스트레이션 도구</Translate>
         </p>
         <p className={styles.heroDescription}>
           <Translate id="homepage.hero.description">
-            간단한 YAML 또는 JSON 파일로 복잡한 작업 파이프라인을 정의할 수 있는 현대적인 워크플로우 자동화 도구. 조건부 실행, 병렬 작업, 대화형 프롬프트, 그리고 아름다운 터미널 출력을 제공합니다.
+            간단한 YAML 또는 JSON 파일로 복잡한 워크플로우를 정의, 조율, 실행하는 현대적인 오케스트레이션 도구. 조건부 실행, 병렬 작업, 대화형 프롬프트, 그리고 아름다운 터미널 출력을 제공합니다.
           </Translate>
         </p>
         <div className={styles.buttons}>
@@ -51,13 +51,13 @@ export default function Home(): ReactNode {
   const {siteConfig, i18n} = useDocusaurusContext();
   const tagline = translate({
     id: 'homepage.tagline',
-    message: i18n.currentLocale === 'ko' ? '조건 기반 작업 파이프라인 실행기' : 'Condition-based Task Pipeline Runner',
+    message: i18n.currentLocale === 'ko' ? '강력한 워크플로우 오케스트레이션 도구' : 'Powerful Workflow Orchestration Tool',
   });
   const description = translate({
     id: 'homepage.hero.description',
     message: i18n.currentLocale === 'en'
-      ? 'A modern workflow automation tool that lets you define complex task pipelines using simple YAML or JSON files. Supports conditional execution, parallel processing, interactive prompts, and beautiful terminal output.'
-      : '간단한 YAML 또는 JSON 파일로 복잡한 작업 파이프라인을 정의할 수 있는 현대적인 워크플로우 자동화 도구. 조건부 실행, 병렬 작업, 대화형 프롬프트, 그리고 아름다운 터미널 출력을 제공합니다.',
+      ? 'A modern workflow orchestration tool that lets you define, coordinate, and execute complex workflows using simple YAML or JSON files. Supports conditional execution, parallel processing, interactive prompts, and beautiful terminal output.'
+      : '간단한 YAML 또는 JSON 파일로 복잡한 워크플로우를 정의, 조율, 실행하는 현대적인 오케스트레이션 도구. 조건부 실행, 병렬 작업, 대화형 프롬프트, 그리고 아름다운 터미널 출력을 제공합니다.',
   });
   return (
     <Layout

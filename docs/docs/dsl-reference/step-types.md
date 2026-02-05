@@ -22,13 +22,13 @@ Execute a shell command.
 - run: <command>
   when?: <condition>   # Optional: Execute only if condition is met
   timeout?: <number>   # Optional: Timeout in seconds
-  retry?: <number>     # Optional: Number of retries on failure (default: 0)
+  retry?: <number> | "Infinity"  # Optional: Number of retries on failure (default: 0). Use "Infinity" for infinite retries
   shell?: <array>      # Optional: Shell configuration (overrides workflow.shell)
   continue?: <bool>    # Optional: Continue workflow even if this step fails
   onError?:            # Optional: Error handling behavior
     run: <command>     # Fallback command to run when the main run command fails (side effect)
     timeout?: <number> # Optional: Timeout for this fallback command
-    retry?: <number>   # Optional: Number of retries for this fallback command
+    retry?: <number> | "Infinity"  # Optional: Number of retries for this fallback command. Use "Infinity" for infinite retries
     onError?: ...      # Optional: Nested fallback (recursive onError chain)
 ```
 
@@ -37,7 +37,7 @@ Execute a shell command.
 - `run` (required): `string` - Shell command to execute
 - `when` (optional): `Condition` - Condition to check before execution
 - `timeout` (optional): `number` - Maximum execution time in seconds. Command will be killed if it exceeds this time.
-- `retry` (optional): `number` - Number of retry attempts if command fails (default: 0, meaning no retry)
+- `retry` (optional): `number | "Infinity"` - Number of retry attempts if command fails (default: 0, meaning no retry). Use `"Infinity"` for infinite retries until success
 - `shell` (optional): `array` of `string` - Shell configuration for this step. Overrides workflow's global `shell`. Format: `[program, ...args]`. Example: `[bash, -lc]`.
 - `continue` (optional): `boolean` - Controls whether to proceed to the next step after this step completes, regardless of success or failure.
   - `continue: true` - Always proceed to the next step (even if this step fails)
@@ -45,7 +45,7 @@ Execute a shell command.
   - `continue` not set (default) - Proceed on success, stop on failure
 - `onError.run` (optional): `string` - Fallback command executed when the main `run` command (after its retries) fails. **`onError` only performs side effects (cleanup, rollback, logging, etc.) and does not change whether the step is considered successful or failed.** If the main `run` fails, this step is treated as failed regardless of `onError` success.
 - `onError.timeout` (optional): `number` - Timeout for this fallback command.
-- `onError.retry` (optional): `number` - Retry count for this fallback command.
+- `onError.retry` (optional): `number | "Infinity"` - Retry count for this fallback command. Use `"Infinity"` for infinite retries.
 
 ### Examples
 
@@ -68,6 +68,14 @@ Execute a shell command.
 # Command with retry (retry up to 3 times)
 - run: npm install
   retry: 3
+
+# Command with infinite retry (retry until success)
+- run: npm install
+  retry: Infinity
+
+# PM2-like process manager: auto-restart crashed server
+- run: node server.js
+  retry: Infinity
 
 # Command with fallback on error
 - run: pnpm lint
