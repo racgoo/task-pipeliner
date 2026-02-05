@@ -16,43 +16,40 @@ interface CronBuilderProps {
 }
 
 export default function CronBuilder({ value, onChange, placeholder }: CronBuilderProps) {
-  const [presetLabel, setPresetLabel] = useState<string>('');
-  const [customCron, setCustomCron] = useState('');
   const [showHelper, setShowHelper] = useState(false);
   const [builderState, setBuilderState] = useState<CronBuilderState>(DEFAULT_CRON_STATE);
+  /** When true, user explicitly chose "Custom / Build"; don't switch to preset label when value happens to match a preset. */
+  const [userChoseCustomBuild, setUserChoseCustomBuild] = useState(false);
 
+  const presetMatch = value ? CRON_PRESETS.find((p) => p.cron === value) : null;
   const isCustom = !CRON_PRESETS.some((p) => p.cron && p.cron === value);
 
+  // Reset "user chose Custom / Build" when value is cleared (parent cleared the field). Deferred to avoid synchronous setState in effect.
   useEffect(() => {
-    if (value) {
-      const found = CRON_PRESETS.find((p) => p.cron === value);
-      if (found) {
-        setPresetLabel(found.label);
-        setShowHelper(false);
-      } else {
-        setPresetLabel('Custom / Build');
-        setCustomCron(value);
-      }
-    } else {
-      setPresetLabel('');
-      setCustomCron('');
-    }
+    if (!value) queueMicrotask(() => setUserChoseCustomBuild(false));
   }, [value]);
+
+  const effectivePresetLabel = (() => {
+    if (!value) return '';
+    if (userChoseCustomBuild) return 'Custom / Build';
+    if (presetMatch) return presetMatch.label;
+    return 'Custom / Build';
+  })();
 
   const handlePresetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = e.target.value;
     const preset = CRON_PRESETS.find((p) => p.label === selected);
     if (preset?.cron) {
+      setUserChoseCustomBuild(false);
       onChange(preset.cron);
       setShowHelper(false);
     } else {
-      setPresetLabel('Custom / Build');
-      if (customCron) onChange(customCron);
+      setUserChoseCustomBuild(true);
+      onChange(value);
     }
   };
 
   const handleCustomCronChange = (v: string) => {
-    setCustomCron(v);
     onChange(v);
   };
 
@@ -74,7 +71,7 @@ export default function CronBuilder({ value, onChange, placeholder }: CronBuilde
       <div className="cron-preset-row">
         <select
           className="cron-preset-select"
-          value={presetLabel || (isCustom ? 'Custom / Build' : '')}
+          value={effectivePresetLabel || (isCustom ? 'Custom / Build' : '')}
           onChange={handlePresetChange}
         >
           <option value="">Select preset or custom...</option>
@@ -86,13 +83,13 @@ export default function CronBuilder({ value, onChange, placeholder }: CronBuilde
         </select>
       </div>
 
-      {(presetLabel === 'Custom / Build' || isCustom) && (
+      {(effectivePresetLabel === 'Custom / Build' || isCustom) && (
         <>
           <div className="cron-custom-row">
             <input
               type="text"
               className="cron-custom-input"
-              value={customCron}
+              value={value}
               onChange={(e) => handleCustomCronChange(e.target.value)}
               placeholder={placeholder ?? 'e.g. 0 9 * * * or */5 * * * * *'}
             />

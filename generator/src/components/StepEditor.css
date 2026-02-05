@@ -54,6 +54,13 @@
   min-width: 0;
 }
 
+.step-chevron {
+  width: 1rem;
+  flex-shrink: 0;
+  color: var(--color-text-secondary, #666);
+  font-size: 0.75rem;
+}
+
 .step-number {
   display: flex;
   align-items: center;

@@ -19,9 +19,23 @@ const DEFAULT_SCHEDULE: ScheduleDefinition = {
 
 export default function ScheduleBuilder() {
   const [schedules, setSchedules] = useState<ScheduleDefinition[]>([{ ...DEFAULT_SCHEDULE }]);
+  const [expandedSchedules, setExpandedSchedules] = useState<Set<number>>(new Set([0]));
   const [outputFormat, setOutputFormat] = useState<'yaml' | 'json'>('yaml');
   const [preview, setPreview] = useState('');
   const [previewError, setPreviewError] = useState<string | null>(null);
+
+  const toggleSchedule = (index: number) => {
+    setExpandedSchedules((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  };
+
+  const collapseAllSchedules = () => setExpandedSchedules(new Set());
+  const expandAllSchedules = () =>
+    setExpandedSchedules(new Set(schedules.map((_, i) => i)));
 
   const getCleanSchedules = (): ScheduleDefinition[] => {
     return schedules
@@ -93,7 +107,9 @@ export default function ScheduleBuilder() {
   }, [outputFormat]);
 
   const addSchedule = () => {
+    const newIndex = schedules.length;
     setSchedules((prev) => [...prev, { ...DEFAULT_SCHEDULE }]);
+    setExpandedSchedules((prev) => new Set([...prev, newIndex]));
   };
 
   const updateSchedule = (index: number, updates: Partial<ScheduleDefinition>) => {
@@ -140,15 +156,33 @@ export default function ScheduleBuilder() {
           <div className="schedule-config">
             <div className="section-header">
               <h3 className="section-title">Schedules</h3>
-              <button
-                type="button"
-                onClick={generatePreview}
-                className="sync-button sync-to-code"
-                title="Generate code from visual editor and show in code editor"
-              >
-                <span className="button-icon">→</span>
-                <span className="button-text">→ Code</span>
-              </button>
+              <div className="section-header-actions">
+                <button
+                  type="button"
+                  onClick={collapseAllSchedules}
+                  className="collapse-all-btn"
+                  title="Collapse all schedule blocks"
+                >
+                  Collapse all
+                </button>
+                <button
+                  type="button"
+                  onClick={expandAllSchedules}
+                  className="expand-all-btn"
+                  title="Expand all schedule blocks"
+                >
+                  Expand all
+                </button>
+                <button
+                  type="button"
+                  onClick={generatePreview}
+                  className="sync-button sync-to-code"
+                  title="Generate code from visual editor and show in code editor"
+                >
+                  <span className="button-icon">→</span>
+                  <span className="button-text">→ Code</span>
+                </button>
+              </div>
             </div>
             <p className="field-hint" style={{ marginBottom: 12 }}>
               Add one or more schedules. Use <code>tp schedule add &lt;file&gt;</code> to register
@@ -157,12 +191,36 @@ export default function ScheduleBuilder() {
 
             <div className="schedules-list">
               {schedules.map((schedule, index) => (
-                <div key={index} className="schedule-block">
-                  <div className="schedule-block-header">
-                    <span className="schedule-block-title">Schedule {index + 1}</span>
+                <div
+                  key={index}
+                  className={`schedule-block ${expandedSchedules.has(index) ? 'schedule-block-open' : 'schedule-block-closed'}`}
+                >
+                  <div
+                    className="schedule-block-header"
+                    onClick={() => toggleSchedule(index)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleSchedule(index);
+                      }
+                    }}
+                    aria-expanded={expandedSchedules.has(index)}
+                    aria-label={`Schedule ${index + 1}, ${expandedSchedules.has(index) ? 'collapse' : 'expand'}`}
+                  >
+                    <span className="schedule-block-title">
+                      {expandedSchedules.has(index) ? '▼' : '▶'} Schedule {index + 1}
+                      {schedule.name?.trim() && (
+                        <span className="schedule-block-name"> — {schedule.name.trim()}</span>
+                      )}
+                    </span>
                     <button
                       type="button"
-                      onClick={() => removeSchedule(index)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeSchedule(index);
+                      }}
                       className="remove-schedule-btn"
                       title="Remove schedule"
                       disabled={schedules.length === 1}
@@ -171,6 +229,7 @@ export default function ScheduleBuilder() {
                     </button>
                   </div>
 
+                  {expandedSchedules.has(index) && (
                   <div className="schedule-fields">
                     <div className="form-group">
                       <label>Name (alias)</label>
@@ -247,6 +306,7 @@ export default function ScheduleBuilder() {
                       />
                     </div>
                   </div>
+                  )}
                 </div>
               ))}
             </div>
