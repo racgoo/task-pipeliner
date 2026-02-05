@@ -5,7 +5,7 @@
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "pnpm run build && docusaurus serve",
-    "build": "rm -rf build && rm -rf .docusaurus && docusaurus build",
+    "build": "pnpm run build:clean && pnpm run clear && docusaurus build",
     "build:clean": "rm -rf build",
     "build:ko": "BASE_URL=/ko/ docusaurus build --locale ko --out-dir build/ko",
     "build:en": "BASE_URL=/en/ docusaurus build --locale en --out-dir build/en",
