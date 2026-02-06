@@ -16,12 +16,12 @@ steps:
   - when:
       var:
         env: prod
-    run: echo "Production deployment"
+    run: 'echo "Production deployment"'
 
   # 2. File existence check
   - when:
       file: ./dist
-    run: echo "Dist directory exists"
+    run: 'echo "Dist directory exists"'
 
   # 3. Variable existence check (variables from prompts)
   - prompt:
@@ -37,7 +37,7 @@ steps:
         - file: ./dist
         - var:
             env: prod
-    run: echo "Production build with dist"
+    run: 'echo "Production build with dist"'
 
   # 5. OR combination
   - when:
@@ -46,7 +46,7 @@ steps:
             env: staging
         - var:
             env: prod
-    run: echo "Deploying to server"
+    run: 'echo "Deploying to server"'
 
   # 6. NOT condition
   - when:

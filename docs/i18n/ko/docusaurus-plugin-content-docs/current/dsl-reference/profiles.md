@@ -118,7 +118,7 @@ steps:
         - id: prod
           label: Production
       as: env
-  - run: echo "Deploying {{env}} at {{version}}"
+  - run: 'echo "Deploying {{env}} at {{version}}"'
 ```
 
 ```bash

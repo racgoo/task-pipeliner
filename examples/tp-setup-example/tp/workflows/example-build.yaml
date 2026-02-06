@@ -13,7 +13,7 @@ profiles:
       label: "prod-build"
 
 steps:
-  - run: echo "Build workflow started..."
+  - run: 'echo "Build workflow started..."'
   - choose:
       message: "Select mode (or run with --profile Dev/Prod to skip):"
       options:
@@ -22,18 +22,18 @@ steps:
         - id: prod
           label: "Production"
       as: mode
-  - run: echo "Mode: {{ mode }}"
+  - run: 'echo "Mode: {{ mode }}"'
   - prompt:
       message: "Enter build label"
       as: label
       default: "default"
-  - run: echo "Label: {{ label }}"
+  - run: 'echo "Label: {{ label }}"'
   - when:
       var:
         mode: dev
-    run: echo "Dev-only step (e.g. npm run build:dev)"
+    run: 'echo "Dev-only step (e.g. npm run build:dev)"'
   - when:
       var:
         mode: prod
-    run: echo "Prod-only step (e.g. npm run build)"
-  - run: echo "Done. Replace run steps with real commands."
+    run: 'echo "Prod-only step (e.g. npm run build)"'
+  - run: 'echo "Done. Replace run steps with real commands."'

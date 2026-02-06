@@ -124,7 +124,7 @@ steps:
             frontend: react
         - var:
             buildTool: vite
-    run: echo "Setting up React + Vite project..."
+    run: 'echo "Setting up React + Vite project..."'
 
   # 9. API Service + Express combination
   - when:
@@ -133,7 +133,7 @@ steps:
             projectType: api_service
         - var:
             apiFramework: express
-    run: echo "Setting up Express.js API..."
+    run: 'echo "Setting up Express.js API..."'
 
   # 10. Microservice + gRPC combination
   - when:
@@ -142,7 +142,7 @@ steps:
             projectType: microservice
         - var:
             communication: grpc
-    run: echo "Setting up gRPC microservice..."
+    run: 'echo "Setting up gRPC microservice..."'
 
   # 11. Monorepo + Turborepo combination
   - when:
@@ -151,7 +151,7 @@ steps:
             projectType: monorepo
         - var:
             monorepoTool: turborepo
-    run: echo "Setting up Turborepo monorepo..."
+    run: 'echo "Setting up Turborepo monorepo..."'
 
   # 12. When Jest or Vitest is selected
   - when:
@@ -160,7 +160,7 @@ steps:
             testFramework: jest
         - var:
             testFramework: vitest
-    run: echo "Configuring unit tests..."
+    run: 'echo "Configuring unit tests..."'
 
   # 13. When Playwright or Cypress is selected
   - when:
@@ -169,7 +169,7 @@ steps:
             testFramework: playwright
         - var:
             testFramework: cypress
-    run: echo "Configuring E2E tests..."
+    run: 'echo "Configuring E2E tests..."'
 
   # 14. Confirm project setup completion
   - when:
@@ -194,7 +194,7 @@ steps:
                 projectType: monorepo
             - var:
                 monorepoTool: turborepo
-    run: echo "✅ Project setup completed based on your choices!"
+    run: 'echo "✅ Project setup completed based on your choices!"'
 
   # 15. Warn if no test configuration
   - when:

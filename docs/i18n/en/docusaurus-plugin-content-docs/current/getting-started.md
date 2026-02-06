@@ -129,7 +129,7 @@ Create a `workflow.yaml` or `workflow.json` file in your project root:
 name: My First Workflow
 
 steps:
-  - run: echo "Hello, World!"
+  - run: 'echo "Hello, World!"'
   
   - choose:
       message: "What would you like to do?"
@@ -143,12 +143,12 @@ steps:
   - when:
       var:
         action: build
-    run: npm run build
+    run: 'npm run build'
   
   - when:
       var:
         action: test
-    run: npm test
+    run: 'npm test'
 ```
 
 **JSON Format (`workflow.json`):**
@@ -249,8 +249,8 @@ name: Workflow Name                    # Optional: Display name for the workflow
 baseDir: ./                            # Optional: Base directory for command execution
 
 steps:                                 # Required: Array of steps to execute
-  - run: echo "Step 1"
-  - run: echo "Step 2"
+  - run: 'echo "Step 1"'
+  - run: 'echo "Step 2"'
 ```
 
 ### Steps
@@ -270,7 +270,7 @@ Use `when` clauses to specify execution conditions for steps:
 ```yaml
 - when:
     file: ./dist
-  run: echo "Build exists"
+  run: 'echo "Build exists"'
 ```
 
 ## Practical Examples
@@ -284,7 +284,7 @@ steps:
   - when:
       not:
         file: ./node_modules
-    run: npm install
+    run: 'npm install'
 ```
 
 This workflow only runs `npm install` when the `node_modules` directory doesn't exist.
@@ -300,7 +300,7 @@ steps:
       as: version
       default: "1.0.0"
   
-  - run: echo "Building version {{version}}"
+  - run: 'echo "Building version {{version}}"'
 ```
 
 Store the user's input as a variable and use it in commands.
@@ -312,9 +312,9 @@ name: Parallel Execution
 
 steps:
   - parallel:
-      - run: npm run test:unit
-      - run: npm run test:integration
-      - run: npm run lint
+      - run: 'npm run test:unit'
+      - run: 'npm run test:integration'
+      - run: 'npm run lint'
 ```
 
 Run multiple tests simultaneously to save time.

@@ -1,7 +1,7 @@
 name: Basic Workflow Example
 
 steps:
-  - run: echo "Building..."
+  - run: 'echo "Building..."'
 
   - choose:
       message: "Deploy to which environment?"
@@ -16,21 +16,21 @@ steps:
   - when:
       var:
         env: staging
-    run: echo "Deploying to staging..."
+    run: 'echo "Deploying to staging..."'
 
   - when:
       var:
         env: prod
-    run: echo "Deploying to production..."
+    run: 'echo "Deploying to production..."'
 
   # File existence check example
   - when:
       file: ./dist
-    run: echo "Build output exists"
+    run: 'echo "Build output exists"'
 
   # Variable usage example (values from prompts are stored as variables)
   - prompt:
       message: "Enter version:"
       as: version
-  - run: echo "Building version {{version}}"
+  - run: 'echo "Building version {{version}}"'
 

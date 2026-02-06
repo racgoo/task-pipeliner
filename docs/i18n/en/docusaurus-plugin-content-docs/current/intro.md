@@ -70,7 +70,7 @@ Create a `workflow.yaml` or `workflow.json` file:
 name: My First Workflow
 
 steps:
-  - run: echo "Hello, World!"
+  - run: 'echo "Hello, World!"'
   
   - choose:
       message: "What would you like to do?"
@@ -84,12 +84,12 @@ steps:
   - when:
       var:
         action: build
-    run: npm run build
+    run: 'npm run build'
   
   - when:
       var:
         action: test
-    run: npm test
+    run: 'npm test'
 ```
 
 **JSON Format (`workflow.json`):**

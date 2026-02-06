@@ -63,7 +63,7 @@ program
       '  0. (Optional) tp setup — create tp/, tp/workflows, tp/schedules and add 2 example workflows + 2 example schedules (echo-based dummies)\n\n' +
       '  1. Create a workflow.yaml or workflow.json file:\n' +
       '     steps:\n' +
-      '       - run: echo "Hello, World!"\n' +
+      '       - run: \'echo "Hello, World!"\'\n' +
       '       - choose:\n' +
       '           message: "Select action:"\n' +
       '           options:\n' +
@@ -73,7 +73,7 @@ program
       '       - when:\n' +
       '           var:\n' +
       '             action: build\n' +
-      '         run: npm run build\n\n' +
+      "         run: 'npm run build'\n\n" +
       '  2. Run it:\n' +
       '     tp run workflow.yaml\n' +
       '     tp run workflow.json\n\n' +
@@ -265,7 +265,7 @@ const SETUP_WORKFLOW_EXAMPLES: { filename: string; content: string }[] = [
 
 # Interactive choice: stored as variable and used in later steps
 steps:
-  - run: echo "Hello from task-pipeliner"
+  - run: 'echo "Hello from task-pipeliner"'
   - choose:
       message: "Select action:"
       options:
@@ -274,15 +274,15 @@ steps:
         - id: info
           label: "Show info"
       as: action
-  - run: echo "You chose: {{ action }}"
+  - run: 'echo "You chose: {{ action }}"'
   - when:
       var:
         action: greet
-    run: echo "Hi there! Edit tp/workflows/*.yaml and run: tp run tp/workflows/example-hello.yaml"
+    run: 'echo "Hi there! Edit tp/workflows and run: tp run tp/workflows/example-hello.yaml"'
   - when:
       var:
         action: info
-    run: echo "Tip: Use --profile to skip prompts. See example-build.yaml for profiles."
+    run: 'echo "Tip: Use --profile. See example-build.yaml for profiles."'
 `,
   },
   {
@@ -302,7 +302,7 @@ profiles:
       label: "prod-build"
 
 steps:
-  - run: echo "Build workflow started..."
+  - run: 'echo "Build workflow started..."'
   - choose:
       message: "Select mode (or run with --profile Dev/Prod to skip):"
       options:
@@ -311,21 +311,21 @@ steps:
         - id: prod
           label: "Production"
       as: mode
-  - run: echo "Mode: {{ mode }}"
+  - run: 'echo "Mode: {{ mode }}"'
   - prompt:
       message: "Enter build label"
       as: label
       default: "default"
-  - run: echo "Label: {{ label }}"
+  - run: 'echo "Label: {{ label }}"'
   - when:
       var:
         mode: dev
-    run: echo "Dev-only step (e.g. npm run build:dev)"
+    run: 'echo "Dev-only step (e.g. npm run build:dev)"'
   - when:
       var:
         mode: prod
-    run: echo "Prod-only step (e.g. npm run build)"
-  - run: echo "Done. Replace run steps with real commands."
+    run: 'echo "Prod-only step (e.g. npm run build)"'
+  - run: 'echo "Done. Replace run steps with real commands."'
 `,
   },
 ];
@@ -617,7 +617,7 @@ function extractFileName(filePath: string): string {
  * Display workflow execution history in a formatted way
  */
 function displayHistory(history: History, filename: string): void {
-  console.log('\n');
+  console.log();
 
   // Calculate total duration
   const totalDuration = history.records.reduce((sum, record) => sum + record.duration, 0);
@@ -629,7 +629,7 @@ function displayHistory(history: History, filename: string): void {
   const durationMs = totalDuration;
   const durationSec = formatDuration(durationMs);
 
-  // Header box
+  // Header box (reduced padding and margin)
   const headerContent = [
     chalk.bold('Workflow Execution History'),
     '',
@@ -646,8 +646,8 @@ function displayHistory(history: History, filename: string): void {
   console.log(
     boxen(headerContent, {
       borderStyle: 'round',
-      padding: { top: 1, bottom: 1, left: 2, right: 2 },
-      margin: { top: 0, bottom: 1, left: 0, right: 0 },
+      padding: { top: 0, bottom: 0, left: 1, right: 1 },
+      margin: { top: 0, bottom: 0, left: 0, right: 0 },
       borderColor: 'cyan',
     })
   );
@@ -657,7 +657,7 @@ function displayHistory(history: History, filename: string): void {
     displayRecord(record, index + 1, history.records.length);
   });
 
-  console.log('');
+  console.log();
 }
 
 /**
@@ -681,8 +681,8 @@ function displayRecord(record: WorkflowRecord, stepNumber: number, totalSteps: n
   console.log(
     boxen(stepHeader, {
       borderStyle: 'round',
-      padding: { top: 1, bottom: 1, left: 2, right: 2 },
-      margin: { top: 0, bottom: 1, left: 0, right: 0 },
+      padding: { top: 0, bottom: 0, left: 1, right: 1 },
+      margin: { top: 0, bottom: 0, left: 0, right: 0 },
       borderColor: record.status === 'success' ? 'green' : 'red',
     })
   );

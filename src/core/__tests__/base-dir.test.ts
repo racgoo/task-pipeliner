@@ -47,7 +47,7 @@ describe('Base Directory Tests', () => {
     const yamlContent = `name: Test
 baseDir: ./examples
 steps:
-  - run: echo "test"
+  - run: 'echo "test"'
 `;
 
     const workflow = parse(yamlContent) as Workflow;
@@ -72,7 +72,7 @@ steps:
     const yamlContent = `name: Test
 baseDir: ${absolutePath}
 steps:
-  - run: echo "test"
+  - run: 'echo "test"'
 `;
 
     const workflow = parse(yamlContent) as Workflow;
@@ -94,7 +94,7 @@ steps:
     const yamlContent = `name: Test
 baseDir: ./examples
 steps:
-  - run: echo "test"
+  - run: 'echo "test"'
 `;
 
     const workflow = parse(yamlContent) as Workflow;
@@ -112,8 +112,8 @@ steps:
     const yamlContent = `name: Test
 baseDir: ./examples
 steps:
-  - run: echo "test1"
-  - run: echo "test2"
+  - run: 'echo "test1"'
+  - run: 'echo "test2"'
 `;
 
     const workflow = parse(yamlContent) as Workflow;
@@ -133,14 +133,36 @@ steps:
   it('should work without baseDir (use current working directory)', async () => {
     const yamlContent = `name: Test
 steps:
-  - run: echo "test"
+  - run: 'echo "test"'
 `;
 
     const workflow = parse(yamlContent) as Workflow;
 
     await executor.execute(workflow);
 
-    // baseDir should be undefined
+    // baseDir should be workflow file directory
+    const expectedBaseDir = dirname(workflowPath);
+    const actualBaseDir = (executor as any).baseDir;
+    expect(actualBaseDir).toBe(expectedBaseDir);
+
+    // Command should be called with workflow file directory as cwd
+    expect(mockRun).toHaveBeenCalled();
+    const lastCall = mockRun.mock.calls[mockRun.mock.calls.length - 1];
+    expect(lastCall[8]).toBe(expectedBaseDir);
+  });
+
+  it('should fallback to current working directory when baseDir and _filePath are not specified', async () => {
+    const yamlContent = `name: Test
+steps:
+  - run: 'echo "test"'
+`;
+
+    const workflow = parse(yamlContent) as Workflow;
+    // Don't set _filePath
+
+    await executor.execute(workflow);
+
+    // baseDir should be undefined (fallback to process.cwd())
     const actualBaseDir = (executor as any).baseDir;
     expect(actualBaseDir).toBeUndefined();
 

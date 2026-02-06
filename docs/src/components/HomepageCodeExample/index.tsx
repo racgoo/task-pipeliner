@@ -27,22 +27,22 @@ steps:
   - when:
       var:
         env: dev
-    run: npm run build:dev
+    run: 'npm run build:dev'
 
   - when:
       var:
         env: prod
-    run: npm run build:prod
+    run: 'npm run build:prod'
 
   # 3. Parallel execution
   - parallel:
-      - run: npm test
-      - run: npm run lint
+      - run: 'npm test'
+      - run: 'npm run lint'
 
   # 4. Deploy after file check
   - when:
       file: ./dist
-    run: npm run deploy`
+    run: 'npm run deploy'`
     : `name: Build and Deploy
 
 baseDir: ./
@@ -62,22 +62,22 @@ steps:
   - when:
       var:
         env: dev
-    run: npm run build:dev
+    run: 'npm run build:dev'
 
   - when:
       var:
         env: prod
-    run: npm run build:prod
+    run: 'npm run build:prod'
 
   # 3. 병렬 실행
   - parallel:
-      - run: npm test
-      - run: npm run lint
+      - run: 'npm test'
+      - run: 'npm run lint'
 
   # 4. 파일 확인 후 배포
   - when:
       file: ./dist
-    run: npm run deploy`;
+    run: 'npm run deploy'`;
 
   return (
     <section className={styles.codeExample}>

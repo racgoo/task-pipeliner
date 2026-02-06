@@ -2,7 +2,7 @@ name: Simple Example
 
 steps:
   # Step 1: Run a command
-  - run: echo "Hello, World!"
+  - run: 'echo "Hello, World!"'
 
   # Step 2: Ask for user choice
   - choose:
@@ -18,15 +18,15 @@ steps:
   - when:
       var:
         action: greet
-    run: echo "Greetings!"
+    run: 'echo "Greetings!"'
 
   - when:
       var:
         action: build
-    run: echo "Building..."
+    run: 'echo "Building..."'
 
   # Step 4: Check if file exists
   - when:
       file: ./package.json
-    run: echo "package.json found"
+    run: 'echo "package.json found"'
 

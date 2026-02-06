@@ -8,7 +8,7 @@ describe('Workflow Validation', () => {
       const yaml = `
 name: test
 steps:
-  - run: echo "hello"
+  - run: 'echo "hello"'
 `;
       const workflow = parser.parse(yaml);
       expect(workflow.name).toBe('test');
@@ -47,7 +47,7 @@ steps: []
       const yaml = `
 name: test
 steps:
-  - run: echo "hello"
+  - run: 'echo "hello"'
   - choose:
       message: "Select"
       options:
@@ -58,8 +58,8 @@ steps:
       message: "Enter name"
       as: name
   - parallel:
-      - run: echo "task1"
-      - run: echo "task2"
+      - run: 'echo "task1"'
+      - run: 'echo "task2"'
   - fail:
       message: "Error"
 `;
@@ -73,7 +73,7 @@ steps:
 name: test
 steps:
   - parallel:
-      - run: echo "hi"
+      - run: 'echo "hi"'
       - choose:
           message: "Select"
           options:
@@ -91,7 +91,7 @@ steps:
 name: test
 steps:
   - parallel:
-      - run: echo "hi"
+      - run: 'echo "hi"'
       - prompt:
           message: "Enter value"
           as: val
@@ -108,7 +108,7 @@ shell:
   - bash
   - -lc
 steps:
-  - run: echo "hello"
+  - run: 'echo "hello"'
 `;
       const workflow = parser.parse(yaml);
       expect(workflow.shell).toEqual(['bash', '-lc']);
@@ -119,7 +119,7 @@ steps:
       const yaml = `
 name: test
 steps:
-  - run: echo "hello"
+  - run: 'echo "hello"'
     shell:
       - zsh
       - -c
@@ -135,7 +135,7 @@ steps:
 name: test
 shell: []
 steps:
-  - run: echo "hello"
+  - run: 'echo "hello"'
 `;
       expect(() => parser.parse(yaml)).toThrow('Invalid workflow structure');
       expect(() => parser.parse(yaml)).toThrow(/shell.*cannot be empty/i);
@@ -146,7 +146,7 @@ steps:
       const yaml = `
 name: test
 steps:
-  - run: echo "hello"
+  - run: 'echo "hello"'
     shell: []
 `;
       expect(() => parser.parse(yaml)).toThrow('Invalid workflow structure');
@@ -167,7 +167,7 @@ profiles:
       mode: "prod"
       label: "prod-label"
 steps:
-  - run: echo "hi"
+  - run: 'echo "hi"'
 `;
       const workflow = parser.parse(yaml);
       expect(workflow.name).toBe('Profiles Example');
@@ -188,7 +188,7 @@ profiles:
     var:
       x: "y"
 steps:
-  - run: echo "hi"
+  - run: 'echo "hi"'
 `;
       expect(() => parser.parse(yaml)).toThrow('Invalid workflow structure');
       expect(() => parser.parse(yaml)).toThrow(/Profile name|non-empty/i);

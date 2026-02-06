@@ -2,48 +2,48 @@ name: Timeout and Retry Example
 
 steps:
   # 1. Simple command with timeout
-  - run: echo "This command has a 10 second timeout"
+  - run: 'echo "This command has a 10 second timeout"'
     timeout: 10
 
   # 2. Command with retry (will retry up to 3 times on failure)
-  - run: echo "This command will retry up to 3 times if it fails"
+  - run: 'echo "This command will retry up to 3 times if it fails"'
     retry: 3
 
   # 3. Command with both timeout and retry
-  - run: echo "This command has both timeout (30s) and retry (2 attempts)"
+  - run: 'echo "This command has both timeout (30s) and retry (2 attempts)"'
     timeout: 30
     retry: 2
 
   # 4. Network request with timeout and retry (common use case)
-  - run: echo "Simulating network request..."
+  - run: 'echo "Simulating network request..."'
     timeout: 60
     retry: 5
 
   # 5. Build command with timeout
-  - run: echo "Building project (max 5 minutes)..."
+  - run: 'echo "Building project (max 5 minutes)..."'
     timeout: 300  # 5 minutes
 
   # 6. Installation with retry (network issues can cause failures)
-  - run: echo "Installing dependencies (will retry on failure)..."
+  - run: 'echo "Installing dependencies (will retry on failure)..."'
     retry: 3
 
   # 7. Conditional command with timeout
   - when:
       file: ./package.json
-    run: echo "Running npm install with timeout..."
+    run: 'echo "Running npm install with timeout..."'
     timeout: 120  # 2 minutes
 
   # 8. Critical command with multiple retries
-  - run: echo "Critical deployment step (will retry up to 5 times)..."
+  - run: 'echo "Critical deployment step (will retry up to 5 times)..."'
     retry: 5
     timeout: 180  # 3 minutes
 
   # 9. Infinite retry (retry until success)
-  - run: echo "This command will retry indefinitely until it succeeds"
+  - run: 'echo "This command will retry indefinitely until it succeeds"'
     retry: Infinity
 
   # 10. Network request with infinite retry and timeout
-  - run: echo "Network request that will retry until success (with timeout)..."
+  - run: 'echo "Network request that will retry until success (with timeout)..."'
     retry: Infinity
     timeout: 60  # Each attempt has 60 second timeout
 

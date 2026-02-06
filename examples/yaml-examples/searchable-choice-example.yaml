@@ -141,9 +141,9 @@ steps:
       as: framework
   
   # Show selected options
-  - run: echo "Selected country: {{country}}"
-  - run: echo "Selected language: {{language}}"
-  - run: echo "Selected framework: {{framework}}"
+  - run: 'echo "Selected country: {{country}}"'
+  - run: 'echo "Selected language: {{language}}"'
+  - run: 'echo "Selected framework: {{framework}}"'
   
   # Interactive features demonstrated:
   # - Type to filter: Try typing "united" to filter countries, or "react" to filter frameworks

@@ -103,7 +103,7 @@ Use `tp schedule list` and `tp schedule status` (or `tp schedule status -n` to s
 name: Basic Workflow
 
 steps:
-  - run: echo "Hello, World!"
+  - run: 'echo "Hello, World!"'
 ```
 
 ### Conditional Execution
@@ -114,12 +114,12 @@ name: Conditional Execution
 steps:
   - when:
       file: ./package.json
-    run: npm install
+    run: 'npm install'
   
   - when:
       not:
         file: ./dist
-    run: npm run build
+    run: 'npm run build'
 ```
 
 ### User Choice
@@ -142,7 +142,7 @@ steps:
   - when:
       var:
         env: prod
-    run: echo "Deploying to production"
+    run: 'echo "Deploying to production"'
 ```
 
 ### Variable Usage
@@ -156,9 +156,9 @@ steps:
       as: version
       default: "1.0.0"
   
-  - run: echo "Building version {{version}}"
+  - run: 'echo "Building version {{version}}"'
   
-  - run: npm version {{version}}
+  - run: 'npm version {{version}}'
 ```
 
 ### Parallel Execution
@@ -168,9 +168,9 @@ name: Parallel Execution
 
 steps:
   - parallel:
-      - run: npm run test:unit
-      - run: npm run test:integration
-      - run: npm run lint
+      - run: 'npm run test:unit'
+      - run: 'npm run test:integration'
+      - run: 'npm run lint'
 ```
 
 ### Error Handling with onError
@@ -179,9 +179,9 @@ steps:
 name: Error Handling
 
 steps:
-  - run: pnpm lint
+  - run: 'pnpm lint'
     onError:
-      run: pnpm lint:fix
+      run: 'pnpm lint:fix'
       continue: true
 ```
 

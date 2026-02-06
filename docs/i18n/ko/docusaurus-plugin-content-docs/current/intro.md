@@ -71,7 +71,7 @@ npx tp run workflow.yaml
 name: My First Workflow
 
 steps:
-  - run: echo "Hello, World!"
+  - run: 'echo "Hello, World!"'
   
   - choose:
       message: "무엇을 하시겠습니까?"
@@ -85,12 +85,12 @@ steps:
   - when:
       var:
         action: build
-    run: npm run build
+    run: 'npm run build'
   
   - when:
       var:
         action: test
-    run: npm test
+    run: 'npm test'
 ```
 
 **JSON 형식 (`workflow.json`):**

@@ -2,12 +2,12 @@ name: File Checks Example
 
 steps:
   # 1. Build project
-  - run: echo "Building project..."
+  - run: 'echo "Building project..."'
 
   # 2. Check build output
   - when:
       file: ./dist
-    run: echo "Build output found"
+    run: 'echo "Build output found"'
 
   # 3. Handle build failure
   - when:
@@ -17,19 +17,19 @@ steps:
       message: "Build failed: dist directory not found"
 
   # 4. Run tests
-  - run: echo "Running tests..."
+  - run: 'echo "Running tests..."'
 
   # 5. Check test results
   - when:
       file: ./test-results
-    run: echo "Test results found"
+    run: 'echo "Test results found"'
 
   # 6. Check multiple files
   - when:
       all:
         - file: ./dist
         - file: ./package.json
-    run: echo "All required files present"
+    run: 'echo "All required files present"'
 
   # 7. Warn if file is missing
   - when:
@@ -53,14 +53,14 @@ steps:
         - var:
             env: dev
         - file: ./.env.development
-    run: echo "Development config found"
+    run: 'echo "Development config found"'
 
   - when:
       all:
         - var:
             env: prod
         - file: ./.env.production
-    run: echo "Production config found"
+    run: 'echo "Production config found"'
 
   # 10. Fail if config file is missing for selected environment
   - when:

@@ -50,62 +50,62 @@ Execute a shell command.
 
 ```yaml
 # Simple command
-- run: npm install
+- run: 'npm install'
 
 # Command with condition
 - when:
     file: ./package.json
-  run: npm install
+  run: 'npm install'
 
 # Command with variable substitution
-- run: echo "Building {{version}}"
+- run: 'echo "Building {{version}}"'
 
 # Command with timeout (30 seconds)
-- run: npm install
+- run: 'npm install'
   timeout: 30
 
 # Command with retry (retry up to 3 times)
-- run: npm install
+- run: 'npm install'
   retry: 3
 
 # PM2-like process manager: auto-restart crashed server
-- run: node server.js
+- run: 'node server.js'
   retry: Infinity
 
 # Command with fallback on error
-- run: pnpm lint
+- run: 'pnpm lint'
   onError:
-    run: pnpm lint:fix
+    run: 'pnpm lint:fix'
 
 # Command with multi-level fallback on error
-- run: step1
+- run: 'step1'
   onError:
-    run: step2
+    run: 'step2'
     onError:
-      run: step3
+      run: 'step3'
 
 # Command that records failure but continues workflow
-- run: pnpm typecheck
+- run: 'pnpm typecheck'
   continue: true
   onError:
-    run: echo "Type check failed, but continuing..."
+    run: 'echo "Type check failed, but continuing..."'
 
 # Shell configuration examples
 # Unix/Linux/macOS
-- run: echo "Running with bash"
+- run: 'echo "Running with bash"'
   shell: [bash, -lc]
 
-- run: echo "Running with zsh"
+- run: 'echo "Running with zsh"'
   shell: [zsh, -c]
 
 # Windows
-- run: echo Running with Command Prompt
+- run: 'echo Running with Command Prompt'
   shell: [cmd, /c]
 
-- run: Write-Host "Running with PowerShell"
+- run: 'Write-Host "Running with PowerShell"'
   shell: [powershell, -Command]
 
-- run: Write-Host "Running with PowerShell Core"
+- run: 'Write-Host "Running with PowerShell Core"'
   shell: [pwsh, -Command]
 ```
 
@@ -239,16 +239,16 @@ Execute multiple steps simultaneously.
 ```yaml
 # Basic parallel execution
 - parallel:
-    - run: npm run test:unit
-    - run: npm run test:integration
-    - run: npm run lint
+    - run: 'npm run test:unit'
+    - run: 'npm run test:integration'
+    - run: 'npm run lint'
 
 # Nested parallel (allowed); only run / parallel / fail inside parallel
 - parallel:
-    - run: npm run test
+    - run: 'npm run test'
     - parallel:
-        - run: npm run lint
-        - run: npm run typecheck
+        - run: 'npm run lint'
+        - run: 'npm run typecheck'
 ```
 
 ---

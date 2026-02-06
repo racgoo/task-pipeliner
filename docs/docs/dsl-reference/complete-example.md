@@ -12,7 +12,7 @@ baseDir: ./
 
 steps:
   # 1. Simple command
-  - run: echo "Starting workflow..."
+  - run: 'echo "Starting workflow..."'
 
   # 2. User choice with variable storage
   - choose:
@@ -38,12 +38,12 @@ steps:
   - when:
       var:
         env: dev
-    run: echo "Deploying to development..."
+    run: 'echo "Deploying to development..."'
 
   - when:
       var:
         env: staging
-    run: echo "Deploying to staging..."
+    run: 'echo "Deploying to staging..."'
 
   # 5. Complex condition (all)
   - when:
@@ -52,24 +52,24 @@ steps:
             env: prod
         - var: deployReason
         - file: ./dist
-    run: echo "Production deployment approved"
+    run: 'echo "Production deployment approved"'
 
   # 6. Parallel execution
   - parallel:
-      - run: npm run test:unit
-      - run: npm run test:integration
-      - run: npm run lint
+      - run: 'npm run test:unit'
+      - run: 'npm run test:integration'
+      - run: 'npm run lint'
 
   # 7. Error handling with onError (fallback) and continue
-  - run: pnpm lint
+  - run: 'pnpm lint'
     continue: true
     onError:
-      run: pnpm lint:fix
+      run: 'pnpm lint:fix'
 
   # 8. File existence check
   - when:
       file: ./test-results
-    run: echo "Tests completed"
+    run: 'echo "Tests completed"'
 
   # 9. Combined condition (any)
   - when:
@@ -78,7 +78,7 @@ steps:
             env: staging
         - var:
             env: prod
-    run: echo "Deploying to server..."
+    run: 'echo "Deploying to server..."'
 
   # 10. Negation
   - when:
@@ -88,7 +88,7 @@ steps:
       message: "Build output not found"
 
   # 11. Variable substitution
-  - run: echo "Deploying {{projectName}} version {{version}} to {{env}}"
+  - run: 'echo "Deploying {{projectName}} version {{version}} to {{env}}"'
 ```
 
 ## Features Demonstrated

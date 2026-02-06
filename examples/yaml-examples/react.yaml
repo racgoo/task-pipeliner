@@ -2,18 +2,18 @@ name: React Build Workflow
 
 steps:
   # Install dependencies
-  - run: npm install
+  - run: 'npm install'
 
   # Run linter
-  - run: npm run lint
+  - run: 'npm run lint'
 
   # Build the project
-  - run: npm run build
+  - run: 'npm run build'
 
   # Verify build output exists
   - when:
       file: ./dist
-    run: echo "Build successful! dist/ directory created"
+    run: 'echo "Build successful! dist/ directory created"'
 
   # Ask for deployment target
   - choose:
@@ -29,7 +29,7 @@ steps:
   - when:
       var:
         env: staging
-    run: echo "Deploying to staging..."
+    run: 'echo "Deploying to staging..."'
 
   # Deploy to production (with confirmation)
   - when:
@@ -51,7 +51,7 @@ steps:
             env: production
         - var:
             confirmProd: confirm
-    run: echo "Deploying to production..."
+    run: 'echo "Deploying to production..."'
 
   # Deployment cancelled
   - when:

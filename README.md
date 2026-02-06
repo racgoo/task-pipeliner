@@ -224,7 +224,7 @@ Create a `workflow.yaml` or `workflow.json` file:
 name: My Workflow
 
 steps:
-  - run: echo "Hello, World!"
+  - run: 'echo "Hello, World!"'
   
   - choose:
       message: "What would you like to do?"
@@ -238,12 +238,12 @@ steps:
   - when:
       var:
         action: build
-    run: npm run build
+    run: 'npm run build'
   
   - when:
       var:
         action: test
-    run: npm test
+    run: 'npm test'
 ```
 
 **JSON Format (`workflow.json`):**
@@ -509,12 +509,12 @@ Execute a shell command.
 ```yaml
 # Simple command
 steps:
-  - run: npm install
+  - run: 'npm install'
 
   # Command with condition
   - when:
       file: ./package.json
-    run: npm install
+    run: 'npm install'
 
   # Variable input
   - choose:
@@ -529,55 +529,55 @@ steps:
       as: version
 
   # Command with variable substitution
-  - run: echo "Building {{version}}"
+  - run: 'echo "Building {{version}}"'
 
   # Command with timeout (30 seconds)
-  - run: npm install
+  - run: 'npm install'
     timeout: 30
 
   # Command with retry (retry up to 3 times)
-  - run: npm install
+  - run: 'npm install'
     retry: 3
 
   # Command with infinite retry (retry until success)
-  - run: npm install
+  - run: 'npm install'
     retry: Infinity
 
   # PM2-like process manager: auto-restart crashed server
-  - run: node server.js
+  - run: 'node server.js'
     retry: Infinity
 
   # Using both timeout and retry
-  - run: npm install
+  - run: 'npm install'
     timeout: 60
     retry: 2
 
   # Command with fallback on error
-  - run: pnpm lint
+  - run: 'pnpm lint'
     onError:
-      run: pnpm lint:fix
+      run: 'pnpm lint:fix'
 
   # Command with multi-level fallback on error
-  - run: step1
+  - run: 'step1'
     onError:
-      run: step2
+      run: 'step2'
       onError:
-        run: step3
+        run: 'step3'
 
   # Command that records failure but continues workflow
-  - run: pnpm typecheck
+  - run: 'pnpm typecheck'
     continue: true
     onError:
-      run: echo "Type check failed, but continuing..."
+      run: 'echo "Type check failed, but continuing..."'
 
   # Command with custom shell (step-level)
-  - run: echo $SHELL
+  - run: 'echo $SHELL'
     shell:
       - zsh
       - -c
 
   # Command with bash login shell
-  - run: source ~/.bashrc && echo "Loaded profile"
+  - run: 'source ~/.bashrc && echo "Loaded profile"'
     shell:
       - bash
       - -lc
@@ -679,7 +679,7 @@ steps:
 - when:
     var:         # Definition that uses a variable
       env: prod  # Check if 'env' variable equals 'prod'
-  run: echo "Deploying to production"
+  run: 'echo "Deploying to production"'
 ```
 
 ---
@@ -733,13 +733,13 @@ Ask user for text input.
 **Usage:**
 ```yaml
 # Use in command
-- run: echo "Building version {{version}}"
+- run: 'echo "Building version {{version}}"'
 
 # Check in condition
 - when:
     var:
       version: "1.0.0"
-  run: echo "Deploying stable version"
+  run: 'echo "Deploying stable version"'
 ```
 
 ---
@@ -768,19 +768,19 @@ Execute multiple steps simultaneously. Like `steps`, `parallel` contains an arra
 # Basic parallel execution
 # Each step inside parallel starts with `-`, same format as `steps`
 - parallel:
-    - run: npm run test:unit
-    - run: npm run test:integration
-    - run: npm run lint
+    - run: 'npm run test:unit'
+    - run: 'npm run test:integration'
+    - run: 'npm run lint'
 
 # Parallel with conditions
 # Each step can have its own `when` condition
 - parallel:
     - when:
           file: ./src
-        run: echo "Building frontend..."
+        run: 'echo "Building frontend..."'
     - when:
           file: ./api
-        run: echo "Building backend..."
+        run: 'echo "Building backend..."'
 
 # Conditional parallel block
 # The entire parallel block can have a `when` condition
@@ -788,15 +788,15 @@ Execute multiple steps simultaneously. Like `steps`, `parallel` contains an arra
     var:
       env: staging
   parallel:
-    - run: npm run test
-    - run: npm run lint
+    - run: 'npm run test'
+    - run: 'npm run lint'
 
 # Nested parallel (allowed); only run / parallel / fail inside parallel
 - parallel:
-    - run: npm run test
+    - run: 'npm run test'
     - parallel:
-        - run: npm run lint
-        - run: npm run typecheck
+        - run: 'npm run lint'
+        - run: 'npm run typecheck'
 ```
 
 **Behavior:**
@@ -870,16 +870,16 @@ when:
 ```yaml
 - when:
     file: ./dist
-  run: echo "Build exists"
+  run: 'echo "Build exists"'
 
 - when:
     file: ./package.json
-  run: npm install
+  run: 'npm install'
 
 - when:
     not:
       file: ./node_modules
-  run: npm install
+  run: 'npm install'
 ```
 
 **Behavior:**
@@ -910,20 +910,20 @@ when:
 - when:
     var:
       env: prod
-  run: echo "Deploying to production"
+  run: 'echo "Deploying to production"'
 
 # Check if version equals specific value
 - when:
     var:
       version: "1.0.0"
-  run: echo "Deploying stable version"
+  run: 'echo "Deploying stable version"'
 
 # Multiple variable checks (all must match)
 - when:
     var:
       env: staging
       version: "2.0.0"
-  run: echo "Deploying v2.0.0 to staging"
+  run: 'echo "Deploying v2.0.0 to staging"'
 ```
 
 **Behavior:**
@@ -955,12 +955,12 @@ when:
 # Check if variable exists
 - when:
     var: version
-  run: echo "Version: {{version}}"
+  run: 'echo "Version: {{version}}"'
 
 # Use 'has' alias
 - when:
     has: projectName
-  run: echo "Project: {{projectName}}"
+  run: 'echo "Project: {{projectName}}"'
 ```
 
 **Behavior:**
@@ -994,7 +994,7 @@ when:
       - file: ./dist
       - var:
           env: production
-  run: echo "Production build ready"
+  run: 'echo "Production build ready"'
 
 - when:
     all:
@@ -1003,7 +1003,7 @@ when:
       - var:
           version: "2.0.0"
       - file: ./dist
-  run: echo "Deploying v2.0.0 to staging"
+  run: 'echo "Deploying v2.0.0 to staging"'
 ```
 
 **Behavior:**
@@ -1034,13 +1034,13 @@ when:
           env: staging
       - var:
           env: production
-  run: echo "Deploying to server"
+  run: 'echo "Deploying to server"'
 
 - when:
     any:
       - file: ./dist
       - file: ./build
-  run: echo "Build output found"
+  run: 'echo "Build output found"'
 ```
 
 **Behavior:**
@@ -1075,7 +1075,7 @@ when:
     not:
       var:
         env: prod
-  run: echo "Not production environment"
+  run: 'echo "Not production environment"'
 
 # Complex negation
 - when:
@@ -1084,7 +1084,7 @@ when:
         - file: ./dist
         - var:
             env: prod
-  run: echo "Production not ready"
+  run: 'echo "Production not ready"'
 ```
 
 **Behavior:**
@@ -1112,7 +1112,7 @@ Nest conditions to create complex logic.
       - not:
           var:
             version: "0.0.0"
-  run: echo "Ready to deploy"
+  run: 'echo "Ready to deploy"'
 
 # Multiple levels of nesting
 - when:
@@ -1126,7 +1126,7 @@ Nest conditions to create complex logic.
               env: staging
           - not:
               file: ./test-results
-  run: echo "Conditional deployment"
+  run: 'echo "Conditional deployment"'
 ```
 
 ---
@@ -1137,9 +1137,9 @@ Variables can be used in commands using the `{{variable}}` syntax. Optional whit
 
 **Syntax:**
 ```yaml
-run: echo "{{variableName}}"
+run: 'echo "{{variableName}}"'
 # or with optional spaces
-run: echo "{{ variableName }}"
+run: 'echo "{{ variableName }}"'
 ```
 
 **⚠️ Important YAML Syntax Rules:**
@@ -1148,9 +1148,9 @@ When using `{{variable}}` in commands, follow these rules to avoid parsing error
 
 ✅ **Safe patterns:**
 ```yaml
-# Start with a word (no quotes needed)
-- run: echo "Building {{version}}..."
-- run: npm run build --version={{version}}
+# Wrap in single quotes (recommended)
+- run: 'echo "Building {{version}}..."'
+- run: 'npm run build --version={{version}}'
 
 # Wrap entire command in single quotes
 - run: 'echo "Selected: {{mode}}"'
@@ -1158,7 +1158,7 @@ When using `{{variable}}` in commands, follow these rules to avoid parsing error
 
 ❌ **Problematic patterns:**
 ```yaml
-# DO NOT: quotes + colons before variables
+# DO NOT: unquoted value with colons before variables
 - run: echo "mode: {{mode}}"        # ❌ YAML parsing error!
 
 # FIX: Wrap entire command in single quotes
@@ -1171,7 +1171,7 @@ When using `{{variable}}` in commands, follow these rules to avoid parsing error
 - prompt:
     message: "Enter project name:"
     as: projectName
-- run: echo "Building {{projectName}}..."
+- run: 'echo "Building {{projectName}}..."'
 
 # Use choice variable
 - choose:
@@ -1180,10 +1180,11 @@ When using `{{variable}}` in commands, follow these rules to avoid parsing error
       - id: dev
         label: "Development"
     as: env
-- run: echo "Deploying to {{env}}"
+- run: 'echo "Deploying to {{env}}"'
+
 
 # Multiple variables
-- run: echo "Building {{projectName}} version {{version}} for {{env}}"
+- run: 'echo "Building {{projectName}} version {{version}} for {{env}}"'
 ```
 
 **Behavior:**
@@ -1204,7 +1205,7 @@ shell: [bash, -c]  # Optional: Use bash for all steps (default: user's current s
 
 steps:
   # 1. Simple command
-  - run: echo "Starting workflow..."
+  - run: 'echo "Starting workflow..."'
 
   # 2. User choice with variable storage
   - choose:
@@ -1230,12 +1231,12 @@ steps:
   - when:
       var:
         env: dev
-    run: echo "Deploying to development..."
+    run: 'echo "Deploying to development..."'
 
   - when:
       var:
         env: staging
-    run: echo "Deploying to staging..."
+    run: 'echo "Deploying to staging..."'
 
   # 5. Complex condition (all)
   - when:
@@ -1244,22 +1245,22 @@ steps:
             env: prod
         - var: deployReason
         - file: ./dist
-    run: echo "Production deployment approved"
+    run: 'echo "Production deployment approved"'
 
   # 6. Parallel execution
   - parallel:
-      - run: npm run test:unit
-      - run: npm run test:integration
-      - run: npm run lint
+      - run: 'npm run test:unit'
+      - run: 'npm run test:integration'
+      - run: 'npm run lint'
 
   # 6.5. Step-level shell override
-  - run: echo "Running with zsh"
+  - run: 'echo "Running with zsh"'
     shell: [zsh, -c]  # Override workflow shell for this step only
 
   # 7. File existence check
   - when:
       file: ./test-results
-    run: echo "Tests completed"
+    run: 'echo "Tests completed"'
 
   # 8. Combined condition (any)
   - when:
@@ -1268,7 +1269,7 @@ steps:
             env: staging
         - var:
             env: prod
-    run: echo "Deploying to server..."
+    run: 'echo "Deploying to server..."'
 
   # 9. Negation
   - when:
@@ -1278,7 +1279,7 @@ steps:
       message: "Build output not found"
 
   # 10. Variable substitution
-  - run: echo "Deploying {{projectName}} version {{version}} to {{env}}"
+  - run: 'echo "Deploying {{projectName}} version {{version}} to {{env}}"'
 ```
 
 ---

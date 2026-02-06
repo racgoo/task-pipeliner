@@ -103,7 +103,7 @@ schedules:
 name: Basic Workflow
 
 steps:
-  - run: echo "Hello, World!"
+  - run: 'echo "Hello, World!"'
 ```
 
 ### 조건부 실행
@@ -114,12 +114,12 @@ name: Conditional Execution
 steps:
   - when:
       file: ./package.json
-    run: npm install
+    run: 'npm install'
   
   - when:
       not:
         file: ./dist
-    run: npm run build
+    run: 'npm run build'
 ```
 
 ### 사용자 선택
@@ -142,7 +142,7 @@ steps:
   - when:
       var:
         env: prod
-    run: echo "프로덕션 배포 중"
+    run: 'echo "프로덕션 배포 중"'
 ```
 
 ### 변수 사용
@@ -156,9 +156,9 @@ steps:
       as: version
       default: "1.0.0"
   
-  - run: echo "Building version {{version}}"
+  - run: 'echo "Building version {{version}}"'
   
-  - run: npm version {{version}}
+  - run: 'npm version {{version}}'
 ```
 
 ### 병렬 실행
@@ -168,9 +168,9 @@ name: Parallel Execution
 
 steps:
   - parallel:
-      - run: npm run test:unit
-      - run: npm run test:integration
-      - run: npm run lint
+      - run: 'npm run test:unit'
+      - run: 'npm run test:integration'
+      - run: 'npm run lint'
 ```
 
 ## 다음 단계

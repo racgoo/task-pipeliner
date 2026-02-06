@@ -2,31 +2,31 @@ name: CI/CD Pipeline Example
 
 steps:
   # 1. Build source code (with timeout to prevent hanging)
-  - run: echo "Building application..."
+  - run: 'echo "Building application..."'
     timeout: 300  # 5 minutes timeout
-  - run: echo "Running linter..."
+  - run: 'echo "Running linter..."'
     timeout: 60  # 1 minute timeout
-  - run: echo "Running type check..."
+  - run: 'echo "Running type check..."'
     timeout: 120  # 2 minutes timeout
 
   # 2. Run tests (parallel with timeout)
   - parallel:
-      - run: echo "Running unit tests..."
+      - run: 'echo "Running unit tests..."'
         timeout: 180  # 3 minutes
-      - run: echo "Running integration tests..."
+      - run: 'echo "Running integration tests..."'
         timeout: 300  # 5 minutes
-      - run: echo "Running e2e tests..."
+      - run: 'echo "Running e2e tests..."'
         timeout: 600  # 10 minutes
 
   # 3. Check build output
   - when:
       file: ./dist
-    run: echo "Build artifacts found"
+    run: 'echo "Build artifacts found"'
 
   # 4. Check test results
   - when:
       file: ./test-results
-    run: echo "Test results found"
+    run: 'echo "Test results found"'
 
   # 5. Select deployment environment
   - choose:
@@ -42,7 +42,7 @@ steps:
   - when:
       var:
         env: staging
-    run: echo "Deploying to staging..."
+    run: 'echo "Deploying to staging..."'
     timeout: 300  # 5 minutes
     retry: 2  # Retry up to 2 times on failure
 
@@ -66,7 +66,7 @@ steps:
             env: production
         - var:
             confirmProd: confirm
-    run: echo "Deploying to production..."
+    run: 'echo "Deploying to production..."'
     timeout: 600  # 10 minutes
     retry: 3  # Retry up to 3 times for critical deployment
 
@@ -87,5 +87,5 @@ steps:
             env: staging
         - var:
             confirmProd: confirm
-    run: echo "Running post-deployment checks..."
+    run: 'echo "Running post-deployment checks..."'
 

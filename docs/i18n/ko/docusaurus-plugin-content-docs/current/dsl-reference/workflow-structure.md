@@ -115,8 +115,8 @@ steps:                                 # 필수: 실행할 단계 배열
 - **예제**:
   ```yaml
   steps:
-    - run: echo "Step 1"
-    - run: echo "Step 2"
+    - run: 'echo "Step 1"'
+    - run: 'echo "Step 2"'
   ```
   ```json
   {
@@ -147,7 +147,7 @@ steps:                                 # 필수: 실행할 단계 배열
 steps:
   - when:
       file: ./package.json
-    run: npm install
+    run: 'npm install'
 ```
 
 조건에 대한 자세한 설명은 [조건](/docs/dsl-reference/conditions) 문서를 참조하세요.
@@ -160,11 +160,11 @@ steps:
 
 ```yaml
 steps:
-  - run: pnpm lint
+  - run: 'pnpm lint'
     retry: 2
     continue: true       # 성공/실패 무관하게 다음 단계로 계속 진행
     onError:
-      run: pnpm lint:fix   # lint 실패 시 실행할 fallback 명령 (사이드 이펙트만)
+      run: 'pnpm lint:fix'   # lint 실패 시 실행할 fallback 명령 (사이드 이펙트만)
       retry: 1             # fallback 명령의 재시도 횟수
 ```
 
@@ -175,11 +175,11 @@ steps:
 - `onError` 안에 다시 `onError` 를 넣어 **재귀 체인**을 만들 수 있습니다:
 
   ```yaml
-  - run: step1
+  - run: 'step1'
     onError:
-      run: step2
+      run: 'step2'
       onError:
-        run: step3
+        run: 'step3'
   ```
 
   스텝의 성공/실패는 항상 메인 `run` 명령의 결과로 결정되며, `onError` 명령의 결과와는 무관합니다.
@@ -200,7 +200,7 @@ steps:
   - prompt:
       message: "버전을 입력하세요:"
       as: version
-  - run: echo "Building {{version}}"
+  - run: 'echo "Building {{version}}"'
 ```
 
 변수에 대한 자세한 설명은 [변수](/docs/dsl-reference/variables) 문서를 참조하세요.

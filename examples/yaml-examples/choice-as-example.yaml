@@ -14,7 +14,7 @@ steps:
       as: env  # Store choice as 'env' variable instead of 'dev'/'staging'/'production'
 
   # Step 2: Use the variable in a command
-  - run: echo "Deploying to {{env}} environment..."
+  - run: 'echo "Deploying to {{env}} environment..."'
 
   # Step 3: Choose build type and store as 'buildType' variable
   - choose:
@@ -27,11 +27,11 @@ steps:
       as: buildType
 
   # Step 4: Use both variables
-  - run: echo "Building {{buildType}} for {{env}}..."
+  - run: 'echo "Building {{buildType}} for {{env}}..."'
 
   # Note: Now use var value comparison instead of choice
   - when:
       var:
         env: dev  # Uses variable value, not choice id
-    run: echo "Development-specific step"
+    run: 'echo "Development-specific step"'
 

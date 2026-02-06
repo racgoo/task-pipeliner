@@ -224,7 +224,7 @@ npx tp run workflow.yaml
 name: My Workflow
 
 steps:
-  - run: echo "Hello, World!"
+  - run: 'echo "Hello, World!"'
   
   - choose:
       message: "무엇을 하시겠습니까?"
@@ -238,12 +238,12 @@ steps:
   - when:
       var:
         action: build
-    run: npm run build
+    run: 'npm run build'
   
   - when:
       var:
         action: test
-    run: npm test
+    run: 'npm test'
 ```
 
 **JSON 형식 (`workflow.json`):**
@@ -509,12 +509,12 @@ steps:                                 # 필수: 실행할 단계 배열
 ```yaml
 # 간단한 명령
 steps:
-  - run: npm install
+  - run: 'npm install'
 
   # 조건이 있는 명령
   - when:
       file: ./package.json
-    run: npm install
+    run: 'npm install'
 
   # 변수 입력
   - choose:
@@ -529,55 +529,55 @@ steps:
       as: version
 
   # 변수 치환이 있는 명령
-  - run: echo "Building {{version}}"
+  - run: 'echo "Building {{version}}"'
 
   # 타임아웃이 있는 명령 (30초)
-  - run: npm install
+  - run: 'npm install'
     timeout: 30
 
   # 재시도가 있는 명령 (최대 3번 재시도)
-  - run: npm install
+  - run: 'npm install'
     retry: 3
 
   # 무한 재시도 명령 (성공할 때까지 재시도)
-  - run: npm install
+  - run: 'npm install'
     retry: Infinity
 
   # PM2처럼 프로세스 관리: 서버가 죽으면 자동 재시작
-  - run: node server.js
+  - run: 'node server.js'
     retry: Infinity
 
   # 타임아웃과 재시도 모두 사용
-  - run: npm install
+  - run: 'npm install'
     timeout: 60
     retry: 2
 
   # 실패 시 fallback 명령 실행
-  - run: pnpm lint
+  - run: 'pnpm lint'
     onError:
-      run: pnpm lint:fix
+      run: 'pnpm lint:fix'
 
   # 여러 단계로 이어지는 fallback 체인
-  - run: step1
+  - run: 'step1'
     onError:
-      run: step2
+      run: 'step2'
       onError:
-        run: step3
+        run: 'step3'
 
   # 실패를 기록만 하고 워크플로우는 계속 진행
-  - run: pnpm typecheck
+  - run: 'pnpm typecheck'
     continue: true
     onError:
-      run: echo "Type check failed, but continuing..."
+      run: 'echo "Type check failed, but continuing..."'
 
   # 커스텀 쉘 사용 (스텝별)
-  - run: echo $SHELL
+  - run: 'echo $SHELL'
     shell:
       - zsh
       - -c
 
   # bash 로그인 쉘 사용
-  - run: source ~/.bashrc && echo "프로필 로드됨"
+  - run: 'source ~/.bashrc && echo "프로필 로드됨"'
     shell:
       - bash
       - -lc
@@ -679,7 +679,7 @@ steps:
 - when:
     var:         # 변수를 사용한다는 정의
       env: prod  # 'env' 변수가 'prod'와 같은지 확인
-  run: echo "프로덕션에 배포 중"
+  run: 'echo "프로덕션에 배포 중"'
 ```
 
 ---
@@ -733,13 +733,13 @@ steps:
 **사용:**
 ```yaml
 # 명령에서 사용
-- run: echo "Building version {{version}}"
+- run: 'echo "Building version {{version}}"'
 
 # 조건에서 확인
 - when:
     var:
       version: "1.0.0"
-  run: echo "안정 버전 배포 중"
+  run: 'echo "안정 버전 배포 중"'
 ```
 
 ---
@@ -768,19 +768,19 @@ steps:
 # 기본 병렬 실행
 # parallel 내부의 각 step은 `-`로 시작하며, `steps`와 동일한 형식
 - parallel:
-    - run: npm run test:unit
-    - run: npm run test:integration
-    - run: npm run lint
+    - run: 'npm run test:unit'
+    - run: 'npm run test:integration'
+    - run: 'npm run lint'
 
 # 조건이 있는 병렬
 # 각 step은 자신만의 `when` 조건을 가질 수 있습니다
 - parallel:
     - when:
           file: ./src
-        run: echo "프론트엔드 빌드 중..."
+        run: 'echo "프론트엔드 빌드 중..."'
     - when:
           file: ./api
-        run: echo "백엔드 빌드 중..."
+        run: 'echo "백엔드 빌드 중..."'
 
 # 조건부 병렬 블록
 # 전체 parallel 블록에 `when` 조건을 적용할 수 있습니다
@@ -788,15 +788,15 @@ steps:
     var:
       env: staging
   parallel:
-    - run: npm run test
-    - run: npm run lint
+    - run: 'npm run test'
+    - run: 'npm run lint'
 
 # 중첩 parallel (허용); parallel 내부에는 run / parallel / fail만 사용
 - parallel:
-    - run: npm run test
+    - run: 'npm run test'
     - parallel:
-        - run: npm run lint
-        - run: npm run typecheck
+        - run: 'npm run lint'
+        - run: 'npm run typecheck'
 ```
 
 **동작:**
@@ -870,16 +870,16 @@ when:
 ```yaml
 - when:
     file: ./dist
-  run: echo "빌드가 존재합니다"
+  run: 'echo "빌드가 존재합니다"'
 
 - when:
     file: ./package.json
-  run: npm install
+  run: 'npm install'
 
 - when:
     not:
       file: ./node_modules
-  run: npm install
+  run: 'npm install'
 ```
 
 **동작:**
@@ -910,20 +910,20 @@ when:
 - when:
     var:
       env: prod
-  run: echo "프로덕션에 배포 중"
+  run: 'echo "프로덕션에 배포 중"'
 
 # version이 특정 값과 같은지 확인
 - when:
     var:
       version: "1.0.0"
-  run: echo "안정 버전 배포 중"
+  run: 'echo "안정 버전 배포 중"'
 
 # 여러 변수 확인 (모두 일치해야 함)
 - when:
     var:
       env: staging
       version: "2.0.0"
-  run: echo "스테이징에 v2.0.0 배포 중"
+  run: 'echo "스테이징에 v2.0.0 배포 중"'
 ```
 
 **동작:**
@@ -955,12 +955,12 @@ when:
 # 변수가 존재하는지 확인
 - when:
     var: version
-  run: echo "Version: {{version}}"
+  run: 'echo "Version: {{version}}"'
 
 # 'has' 별칭 사용
 - when:
     has: projectName
-  run: echo "Project: {{projectName}}"
+  run: 'echo "Project: {{projectName}}"'
 ```
 
 **동작:**
@@ -994,7 +994,7 @@ when:
       - file: ./dist
       - var:
           env: production
-  run: echo "프로덕션 빌드 준비 완료"
+  run: 'echo "프로덕션 빌드 준비 완료"'
 
 - when:
     all:
@@ -1003,7 +1003,7 @@ when:
       - var:
           version: "2.0.0"
       - file: ./dist
-  run: echo "스테이징에 v2.0.0 배포 중"
+  run: 'echo "스테이징에 v2.0.0 배포 중"'
 ```
 
 **동작:**
@@ -1034,13 +1034,13 @@ when:
           env: staging
       - var:
           env: production
-  run: echo "서버에 배포 중"
+  run: 'echo "서버에 배포 중"'
 
 - when:
     any:
       - file: ./dist
       - file: ./build
-  run: echo "빌드 출력을 찾았습니다"
+  run: 'echo "빌드 출력을 찾았습니다"'
 ```
 
 **동작:**
@@ -1075,7 +1075,7 @@ when:
     not:
       var:
         env: prod
-  run: echo "프로덕션 환경이 아닙니다"
+  run: 'echo "프로덕션 환경이 아닙니다"'
 
 # 복잡한 부정
 - when:
@@ -1084,7 +1084,7 @@ when:
         - file: ./dist
         - var:
             env: prod
-  run: echo "프로덕션 준비가 되지 않았습니다"
+  run: 'echo "프로덕션 준비가 되지 않았습니다"'
 ```
 
 **동작:**
@@ -1112,7 +1112,7 @@ when:
       - not:
           var:
             version: "0.0.0"
-  run: echo "배포 준비 완료"
+  run: 'echo "배포 준비 완료"'
 
 # 여러 수준의 중첩
 - when:
@@ -1126,7 +1126,7 @@ when:
               env: staging
           - not:
               file: ./test-results
-  run: echo "조건부 배포"
+  run: 'echo "조건부 배포"'
 ```
 
 ---
@@ -1137,9 +1137,9 @@ when:
 
 **문법:**
 ```yaml
-run: echo "{{variableName}}"
+run: 'echo "{{variableName}}"'
 # 또는 선택적으로 공백 사용
-run: echo "{{ variableName }}"
+run: 'echo "{{ variableName }}"'
 ```
 
 **⚠️ 중요: YAML 문법 규칙**
@@ -1148,9 +1148,9 @@ run: echo "{{ variableName }}"
 
 ✅ **안전한 패턴:**
 ```yaml
-# 단어로 시작 (따옴표 불필요)
-- run: echo "Building {{version}}..."
-- run: npm run build --version={{version}}
+# 작은따옴표로 감싸기 (권장)
+- run: 'echo "Building {{version}}..."'
+- run: 'npm run build --version={{version}}'
 
 # 전체 명령어를 작은따옴표로 감싸기
 - run: 'echo "Selected: {{mode}}"'
@@ -1171,7 +1171,7 @@ run: echo "{{ variableName }}"
 - prompt:
     message: "프로젝트 이름을 입력하세요:"
     as: projectName
-- run: echo "Building {{projectName}}..."
+- run: 'echo "Building {{projectName}}..."'
 
 # 선택 변수 사용
 - choose:
@@ -1180,10 +1180,10 @@ run: echo "{{ variableName }}"
       - id: dev
         label: "개발"
     as: env
-- run: echo "Deploying to {{env}}"
+- run: 'echo "Deploying to {{env}}"'
 
 # 여러 변수
-- run: echo "Building {{projectName}} version {{version}} for {{env}}"
+- run: 'echo "Building {{projectName}} version {{version}} for {{env}}"'
 ```
 
 **동작:**
@@ -1203,7 +1203,7 @@ baseDir: ./
 
 steps:
   # 1. 간단한 명령
-  - run: echo "워크플로우 시작 중..."
+  - run: 'echo "워크플로우 시작 중..."'
 
   # 2. 변수 저장이 있는 사용자 선택
   - choose:
@@ -1229,12 +1229,12 @@ steps:
   - when:
       var:
         env: dev
-    run: echo "개발 환경에 배포 중..."
+    run: 'echo "개발 환경에 배포 중..."'
 
   - when:
       var:
         env: staging
-    run: echo "스테이징에 배포 중..."
+    run: 'echo "스테이징에 배포 중..."'
 
   # 5. 복잡한 조건 (all)
   - when:
@@ -1243,22 +1243,22 @@ steps:
             env: prod
         - var: deployReason
         - file: ./dist
-    run: echo "프로덕션 배포 승인됨"
+    run: 'echo "프로덕션 배포 승인됨"'
 
   # 6. 병렬 실행
   - parallel:
-      - run: npm run test:unit
-      - run: npm run test:integration
-      - run: npm run lint
+      - run: 'npm run test:unit'
+      - run: 'npm run test:integration'
+      - run: 'npm run lint'
 
   # 6.5. 스텝별 쉘 오버라이드
-  - run: echo "zsh로 실행"
+  - run: 'echo "zsh로 실행"'
     shell: [zsh, -c]  # 이 스텝만 워크플로우 쉘 오버라이드
 
   # 7. 파일 존재 확인
   - when:
       file: ./test-results
-    run: echo "테스트 완료"
+    run: 'echo "테스트 완료"'
 
   # 8. 결합된 조건 (any)
   - when:
@@ -1267,7 +1267,7 @@ steps:
             env: staging
         - var:
             env: prod
-    run: echo "서버에 배포 중..."
+    run: 'echo "서버에 배포 중..."'
 
   # 9. 부정
   - when:
@@ -1277,7 +1277,7 @@ steps:
       message: "빌드 출력을 찾을 수 없습니다"
 
   # 10. 변수 치환
-  - run: echo "Deploying {{projectName}} version {{version}} to {{env}}"
+  - run: 'echo "Deploying {{projectName}} version {{version}} to {{env}}"'
 ```
 
 ---

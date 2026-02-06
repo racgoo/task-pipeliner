@@ -1,9 +1,9 @@
 name: CI Pipeline
 
 steps:
-  - run: echo "Starting CI pipeline..."
+  - run: 'echo "Starting CI pipeline..."'
   - parallel:
-      - run: npm run lint
-      - run: npm test
-      - run: npm run build
-  - run: echo "✓ CI pipeline completed"
+      - run: 'npm run lint'
+      - run: 'npm test'
+      - run: 'npm run build'
+  - run: 'echo "✓ CI pipeline completed"'

@@ -3,17 +3,17 @@ name: Parallel Execution Example
 steps:
   # Parallel execution - wait until all branches complete
   - parallel:
-      - run: echo "Running web tests..."
-      - run: echo "Running API tests..."
+      - run: 'echo "Running web tests..."'
+      - run: 'echo "Running API tests..."'
 
   # Check file existence
   - when:
       file: ./test-results/web.json
-    run: echo "Web tests completed"
+    run: 'echo "Web tests completed"'
 
   - when:
       file: ./test-results/api.json
-    run: echo "API tests completed"
+    run: 'echo "API tests completed"'
 
   - choose:
       message: "Deploy strategy?"
@@ -27,10 +27,10 @@ steps:
   - when:
       var:
         strategy: blue_green
-    run: echo "Deploying with blue-green strategy..."
+    run: 'echo "Deploying with blue-green strategy..."'
 
   - when:
       var:
         strategy: rolling
-    run: echo "Deploying with rolling strategy..."
+    run: 'echo "Deploying with rolling strategy..."'
 

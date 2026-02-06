@@ -42,9 +42,9 @@ Variables can be used in commands using the `{{variableName}}` syntax. Optional 
 ### Syntax
 
 ```yaml
-run: echo "{{variableName}}"
+run: 'echo "{{variableName}}"'
 # or with optional spaces
-run: echo "{{ variableName }}"
+run: 'echo "{{ variableName }}"'
 ```
 
 ### ⚠️ Important YAML Syntax Rules
@@ -54,8 +54,8 @@ When using `{{variable}}` in commands, follow these YAML quoting rules to avoid 
 #### ✅ Safe Patterns
 ```yaml
 # Start with a word (no quotes needed)
-- run: echo "Building {{version}}..."
-- run: npm run build --version={{version}}
+- run: 'echo "Building {{version}}..."'
+- run: 'npm run build --version={{version}}'
 
 # Wrap entire command in single quotes
 - run: 'echo "Selected: {{mode}}"'
@@ -82,7 +82,7 @@ When using `{{variable}}` in commands, follow these YAML quoting rules to avoid 
 - prompt:
     message: "Enter project name:"
     as: projectName
-- run: echo "Building {{projectName}}..."
+- run: 'echo "Building {{projectName}}..."'
 
 # Use choice variable
 - choose:
@@ -91,10 +91,10 @@ When using `{{variable}}` in commands, follow these YAML quoting rules to avoid 
       - id: dev
         label: "Development"
     as: env
-- run: echo "Deploying to {{env}}"
+- run: 'echo "Deploying to {{env}}"'
 
 # Multiple variables
-- run: echo "Building {{projectName}} version {{version}} for {{env}}"
+- run: 'echo "Building {{projectName}} version {{version}} for {{env}}"'
 ```
 
 ## Variable Behavior
@@ -117,9 +117,9 @@ steps:
       as: version
       default: "1.0.0"
   
-  - run: echo "Building version {{version}}"
+  - run: 'echo "Building version {{version}}"'
   
-  - run: npm version {{version}}
+  - run: 'npm version {{version}}'
 ```
 
 ### Conditional Variable Usage
@@ -144,7 +144,7 @@ steps:
       message: "Enter production deployment reason:"
       as: deployReason
   
-  - run: echo "Deploying to {{env}}"
+  - run: 'echo "Deploying to {{env}}"'
 ```
 
 ## Variables and Conditions
@@ -159,13 +159,13 @@ Variables can also be used in conditions:
 # Check variable existence
 - when:
     var: version
-  run: echo "Version: {{version}}"
+  run: 'echo "Version: {{version}}"'
 
 # Compare variable value
 - when:
     var:
       version: "1.0.0"
-  run: echo "Deploying stable version"
+  run: 'echo "Deploying stable version"'
 ```
 
 ## Next Steps

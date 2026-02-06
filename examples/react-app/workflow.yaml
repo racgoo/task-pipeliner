@@ -4,10 +4,10 @@ baseDir: ./
 
 steps:
   # Step 1: Install dependencies
-  - run: npm install
+  - run: 'npm install'
 
   # Step 2: Run tests
-  - run: npm run test
+  - run: 'npm run test'
 
   # Step 3: Choose build type
   - choose:
@@ -23,17 +23,17 @@ steps:
   - when:
       var:
         buildType: dev
-    run: echo "Building for development..." && npm run build
+    run: 'echo "Building for development..." && npm run build'
 
   - when:
       var:
         buildType: prod
-    run: echo "Building for production..." && npm run build
+    run: 'echo "Building for production..." && npm run build'
 
   # Step 5: Verify build output
   - when:
       file: ./build
-    run: echo "✓ Build directory created" && ls -la build/
+    run: 'echo "✓ Build directory created" && ls -la build/'
 
   # Step 6: Ask for deployment
   - prompt:
@@ -42,7 +42,7 @@ steps:
       default: "https://example.com"
 
   # Step 7: Deploy
-  - run: echo "Deploying to {{deployUrl}}..."
+  - run: 'echo "Deploying to {{deployUrl}}..."'
 
   # Step 8: Start dev server (optional)
   - choose:
@@ -57,5 +57,5 @@ steps:
   - when:
       var:
         startServer: yes
-    run: npm run start
+    run: 'npm run start'
 

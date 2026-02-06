@@ -3,21 +3,21 @@ name: Advanced Workflow Example
 steps:
   # 1. Initial build and test (parallel with timeout)
   - parallel:
-      - run: echo "Building frontend..."
+      - run: 'echo "Building frontend..."'
         timeout: 300  # 5 minutes
-      - run: echo "Building backend..."
+      - run: 'echo "Building backend..."'
         timeout: 300  # 5 minutes
-      - run: echo "Running unit tests..."
+      - run: 'echo "Running unit tests..."'
         timeout: 180  # 3 minutes
 
   # 2. Verify build output (file existence)
   - when:
       file: ./dist/frontend
-    run: echo "Frontend build completed"
+    run: 'echo "Frontend build completed"'
 
   - when:
       file: ./dist/backend
-    run: echo "Backend build completed"
+    run: 'echo "Backend build completed"'
 
   # 3. Select environment (first choose)
   - choose:
@@ -51,7 +51,7 @@ steps:
             env: prod
         - var:
             prodApproval: approve_prod
-    run: echo "Production deployment approved"
+    run: 'echo "Production deployment approved"'
 
   # 6. Cancel production
   - when:
@@ -95,7 +95,7 @@ steps:
                 strategy: blue_green
             - var:
                 strategy: canary
-        run: echo "Deploying web service..."
+        run: 'echo "Deploying web service..."'
       
       - when:
           any:
@@ -103,17 +103,17 @@ steps:
                 strategy: blue_green
             - var:
                 strategy: rolling
-        run: echo "Deploying API service..."
+        run: 'echo "Deploying API service..."'
       
       - when:
           var:
             strategy: canary
-        run: echo "Deploying canary version..."
+        run: 'echo "Deploying canary version..."'
       
       - when:
           var:
             strategy: rolling
-        run: echo "Rolling update in progress..."
+        run: 'echo "Rolling update in progress..."'
 
   # 9. Post-deployment verification (parallel)
   - when:
@@ -125,12 +125,12 @@ steps:
         - var:
             strategy: canary
     parallel:
-      - run: echo "Running smoke tests..."
-      - run: echo "Checking health endpoints..."
+      - run: 'echo "Running smoke tests..."'
+      - run: 'echo "Checking health endpoints..."'
       - when:
           var:
             strategy: canary
-        run: echo "Monitoring canary metrics..."
+        run: 'echo "Monitoring canary metrics..."'
 
   # 10. Production-only additional verification
   - when:
@@ -139,8 +139,8 @@ steps:
             prodApproval: approve_prod
         - file: ./test-results/smoke.json
     parallel:
-      - run: echo "Running security scan..."
-      - run: echo "Running performance tests..."
+      - run: 'echo "Running security scan..."'
+      - run: 'echo "Running performance tests..."'
 
   # 11. Final approval (Production)
   - when:
@@ -164,11 +164,11 @@ steps:
             prodApproval: approve_prod
         - var:
             finalApproval: final_approve
-    run: echo "🚀 Deploying to production..."
+    run: 'echo "🚀 Deploying to production..."'
     timeout: 600  # 10 minutes
     retry: 3  # Retry up to 3 times for critical production deployment
     onError:
-      run: echo "Deployment failed, running rollback..."
+      run: 'echo "Deployment failed, running rollback..."'
   # Note: If you want to record failure but still continue to the next step, add:
   #   continue: true
 
@@ -190,4 +190,4 @@ steps:
             env: staging
         - var:
             finalApproval: final_approve
-    run: echo "✅ Deployment completed successfully!"
+    run: 'echo "✅ Deployment completed successfully!"'

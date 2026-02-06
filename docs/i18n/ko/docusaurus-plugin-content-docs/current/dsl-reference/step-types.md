@@ -62,67 +62,67 @@
 ```yaml
 # 간단한 명령
 steps:
-  - run: npm install
+  - run: 'npm install'
 
 # 조건이 있는 명령
 - when:
     file: ./package.json
-  run: npm install
+  run: 'npm install'
 
 # 변수 치환이 있는 명령
-- run: echo "Building {{version}}"
+- run: 'echo "Building {{version}}"'
 
 # 타임아웃이 있는 명령 (30초)
-- run: npm install
+- run: 'npm install'
   timeout: 30
 
 # 재시도가 있는 명령 (최대 3번 재시도)
-- run: npm install
+- run: 'npm install'
   retry: 3
 
 # PM2처럼 프로세스 관리: 서버가 죽으면 자동 재시작
-- run: node server.js
+- run: 'node server.js'
   retry: Infinity
 
 # 타임아웃과 재시도 모두 사용
-- run: npm install
+- run: 'npm install'
   timeout: 60
   retry: 2
 
 # 실패 시 fallback 명령 실행
-- run: pnpm lint
+- run: 'pnpm lint'
   onError:
-    run: pnpm lint:fix
+    run: 'pnpm lint:fix'
 
 # 여러 단계로 이어지는 fallback 체인
-- run: step1
+- run: 'step1'
   onError:
-    run: step2
+    run: 'step2'
     onError:
-      run: step3
+      run: 'step3'
 
 # 실패를 기록만 하고 워크플로우는 계속 진행
-- run: pnpm typecheck
+- run: 'pnpm typecheck'
   continue: true
   onError:
-    run: echo "Type check failed, but continuing..."
+    run: 'echo "Type check failed, but continuing..."'
 
 # 쉘 설정 예제
 # Unix/Linux/macOS
-- run: echo "bash로 실행"
+- run: 'echo "bash로 실행"'
   shell: [bash, -lc]
 
-- run: echo "zsh로 실행"
+- run: 'echo "zsh로 실행"'
   shell: [zsh, -c]
 
 # Windows
-- run: echo Windows 명령 프롬프트로 실행
+- run: 'echo Windows 명령 프롬프트로 실행'
   shell: [cmd, /c]
 
-- run: Write-Host "PowerShell로 실행"
+- run: 'Write-Host "PowerShell로 실행"'
   shell: [powershell, -Command]
 
-- run: Write-Host "PowerShell Core로 실행"
+- run: 'Write-Host "PowerShell Core로 실행"'
   shell: [pwsh, -Command]
 ```
 
@@ -248,7 +248,7 @@ steps:
 - when:
     var:         # 변수를 사용한다는 정의
       env: prod  # 'env' 변수가 'prod'와 같은지 확인
-  run: echo "프로덕션에 배포 중"
+  run: 'echo "프로덕션에 배포 중"'
 ```
 
 ---
@@ -318,13 +318,13 @@ steps:
 
 ```yaml
 # 명령에서 사용
-- run: echo "Building version {{version}}"
+- run: 'echo "Building version {{version}}"'
 
 # 조건에서 확인
 - when:
     var:
       version: "1.0.0"
-  run: echo "안정 버전 배포 중"
+  run: 'echo "안정 버전 배포 중"'
 ```
 
 ---
@@ -366,19 +366,19 @@ steps:
 ```yaml
 # 기본 병렬 실행
 - parallel:
-    - run: npm run test:unit
-    - run: npm run test:integration
-    - run: npm run lint
+    - run: 'npm run test:unit'
+    - run: 'npm run test:integration'
+    - run: 'npm run lint'
 
 # 조건이 있는 병렬
 # 각 step은 자신만의 `when` 조건을 가질 수 있습니다
 - parallel:
     - when:
           file: ./src
-        run: echo "프론트엔드 빌드 중..."
+        run: 'echo "프론트엔드 빌드 중..."'
     - when:
           file: ./api
-        run: echo "백엔드 빌드 중..."
+        run: 'echo "백엔드 빌드 중..."'
 
 # 조건부 병렬 블록
 # 전체 parallel 블록에 `when` 조건을 적용할 수 있습니다
@@ -386,15 +386,15 @@ steps:
     var:
       env: staging
   parallel:
-    - run: npm run test
-    - run: npm run lint
+    - run: 'npm run test'
+    - run: 'npm run lint'
 
 # 중첩 parallel (허용); parallel 내부에는 run / parallel / fail만 사용
 - parallel:
-    - run: npm run test
+    - run: 'npm run test'
     - parallel:
-        - run: npm run lint
-        - run: npm run typecheck
+        - run: 'npm run lint'
+        - run: 'npm run typecheck'
 ```
 
 ### 동작

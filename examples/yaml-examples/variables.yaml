@@ -22,14 +22,14 @@ steps:
   # 3. Use variable
   - when:
       var: project_name
-    run: echo "Building {{project_name}}..."
+    run: 'echo "Building {{project_name}}..."'
 
   # 4. Use multiple variables
   - when:
       all:
         - var: project_name
         - var: version
-    run: echo "Building {{project_name}} version {{version}}..."
+    run: 'echo "Building {{project_name}} version {{version}}..."'
 
   # 5. Select environment
   - choose:
@@ -62,7 +62,7 @@ steps:
             - var:
                 env: staging
             - var: deploy_reason
-    run: echo "Deploying {{project_name}} v{{version}}..."
+    run: 'echo "Deploying {{project_name}} v{{version}}..."'
 
   # 8. Production deployment message
   - when:

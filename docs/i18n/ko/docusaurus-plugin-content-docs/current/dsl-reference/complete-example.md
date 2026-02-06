@@ -12,7 +12,7 @@ baseDir: ./
 
 steps:
   # 1. 간단한 명령
-  - run: echo "워크플로우 시작 중..."
+  - run: 'echo "워크플로우 시작 중..."'
 
   # 2. 변수 저장이 있는 사용자 선택
   - choose:
@@ -38,12 +38,12 @@ steps:
   - when:
       var:
         env: dev
-    run: echo "개발 환경에 배포 중..."
+    run: 'echo "개발 환경에 배포 중..."'
 
   - when:
       var:
         env: staging
-    run: echo "스테이징에 배포 중..."
+    run: 'echo "스테이징에 배포 중..."'
 
   # 5. 복잡한 조건 (all)
   - when:
@@ -52,18 +52,18 @@ steps:
             env: prod
         - var: deployReason
         - file: ./dist
-    run: echo "프로덕션 배포 승인됨"
+    run: 'echo "프로덕션 배포 승인됨"'
 
   # 6. 병렬 실행
   - parallel:
-      - run: npm run test:unit
-      - run: npm run test:integration
-      - run: npm run lint
+      - run: 'npm run test:unit'
+      - run: 'npm run test:integration'
+      - run: 'npm run lint'
 
   # 7. 파일 존재 확인
   - when:
       file: ./test-results
-    run: echo "테스트 완료"
+    run: 'echo "테스트 완료"'
 
   # 8. 결합된 조건 (any)
   - when:
@@ -72,7 +72,7 @@ steps:
             env: staging
         - var:
             env: prod
-    run: echo "서버에 배포 중..."
+    run: 'echo "서버에 배포 중..."'
 
   # 9. 부정
   - when:
@@ -82,7 +82,7 @@ steps:
       message: "빌드 출력을 찾을 수 없습니다"
 
   # 10. 변수 치환
-  - run: echo "Deploying {{projectName}} version {{version}} to {{env}}"
+  - run: 'echo "Deploying {{projectName}} version {{version}} to {{env}}"'
 ```
 
 ## JSON 형식

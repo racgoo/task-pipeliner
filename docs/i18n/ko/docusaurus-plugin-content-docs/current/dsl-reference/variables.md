@@ -42,9 +42,9 @@
 ### 문법
 
 ```yaml
-run: echo "{{variableName}}"
+run: 'echo "{{variableName}}"'
 # 또는 선택적으로 공백 사용
-run: echo "{{ variableName }}"
+run: 'echo "{{ variableName }}"'
 ```
 
 ### ⚠️ 중요: YAML 문법 규칙
@@ -54,8 +54,8 @@ run: echo "{{ variableName }}"
 #### ✅ 안전한 패턴
 ```yaml
 # 단어로 시작 (따옴표 불필요)
-- run: echo "Building {{version}}..."
-- run: npm run build --version={{version}}
+- run: 'echo "Building {{version}}..."'
+- run: 'npm run build --version={{version}}'
 
 # 전체 명령어를 작은따옴표로 감싸기
 - run: 'echo "Selected: {{mode}}"'
@@ -82,7 +82,7 @@ run: echo "{{ variableName }}"
 - prompt:
     message: "프로젝트 이름을 입력하세요:"
     as: projectName
-- run: echo "Building {{projectName}}..."
+- run: 'echo "Building {{projectName}}..."'
 
 # 선택 변수 사용
 - choose:
@@ -91,10 +91,10 @@ run: echo "{{ variableName }}"
       - id: dev
         label: "개발"
     as: env
-- run: echo "Deploying to {{env}}"
+- run: 'echo "Deploying to {{env}}"'
 
 # 여러 변수
-- run: echo "Building {{projectName}} version {{version}} for {{env}}"
+- run: 'echo "Building {{projectName}} version {{version}} for {{env}}"'
 ```
 
 ### JSON 예제
@@ -135,9 +135,9 @@ steps:
       as: version
       default: "1.0.0"
   
-  - run: echo "Building version {{version}}"
+  - run: 'echo "Building version {{version}}"'
   
-  - run: npm version {{version}}
+  - run: 'npm version {{version}}'
 ```
 
 ### 조건부 변수 사용
@@ -164,11 +164,11 @@ steps:
       message: "프로덕션 배포 사유를 입력하세요:"
       as: deployReason
   
-  - run: echo "Deploying to {{env}}"
+  - run: 'echo "Deploying to {{env}}"'
   
   - when:
       var: deployReason
-    run: echo "Deployment reason: {{deployReason}}"
+    run: 'echo "Deployment reason: {{deployReason}}"'
 ```
 
 ### 여러 변수 조합
@@ -194,9 +194,9 @@ steps:
           label: "프로덕션"
       as: env
   
-  - run: echo "Building {{projectName}} version {{version}} for {{env}}"
+  - run: 'echo "Building {{projectName}} version {{version}} for {{env}}"'
   
-  - run: npm run build -- --project={{projectName}} --version={{version}} --env={{env}}
+  - run: 'npm run build -- --project={{projectName}} --version={{version}} --env={{env}}'
 ```
 
 ## 변수와 조건
@@ -211,13 +211,13 @@ steps:
 # 변수 존재 확인
 - when:
     var: version
-  run: echo "Version: {{version}}"
+  run: 'echo "Version: {{version}}"'
 
 # 변수 값 비교
 - when:
     var:
       version: "1.0.0"
-  run: echo "안정 버전 배포 중"
+  run: 'echo "안정 버전 배포 중"'
 ```
 
 ## 다음 단계

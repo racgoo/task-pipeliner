@@ -9,7 +9,7 @@ steps:
   # 2. Verify input
   - when:
       var: user_name
-    run: echo "Hello, {{user_name}}!"
+    run: 'echo "Hello, {{user_name}}!"'
 
   # 3. Enter version (stored as variable with 'as')
   - prompt:
@@ -20,7 +20,7 @@ steps:
   # 4. Build after version verification
   - when:
       var: version
-    run: echo "Building version {{version}}..."
+    run: 'echo "Building version {{version}}..."'
 
   # 5. Select environment (choose)
   - choose:
@@ -46,5 +46,5 @@ steps:
         - var:
             env: staging
         - var: deploy_reason
-    run: echo "Deploying..."
+    run: 'echo "Deploying..."'
 

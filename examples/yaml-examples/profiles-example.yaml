@@ -17,7 +17,7 @@ profiles:
       label: "prod-label"
 
 steps:
-  - run: echo "hi"
+  - run: 'echo "hi"'
   - choose:
       message: "Select mode"
       options:

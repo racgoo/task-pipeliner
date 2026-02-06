@@ -36,16 +36,16 @@ when:
 ```yaml
 - when:
     file: ./dist
-  run: echo "빌드가 존재합니다"
+  run: 'echo "빌드가 존재합니다"'
 
 - when:
     file: ./package.json
-  run: npm install
+  run: 'npm install'
 
 - when:
     not:
       file: ./node_modules
-  run: npm install
+  run: 'npm install'
 ```
 
 #### 동작
@@ -90,20 +90,20 @@ when:
 - when:
     var:
       env: prod
-  run: echo "프로덕션에 배포 중"
+  run: 'echo "프로덕션에 배포 중"'
 
 # version이 특정 값과 같은지 확인
 - when:
     var:
       version: "1.0.0"
-  run: echo "안정 버전 배포 중"
+  run: 'echo "안정 버전 배포 중"'
 
 # 여러 변수 확인 (모두 일치해야 함)
 - when:
     var:
       env: staging
       version: "2.0.0"
-  run: echo "스테이징에 v2.0.0 배포 중"
+  run: 'echo "스테이징에 v2.0.0 배포 중"'
 ```
 
 #### 동작
@@ -153,12 +153,12 @@ when:
 # 변수가 존재하는지 확인
 - when:
     var: version
-  run: echo "Version: {{version}}"
+  run: 'echo "Version: {{version}}"'
 
 # 'has' 별칭 사용
 - when:
     has: projectName
-  run: echo "Project: {{projectName}}"
+  run: 'echo "Project: {{projectName}}"'
 ```
 
 #### 동작
@@ -206,7 +206,7 @@ when:
 # 선택 확인
 - when:
     choice: dev
-  run: echo "개발 환경 작업 중"
+  run: 'echo "개발 환경 작업 중"'
 ```
 
 #### 동작
@@ -255,7 +255,7 @@ when:
       - file: ./dist
       - var:
           env: production
-  run: echo "프로덕션 빌드 준비 완료"
+  run: 'echo "프로덕션 빌드 준비 완료"'
 
 - when:
     all:
@@ -264,7 +264,7 @@ when:
       - var:
           version: "2.0.0"
       - file: ./dist
-  run: echo "스테이징에 v2.0.0 배포 중"
+  run: 'echo "스테이징에 v2.0.0 배포 중"'
 ```
 
 ##### 동작
@@ -310,13 +310,13 @@ when:
           env: staging
       - var:
           env: production
-  run: echo "서버에 배포 중"
+  run: 'echo "서버에 배포 중"'
 
 - when:
     any:
       - file: ./dist
       - file: ./build
-  run: echo "빌드 출력을 찾았습니다"
+  run: 'echo "빌드 출력을 찾았습니다"'
 ```
 
 ##### 동작
@@ -362,7 +362,7 @@ when:
     not:
       var:
         env: prod
-  run: echo "프로덕션 환경이 아닙니다"
+  run: 'echo "프로덕션 환경이 아닙니다"'
 
 # 복잡한 부정
 - when:
@@ -371,7 +371,7 @@ when:
         - file: ./dist
         - var:
             env: prod
-  run: echo "프로덕션 준비가 되지 않았습니다"
+  run: 'echo "프로덕션 준비가 되지 않았습니다"'
 ```
 
 ##### 동작
@@ -401,7 +401,7 @@ when:
       - not:
           var:
             version: "0.0.0"
-  run: echo "배포 준비 완료"
+  run: 'echo "배포 준비 완료"'
 
 # 여러 수준의 중첩
 - when:
@@ -415,7 +415,7 @@ when:
               env: staging
           - not:
               file: ./test-results
-  run: echo "조건부 배포"
+  run: 'echo "조건부 배포"'
 ```
 
 ---

@@ -28,12 +28,12 @@ when:
 ```yaml
 - when:
     file: ./dist
-  run: echo "Build exists"
+  run: 'echo "Build exists"'
 
 - when:
     not:
       file: ./node_modules
-  run: npm install
+  run: 'npm install'
 ```
 
 ---
@@ -61,14 +61,14 @@ when:
 - when:
     var:
       env: prod
-  run: echo "Deploying to production"
+  run: 'echo "Deploying to production"'
 
 # Multiple variable checks (all must match)
 - when:
     var:
       env: staging
       version: "2.0.0"
-  run: echo "Deploying v2.0.0 to staging"
+  run: 'echo "Deploying v2.0.0 to staging"'
 ```
 
 ---
@@ -93,12 +93,12 @@ when:
 # Check if variable exists
 - when:
     var: version
-  run: echo "Version: {{version}}"
+  run: 'echo "Version: {{version}}"'
 
 # Use 'has' alias
 - when:
     has: projectName
-  run: echo "Project: {{projectName}}"
+  run: 'echo "Project: {{projectName}}"'
 ```
 
 ---
@@ -162,7 +162,7 @@ Nest conditions to create complex logic.
       - not:
           var:
             version: "0.0.0"
-  run: echo "Ready to deploy"
+  run: 'echo "Ready to deploy"'
 ```
 
 ---

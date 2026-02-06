@@ -105,8 +105,8 @@ See the [Profiles](/docs/dsl-reference/profiles) documentation for full details 
 - **Example**:
   ```yaml
   steps:
-    - run: echo "Step 1"
-    - run: echo "Step 2"
+    - run: 'echo "Step 1"'
+    - run: 'echo "Step 2"'
   ```
 
 ## Step Types
@@ -129,7 +129,7 @@ All steps can be executed conditionally using `when` clauses:
 steps:
   - when:
       file: ./package.json
-    run: npm install
+    run: 'npm install'
 ```
 
 See the [Conditions](/docs/dsl-reference/conditions) documentation for detailed information about conditions.
@@ -142,11 +142,11 @@ You can override this behavior per step using the `onError` option on `run` step
 
 ```yaml
 steps:
-  - run: pnpm lint
+  - run: 'pnpm lint'
     retry: 2
     continue: true       # Continue to next step regardless of success/failure
     onError:
-      run: pnpm lint:fix   # Fallback command when lint fails (side effect only)
+      run: 'pnpm lint:fix'   # Fallback command when lint fails (side effect only)
       retry: 1             # Retry for the fallback command
 ```
 
@@ -157,11 +157,11 @@ Key points:
 - `onError` itself can contain another `onError`, forming a **recursive chain**:
 
   ```yaml
-  - run: step1
+  - run: 'step1'
     onError:
-      run: step2
+      run: 'step2'
       onError:
-        run: step3
+        run: 'step3'
   ```
 
   The step's success/failure is always determined by the main `run` command, not by any `onError` commands.
@@ -182,7 +182,7 @@ steps:
   - prompt:
       message: "Enter version:"
       as: version
-  - run: echo "Building {{version}}"
+  - run: 'echo "Building {{version}}"'
 ```
 
 See the [Variables](/docs/dsl-reference/variables) documentation for detailed information about variables.

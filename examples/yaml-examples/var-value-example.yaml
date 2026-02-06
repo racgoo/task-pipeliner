@@ -17,17 +17,17 @@ steps:
   - when:
       var:
         env: dev  # env 변수가 'dev'일 때
-    run: echo "Deploying to development..."
+    run: 'echo "Deploying to development..."'
 
   - when:
       var:
         env: staging  # env 변수가 'staging'일 때
-    run: echo "Deploying to staging..."
+    run: 'echo "Deploying to staging..."'
 
   - when:
       var:
         env: production  # env 변수가 'production'일 때
-    run: echo "Deploying to production..."
+    run: 'echo "Deploying to production..."'
 
   # Step 3: Prompt for version
   - prompt:
@@ -39,7 +39,7 @@ steps:
   - when:
       var:
         version: "1.0.0"  # version 변수가 "1.0.0"일 때
-    run: echo "Deploying stable version 1.0.0"
+    run: 'echo "Deploying stable version 1.0.0"'
 
   # Step 5: Multiple variable checks
   - when:
@@ -48,10 +48,10 @@ steps:
             env: staging
         - var:
             version: "2.0.0"
-    run: echo "Deploying version 2.0.0 to staging"
+    run: 'echo "Deploying version 2.0.0 to staging"'
 
   # Note: You can still use existence check
   - when:
       var: env  # env 변수가 존재하는지만 체크
-    run: echo "Environment is set"
+    run: 'echo "Environment is set"'
 

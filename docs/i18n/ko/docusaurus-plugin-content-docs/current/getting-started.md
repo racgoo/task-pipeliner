@@ -129,7 +129,7 @@ npx tp run workflow.yaml
 name: My First Workflow
 
 steps:
-  - run: echo "Hello, World!"
+  - run: 'echo "Hello, World!"'
   
   - choose:
       message: "무엇을 하시겠습니까?"
@@ -143,12 +143,12 @@ steps:
   - when:
       var:
         action: build
-    run: npm run build
+    run: 'npm run build'
   
   - when:
       var:
         action: test
-    run: npm test
+    run: 'npm test'
 ```
 
 **JSON 형식 (`workflow.json`):**
@@ -269,8 +269,8 @@ name: Workflow Name                    # 선택사항: 워크플로우 표시 �
 baseDir: ./                            # 선택사항: 명령 실행 기본 디렉토리
 
 steps:                                 # 필수: 실행할 단계 배열
-  - run: echo "Step 1"
-  - run: echo "Step 2"
+  - run: 'echo "Step 1"'
+  - run: 'echo "Step 2"'
 ```
 
 ### 단계 (Steps)
@@ -290,7 +290,7 @@ steps:                                 # 필수: 실행할 단계 배열
 ```yaml
 - when:
     file: ./dist
-  run: echo "Build exists"
+  run: 'echo "Build exists"'
 ```
 
 ## 실전 예제
@@ -304,7 +304,7 @@ steps:
   - when:
       not:
         file: ./node_modules
-    run: npm install
+    run: 'npm install'
 ```
 
 이 워크플로우는 `node_modules` 디렉토리가 없을 때만 `npm install`을 실행합니다.
@@ -320,7 +320,7 @@ steps:
       as: version
       default: "1.0.0"
   
-  - run: echo "Building version {{version}}"
+  - run: 'echo "Building version {{version}}"'
 ```
 
 사용자가 입력한 버전 번호를 변수로 저장하고, 명령에서 사용합니다.
@@ -332,9 +332,9 @@ name: Parallel Execution
 
 steps:
   - parallel:
-      - run: npm run test:unit
-      - run: npm run test:integration
-      - run: npm run lint
+      - run: 'npm run test:unit'
+      - run: 'npm run test:integration'
+      - run: 'npm run lint'
 ```
 
 여러 테스트를 동시에 실행하여 시간을 절약합니다.
