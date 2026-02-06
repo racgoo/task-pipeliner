@@ -93,6 +93,10 @@ tp schedule status # 데몬·스케줄 상태 확인 (실시간 모드; Ctrl+C�
 ```
 `tp schedule add`, `toggle`, `remove` 후에는 해당 스케줄이 `tp schedule list`와 같은 카드 레이아웃(크론, 언제 실행되는지 설명, 다음 실행, 활성 여부)으로 표시됩니다. 토글 후에는 ENABLED/DISABLED가 강조되어 새 상태를 한눈에 알 수 있습니다.
 
+**스케줄 상태 (실시간 뷰)** — `tp schedule status`로 데몬과 모든 스케줄을 스크롤 가능한 실시간 화면으로 확인할 수 있습니다. Cron 시간에는 타임존(UTC 또는 local)이 함께 표시됩니다. 스케줄이 많을 때는 ↑/↓ 또는 PgUp/PgDn으로 스크롤할 수 있습니다.
+
+<p align="center"><img src="https://github.com/user-attachments/assets/348325d3-d184-4c1e-bc78-040da13e7e7d" width="720" alt="tp schedule status 실시간 뷰" /></p>
+
 **데이터 및 업그레이드:**
 ```bash
 tp clean   # ~/.pipeliner 전체 삭제 (스케줄, 데몬 상태, 워크플로우 히스토리)
