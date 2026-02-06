@@ -47,10 +47,16 @@
 
 ### CLI 명령어
 
+**프로젝트 셋업 (신규 프로젝트 권장):**
+```bash
+tp setup   # tp/, tp/workflows, tp/schedules 생성 및 예시 워크플로우 2개·예시 스케줄 2개 추가 (echo 기반; choose, when, profiles, prompt 포함)
+```
+프로젝트 루트에서 실행. `tp/workflows/`, `tp/schedules/`를 만들고, choose·when·profiles·prompt를 쓴 예시 워크플로우와 cron·프로필을 쓴 예시 스케줄을 넣습니다. 이미 있는 파일은 덮어쓰지 않습니다.
+
 **워크플로우 실행:**
 ```bash
 tp run workflow.yaml        # 워크플로우 실행
-tp run                      # 가장 가까운 tp 디렉토리에서 워크플로우 선택하여 실행
+tp run                      # 가장 가까운 tp/workflows 디렉토리에서 워크플로우 선택하여 실행
 tp run workflow.yaml --profile Test   # 프로필로 실행 (프로필에 설정된 변수는 choose/prompt 생략)
 tp run workflow.yaml -p Test         # 프로필 짧은 형식
 tp run workflow.yaml --silent  # 사일런트 모드로 실행 (모든 콘솔 출력 억제)
@@ -74,16 +80,18 @@ tp history remove-all # 모든 히스토리 삭제
 **워크플로우 스케줄링:**
 ```bash
 tp schedule        # 모든 스케줄 보기 (tp schedule list와 동일)
-tp schedule list   # 스케줄 목록 및 데몬 상태 보기
-tp schedule add schedules.yaml  # 스케줄 파일에서 스케줄 추가
-tp schedule remove # 스케줄 삭제
+tp schedule list   # 스케줄 목록 및 데몬 상태 (각 스케줄을 카드로 표시: cron, 언제 실행되는지 설명, 다음 실행 시각 등)
+tp schedule add schedules.yaml  # 스케줄 파일에서 추가; 파일 경로 생략 시 가장 가까운 tp/schedules에서 선택
+tp schedule add    # 가장 가까운 tp/schedules 디렉토리에서 스케줄 파일 선택
+tp schedule remove # 스케줄 삭제; 삭제 후 삭제된 스케줄을 list와 동일한 카드 형식으로 표시
 tp schedule remove-all # 모든 스케줄 삭제
-tp schedule toggle # 스케줄 활성화/비활성화
+tp schedule toggle # 스케줄 활성화/비활성화; 토글 후 ENABLED/DISABLED를 굵게·색상으로 강조하고 스케줄 카드 표시
 tp schedule start  # 포그라운드 모드로 스케줄러 시작
 tp schedule start -d  # 백그라운드 데몬 모드로 스케줄러 시작
 tp schedule stop   # 스케줄러 데몬 종료
 tp schedule status # 데몬·스케줄 상태 확인 (실시간 모드; Ctrl+C는 화면만 종료, 데몬은 계속 실행)
 ```
+`tp schedule add`, `toggle`, `remove` 후에는 해당 스케줄이 `tp schedule list`와 같은 카드 레이아웃(크론, 언제 실행되는지 설명, 다음 실행, 활성 여부)으로 표시됩니다. 토글 후에는 ENABLED/DISABLED가 강조되어 새 상태를 한눈에 알 수 있습니다.
 
 **데이터 및 업그레이드:**
 ```bash
@@ -280,26 +288,31 @@ tp run workflow.yaml -s
 
 **`tp` 디렉토리 사용하기 (권장):**
 
-더 나은 조직화를 위해 프로젝트에 `tp` 디렉토리를 만들고 모든 워크플로우 파일을 그곳에 배치할 수 있습니다. 파일을 지정하지 않고 `tp run`을 실행하면 task-pipeliner가 자동으로 가장 가까운 `tp` 디렉토리(현재 디렉토리부터 시작하여 상위로 탐색)를 찾아 대화형으로 워크플로우를 선택할 수 있게 해줍니다.
+권장 프로젝트 구조는 `tp` 디렉토리 아래에 두 개의 하위 디렉토리를 두는 방식입니다.
+
+- **`tp/workflows/`** – 워크플로우 파일(YAML 또는 JSON). 파일 없이 `tp run`을 실행하면 task-pipeliner가 가장 가까운 `tp` 디렉토리를 찾고, **`tp/workflows/`** 안에서 실행할 워크플로우를 선택할 수 있게 합니다.
+- **`tp/schedules/`** – 스케줄 파일(YAML 또는 JSON). `tp schedule add` 실행 시 파일 경로를 주지 않으면 가장 가까운 **`tp/schedules/`** 안에서 스케줄 파일을 선택할 수 있습니다.
+
+**빠른 셋업:** 프로젝트 루트에서 `tp setup`을 실행하면 `tp/`, `tp/workflows/`, `tp/schedules/`가 생성되고, 예시 워크플로우 2개와 예시 스케줄 파일 2개(echo 기반, choose·when·profiles·prompt 및 스케줄 프로필 사용 예시 포함)가 추가됩니다. 이미 있는 파일은 덮어쓰지 않습니다.
 
 ```bash
-# tp 디렉토리를 만들고 워크플로우 파일 추가
-mkdir tp
-mv workflow.yaml tp/
+# 방법 1: tp setup 사용 (tp/workflows, tp/schedules + 예시 생성)
+tp setup
 
-# 파일을 지정하지 않고 실행 - 대화형 선택
+# 방법 2: 수동으로 구조 만들기
+mkdir -p tp/workflows tp/schedules
+mv workflow.yaml tp/workflows/
+
+# 파일 없이 실행 - tp/workflows에서 대화형 선택
 tp run
 ```
 
-이 기능은:
-1. 가장 가까운 `tp` 디렉토리를 찾습니다 (현재 디렉토리 또는 상위 디렉토리)
-2. 해당 디렉토리의 모든 워크플로우 파일 (`.yaml`, `.yml`, `.json`)을 나열합니다
-3. 다음 기능을 제공하는 대화형 검색 가능한 메뉴를 표시합니다:
-   - 타이핑하여 실시간으로 워크플로우 필터링
-   - 화살표 키 (↑↓)로 탐색
-   - Enter를 눌러 선택하고 실행
+파일을 지정하지 않고 `tp run`을 실행하면:
+1. 가장 가까운 `tp` 디렉토리를 찾습니다 (현재 디렉토리 또는 상위).
+2. **`tp/workflows/`** 안의 모든 워크플로우 파일 (`.yaml`, `.yml`, `.json`)을 나열합니다.
+3. 타이핑으로 필터, 화살표(↑↓)로 이동, Enter로 선택·실행하는 대화형 검색 메뉴를 띄웁니다.
 
-대화형 메뉴는 파일 이름과 워크플로우의 `name` (YAML/JSON 내용에서)을 모두 표시하여 쉽게 식별할 수 있습니다.
+메뉴에는 파일 이름과 워크플로우의 `name`(YAML/JSON)이 함께 표시되어 구분하기 쉽습니다.
 
 **사일런트 모드:**
 `--silent` (또는 `-s`) 플래그는 워크플로우 실행 중 모든 콘솔 출력을 억제합니다. 다음 경우에 유용합니다:
@@ -1430,9 +1443,11 @@ schedules:
 
 ```bash
 tp schedule add schedules.yaml
+# 또는 경로 없이: 가장 가까운 tp/schedules/에서 파일 선택
+tp schedule add
 ```
 
-각 스케줄에 대해 별칭을 확인하거나 변경할 수 있습니다
+각 스케줄에 대해 별칭을 확인하거나 변경할 수 있습니다. 추가 후에는 추가된 스케줄이 `tp schedule list`와 같은 카드 형식(크론, 언제 실행되는지 설명, 다음 실행, 활성 여부)으로 표시됩니다.
 
 **Cron 표현식 형식:**
 
@@ -1465,18 +1480,20 @@ tp schedule add schedules.yaml
 ### 스케줄 관리
 
 ```bash
-# 모든 스케줄 목록 보기
+# 모든 스케줄 목록 보기 (카드 레이아웃: cron, "언제" 설명, 다음 실행 등)
 tp schedule list
 
-# 스케줄 삭제
+# 스케줄 삭제 (삭제 후 삭제된 스케줄을 동일한 카드 형식으로 표시)
 tp schedule remove
 
 # 모든 스케줄 삭제
 tp schedule remove-all
 
-# 스케줄 활성화/비활성화
+# 스케줄 활성화/비활성화 (토글 후 ENABLED/DISABLED를 굵게·색상으로 강조하고 스케줄 카드 표시)
 tp schedule toggle
 ```
+
+**통일된 스케줄 UI:** list, add, toggle, remove 모두 동일한 스케줄 카드 레이아웃을 사용합니다. 각 카드에는 크론 표현식, 언제 실행되는지 사람이 읽기 쉬운 설명(예: "매분"), 타임존, 워크플로우 경로, 프로필(설정 시), 마지막 실행, 다음 실행이 표시됩니다. `tp schedule toggle` 후에는 새 상태(ENABLED는 초록, DISABLED는 회색)가 강조되어 한눈에 구분할 수 있습니다.
 
 ### 스케줄러 실행
 
@@ -1532,6 +1549,7 @@ tp schedule status -n   # 한 번만 표시 후 종료 (갱신 없음)
 
 완전한 프로젝트 예제는 `examples/` 디렉토리를 확인하세요:
 
+- **`tp setup`** – 프로젝트 루트에서 `tp setup`을 실행하면 `tp/workflows/`, `tp/schedules/`와 예시 워크플로우 2개(choose, when, profiles, prompt), 예시 스케줄 파일 2개(프로필 사용 포함)가 생성됩니다. 모든 단계는 `echo`로 되어 있어 안전하게 실행한 뒤 실제 명령으로 바꿀 수 있습니다.
 - **`monorepo-example/`** - 여러 프로젝트가 있는 모노레포 워크플로우
 - **`simple-project/`** - 간단한 단일 프로젝트 워크플로우
 - **`react-app/`** - React 애플리케이션 빌드 및 배포

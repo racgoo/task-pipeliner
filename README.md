@@ -29,10 +29,16 @@
 
 ### CLI Commands
 
+**Project setup (recommended for new projects):**
+```bash
+tp setup   # Create tp/, tp/workflows, tp/schedules and add 2 example workflows + 2 example schedules (echo-based; includes choose, when, profiles, prompt)
+```
+Run from your project root. Creates `tp/workflows/` and `tp/schedules/`; example workflows demonstrate choose, when, profiles, and prompt; example schedules include cron and profile usage. Does not overwrite existing files.
+
 **Run Workflows:**
 ```bash
 tp run workflow.yaml        # Run a workflow
-tp run                      # Select and run a workflow from nearest tp directory
+tp run                      # Select and run a workflow from nearest tp/workflows directory
 tp run workflow.yaml --profile Test   # Run with profile (skip choose/prompt for variables set in profile)
 tp run workflow.yaml -p Test         # Short form for profile
 tp run workflow.yaml --silent  # Run in silent mode (suppress all console output)
@@ -56,16 +62,18 @@ tp history remove-all # Remove all histories
 **Workflow Scheduling:**
 ```bash
 tp schedule        # View all schedules (same as tp schedule list)
-tp schedule list   # List schedules with daemon status
-tp schedule add schedules.yaml  # Add schedules from a schedule file
-tp schedule remove # Remove a schedule
+tp schedule list   # List schedules with daemon status (each schedule shown as a card: cron, human "when" description, next run, etc.)
+tp schedule add schedules.yaml  # Add schedules from a file; if no file given, select from nearest tp/schedules
+tp schedule add    # Select a schedule file from nearest tp/schedules directory
+tp schedule remove # Remove a schedule; after removal, the removed schedule is shown in the same card format as list
 tp schedule remove-all # Remove all schedules
-tp schedule toggle # Enable/disable a schedule
+tp schedule toggle # Enable/disable a schedule; after toggle, shows clear ENABLED/DISABLED state (bold, colored) and the schedule card
 tp schedule start  # Start scheduler in foreground mode
 tp schedule start -d  # Start scheduler daemon in background
 tp schedule stop   # Stop the scheduler daemon
 tp schedule status # Check daemon status (real-time mode; Ctrl+C exits the view only, daemon keeps running)
 ```
+After `tp schedule add`, `toggle`, or `remove`, the affected schedule(s) are displayed in the same card layout as `tp schedule list` (cron expression, human-readable “when” description, next run, enabled state). Toggle result emphasizes ENABLED or DISABLED so the new state is obvious.
 
 **Data & upgrades:**
 ```bash
@@ -280,26 +288,31 @@ tp run workflow.yaml -s
 
 **Using the `tp` Directory (Recommended):**
 
-For better organization, you can create a `tp` directory in your project and place all workflow files there. When you run `tp run` without specifying a file, task-pipeliner will automatically search for the nearest `tp` directory (starting from the current directory and traversing up) and let you select a workflow interactively.
+The recommended project layout uses a `tp` directory with two subdirectories:
+
+- **`tp/workflows/`** – workflow files (YAML or JSON). When you run `tp run` without a file, task-pipeliner finds the nearest `tp` directory and lets you choose a workflow from `tp/workflows/`.
+- **`tp/schedules/`** – schedule files (YAML or JSON). When you run `tp schedule add` without a file path, you can select a schedule file from the nearest `tp/schedules/`.
+
+**Quick setup:** Run `tp setup` from your project root to create `tp/`, `tp/workflows/`, and `tp/schedules/` and to add two example workflows and two example schedule files (echo-based; examples include choose, when, profiles, prompt, and schedule profile usage). Existing files are not overwritten.
 
 ```bash
-# Create a tp directory and add workflow files
-mkdir tp
-mv workflow.yaml tp/
+# Option 1: Use tp setup (creates tp/workflows and tp/schedules + examples)
+tp setup
 
-# Run without specifying a file - interactive selection
+# Option 2: Create the structure manually
+mkdir -p tp/workflows tp/schedules
+mv workflow.yaml tp/workflows/
+
+# Run without specifying a file - interactive selection from tp/workflows
 tp run
 ```
 
-This will:
-1. Find the nearest `tp` directory (current directory or any parent directory)
-2. List all workflow files (`.yaml`, `.yml`, `.json`) in that directory
-3. Show an interactive, searchable menu where you can:
-   - Type to filter workflows in real-time
-   - Use arrow keys (↑↓) to navigate
-   - Press Enter to select and run
+When you run `tp run` without a file:
+1. The nearest `tp` directory is found (current directory or any parent).
+2. All workflow files (`.yaml`, `.yml`, `.json`) in **`tp/workflows/`** are listed.
+3. An interactive, searchable menu is shown: type to filter, use arrow keys (↑↓) to move, Enter to select and run.
 
-The interactive menu displays both the filename and the workflow's `name` (from the YAML/JSON content) for easy identification.
+The menu shows both the filename and the workflow `name` from the YAML/JSON for easy identification.
 
 **Silent Mode:**
 The `--silent` (or `-s`) flag suppresses all console output during workflow execution. This is useful for:
@@ -1431,9 +1444,11 @@ Then add all schedules from the file:
 
 ```bash
 tp schedule add schedules.yaml
+# Or, with no path: select a file from the nearest tp/schedules/ directory
+tp schedule add
 ```
 
-You'll be prompted to confirm or override the alias for each schedule
+You'll be prompted to confirm or override the alias for each schedule. After adding, each added schedule is shown in the same card format as `tp schedule list` (cron, human-readable “when” description, next run, enabled state).
 
 **Cron Expression Format:**
 
@@ -1466,18 +1481,20 @@ You'll be prompted to confirm or override the alias for each schedule
 ### Managing Schedules
 
 ```bash
-# List all schedules
+# List all schedules (card layout: cron, "when" description, next run, etc.)
 tp schedule list
 
-# Remove a schedule
+# Remove a schedule (after removal, the removed schedule is shown in the same card format)
 tp schedule remove
 
 # Remove all schedules
 tp schedule remove-all
 
-# Enable/disable a schedule
+# Enable/disable a schedule (after toggle, ENABLED/DISABLED is shown clearly in bold/color and the schedule card is displayed)
 tp schedule toggle
 ```
+
+**Unified schedule UI:** List, add, toggle, and remove all use the same schedule card layout. Each card shows the cron expression, a human-readable description of when it runs (e.g. “Every minute”), timezone, workflow path, profile if set, last run, and next run. After `tp schedule toggle`, the new state is emphasized (ENABLED in green or DISABLED in gray) so it’s obvious at a glance.
 
 ### Running the Scheduler
 
@@ -1533,6 +1550,7 @@ All scheduled workflow executions are logged to the same history directory as ma
 
 Check out the `examples/` directory for complete project examples:
 
+- **`tp setup`** – Run `tp setup` in your project root to generate `tp/workflows/` and `tp/schedules/` with two example workflows (choose, when, profiles, prompt) and two example schedule files (including profile usage). All steps use `echo` so you can run them safely and then replace with real commands.
 - **`monorepo-example/`** - Monorepo workflow with multiple projects
 - **`simple-project/`** - Simple single-project workflow
 - **`react-app/`** - React application build and deployment
