@@ -79,35 +79,27 @@ export class Executor {
    * Resolve baseDir path from workflow configuration
    *
    * baseDir determines where commands will be executed:
-   * - If baseDir is specified:
-   *   - Absolute path: use as-is
-   *   - Relative path: resolve relative to workflow file location
-   * - If baseDir is not specified:
-   *   - Use workflow file directory (if _filePath exists)
-   *   - Fallback to current working directory (if _filePath doesn't exist)
+   * - If absolute path: use as-is
+   * - If relative path: resolve relative to YAML file location
+   * - If no _filePath: resolve relative to current working directory
    */
   private resolveBaseDir(workflow: Workflow): void {
-    if (workflow.baseDir) {
-      // baseDir is specified
-      // Absolute path: use directly
-      if (isAbsolute(workflow.baseDir)) {
-        this.baseDir = workflow.baseDir;
-      }
-      // Relative path: resolve against workflow file directory
-      else if (workflow._filePath) {
-        const workflowDir = dirname(workflow._filePath);
-        this.baseDir = resolve(workflowDir, workflow.baseDir);
-      }
-      // Fallback: resolve against current working directory
-      else {
-        this.baseDir = resolve(process.cwd(), workflow.baseDir);
-      }
-    } else {
-      // baseDir is not specified - use workflow file directory as default
-      if (workflow._filePath) {
-        this.baseDir = dirname(workflow._filePath);
-      }
-      // If no _filePath, baseDir remains undefined (TaskRunner will use process.cwd())
+    if (!workflow.baseDir) {
+      return; // No baseDir specified, use default (process.cwd())
+    }
+
+    // Absolute path: use directly
+    if (isAbsolute(workflow.baseDir)) {
+      this.baseDir = workflow.baseDir;
+    }
+    // Relative path: resolve against YAML file directory
+    else if (workflow._filePath) {
+      const yamlDir = dirname(workflow._filePath);
+      this.baseDir = resolve(yamlDir, workflow.baseDir);
+    }
+    // Fallback: resolve against current working directory
+    else {
+      this.baseDir = resolve(process.cwd(), workflow.baseDir);
     }
   }
 

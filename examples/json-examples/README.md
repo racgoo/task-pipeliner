@@ -59,8 +59,6 @@ task-pipeliner run basic.json
 - **cicd.json** - CI/CD pipeline example
 - **react.json** - React-specific build and deployment workflow
 - **base-dir-example.json** - baseDir configuration example
-  - Setting working directory explicitly
-  - **Note**: If `baseDir` is omitted, commands run in the workflow file's directory (same as schedule files)
 
 ## YAML vs JSON
 

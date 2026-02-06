@@ -1,7 +1,6 @@
 name: Monorepo Build and Deploy Workflow
 
-# baseDir is optional - if omitted, commands run in the workflow file's directory
-# baseDir: ./
+baseDir: ./
 
 steps:
   # Step 1: Choose deployment environment

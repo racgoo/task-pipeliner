@@ -43,7 +43,7 @@ task-pipeliner run workflow.yaml
 
 ## Features Demonstrated
 
-- ✅ Default working directory (workflow file's directory - `baseDir` is optional)
+- ✅ `baseDir` configuration (commands run in monorepo-example/)
 - ✅ Parallel execution
 - ✅ Conditional steps (`when` clauses)
 - ✅ File existence checks

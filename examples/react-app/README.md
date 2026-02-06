@@ -42,7 +42,7 @@ task-pipeliner run workflow.yaml
 
 ## Features Demonstrated
 
-- ✅ Default working directory (workflow file's directory - `baseDir` is optional)
+- ✅ `baseDir` configuration
 - ✅ Conditional builds
 - ✅ User prompts with defaults
 - ✅ File existence checks

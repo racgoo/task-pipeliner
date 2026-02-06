@@ -130,41 +130,17 @@ steps:
     });
   });
 
-  it('should use workflow file directory as default when baseDir is not specified', async () => {
+  it('should work without baseDir (use current working directory)', async () => {
     const yamlContent = `name: Test
 steps:
   - run: echo "test"
 `;
 
     const workflow = parse(yamlContent) as Workflow;
-    const workflowPath = resolve(process.cwd(), 'test-workflow.yaml');
-    workflow._filePath = workflowPath;
 
     await executor.execute(workflow);
 
-    // baseDir should be workflow file directory
-    const expectedBaseDir = dirname(workflowPath);
-    const actualBaseDir = (executor as any).baseDir;
-    expect(actualBaseDir).toBe(expectedBaseDir);
-
-    // Command should be called with workflow file directory as cwd
-    expect(mockRun).toHaveBeenCalled();
-    const lastCall = mockRun.mock.calls[mockRun.mock.calls.length - 1];
-    expect(lastCall[8]).toBe(expectedBaseDir);
-  });
-
-  it('should fallback to current working directory when baseDir and _filePath are not specified', async () => {
-    const yamlContent = `name: Test
-steps:
-  - run: echo "test"
-`;
-
-    const workflow = parse(yamlContent) as Workflow;
-    // Don't set _filePath
-
-    await executor.execute(workflow);
-
-    // baseDir should be undefined (fallback to process.cwd())
+    // baseDir should be undefined
     const actualBaseDir = (executor as any).baseDir;
     expect(actualBaseDir).toBeUndefined();
 
