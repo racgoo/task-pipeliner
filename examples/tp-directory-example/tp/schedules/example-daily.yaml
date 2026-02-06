@@ -1,0 +1,10 @@
+# Example: schedules in tp/schedules/ reference workflows in tp/workflows/
+# Paths are relative to this file; ../workflows/ points to tp/workflows/
+schedules:
+  - name: Daily Build
+    cron: "0 9 * * *"
+    workflow: ../workflows/build.yaml
+
+  - name: Daily Test
+    cron: "0 10 * * *"
+    workflow: ../workflows/test.yaml

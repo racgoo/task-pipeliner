@@ -4,4 +4,3 @@ steps:
   - run: echo "Building project..."
   - run: npm run build
   - run: echo "✓ Build completed"
-

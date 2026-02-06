@@ -1,0 +1,10 @@
+schedules:
+  # With profile: choose/prompt are skipped and profile vars used (good for cron)
+  - name: Hourly Build (Dev)
+    cron: "0 * * * *"
+    workflow: ../workflows/example-build.yaml
+    profile: Dev
+  - name: Nightly Build (Prod)
+    cron: "0 2 * * *"
+    workflow: ../workflows/example-build.yaml
+    profile: Prod

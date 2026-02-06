@@ -7,4 +7,3 @@ steps:
       - run: npm test
       - run: npm run build
   - run: echo "✓ CI pipeline completed"
-

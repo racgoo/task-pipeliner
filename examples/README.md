@@ -4,6 +4,25 @@ This directory contains example workflows and projects demonstrating task-pipeli
 
 ## Quick Start Examples
 
+### 0. tp setup (Recommended for New Projects)
+
+Run **`tp setup`** from your project root to create the recommended directory structure and example files in one step:
+
+- **Directories:** `tp/`, `tp/workflows/`, `tp/schedules/`
+- **Two example workflows** in `tp/workflows/` (echo-based): one with **choose** and **when**, one with **profiles**, **choose**, **prompt**, and **when**
+- **Two example schedule files** in `tp/schedules/`: one with a single schedule, one with two schedules using **profile** (Dev/Prod)
+
+Existing files are not overwritten. See **`examples/tp-setup-example/`** for the exact structure and file contents that `tp setup` generates.
+
+```bash
+# From your project root
+tp setup
+tp run                    # Select from tp/workflows/
+tp schedule add           # Select from tp/schedules/
+```
+
+**Location (reference):** `examples/tp-setup-example/` – browse the same layout and files that `tp setup` creates.
+
 ### 1. Simple Project
 A minimal example with basic workflow features.
 
@@ -31,21 +50,32 @@ task-pipeliner run examples/monorepo-example/workflow.yaml
 
 **Location**: `examples/monorepo-example/`
 
-### 4. tp Directory Example
-Demonstrates using the `tp` directory feature for better workflow organization.
+### 4. tp Directory Example (Recommended Structure)
+
+Uses the **recommended `tp` layout**: workflows in **`tp/workflows/`** and schedule files in **`tp/schedules/`**. Same idea as what `tp setup` creates.
 
 ```bash
-# From the example directory
 cd examples/tp-directory-example
-tp run  # Interactive selection from tp/ directory
+tp run                    # Interactive selection from tp/workflows/
+tp schedule add           # Select a schedule file from tp/schedules/ (or pass path)
+tp schedule list          # Card layout: cron, "when" description, next run, etc.
+tp schedule toggle        # After toggle: ENABLED/DISABLED shown clearly; schedule card displayed
+tp schedule remove        # After remove: removed schedule shown in same card format
 ```
 
 **Location**: `examples/tp-directory-example/`
 
 This example shows how to:
-- Organize workflows in a `tp/` directory
-- Use `tp run` without specifying a file
-- Benefit from interactive, searchable workflow selection
+- Organize workflows in **`tp/workflows/`** and schedules in **`tp/schedules/`**
+- Use **`tp run`** without a file (select from `tp/workflows/`)
+- Use **`tp schedule add`** without a path (select from `tp/schedules/`)
+- Use the unified schedule UI (list, add, toggle, remove all show the same card layout; toggle emphasizes ENABLED/DISABLED)
+
+### 5. tp setup Example (Exact Layout from `tp setup`)
+
+Contains the **exact structure and file contents** that **`tp setup`** generates: `tp/workflows/` with `example-hello.yaml` and `example-build.yaml`, and `tp/schedules/` with `example-daily.yaml` and `example-hourly.yaml`. Use as reference or copy; or run `tp setup` in your project to create the same layout.
+
+**Location**: `examples/tp-setup-example/`
 
 ## YAML Examples
 
@@ -76,13 +106,20 @@ Schedule file examples for `tp schedule add` are in the `schedule-examples/` dir
 
 See [schedule-examples/README.md](schedule-examples/README.md) for schedule file format and usage.
 
+**Schedule UI (unified card layout):** After **add**, **toggle**, or **remove**, the affected schedule(s) are shown in the **same card format as `tp schedule list`** (cron, human “when” description, next run, enabled state). After **toggle**, **ENABLED** or **DISABLED** is emphasized (bold, colored). You can run **`tp schedule add`** without a path to select a file from the nearest **`tp/schedules/`** directory (e.g. after `tp setup`).
+
 **Quick Start:**
 ```bash
-# Add schedules from example file
+# Add schedules (with path or, from a project with tp/schedules/, no path to select interactively)
 tp schedule add examples/schedule-examples/daily-build.yaml
+tp schedule add    # From a directory with tp/schedules/ – select file from tp/schedules/
 
-# List schedules (same card layout as status and start)
+# List schedules (card layout: cron, "when" description, next run, etc.)
 tp schedule list
+
+# Toggle / remove (after action, schedule shown in same card format; toggle shows ENABLED/DISABLED clearly)
+tp schedule toggle
+tp schedule remove
 
 # Start scheduler in daemon mode (background)
 tp schedule start -d
@@ -118,19 +155,22 @@ tp run examples/<example-name>/workflow.yaml --silent
 # or use the short form
 tp run examples/<example-name>/workflow.yaml -s
 
-# Using tp directory (interactive selection)
+# Using tp directory (interactive selection from tp/workflows/)
 cd examples/tp-directory-example
-tp run  # Shows interactive menu with all workflows in tp/ directory
+tp run  # Shows interactive menu with all workflows in tp/workflows/
+
+# Add schedules from tp/schedules/ (no path = select from nearest tp/schedules/)
+cd examples/tp-directory-example
+tp schedule add   # Select a file from tp/schedules/
 ```
 
 ## Project Examples vs YAML Examples
 
-- **Project Examples** (monorepo-example, simple-project, react-app):
-  - Include actual project files
-  - Commands run in workflow file's directory by default (same as schedule files)
-  - `baseDir` is optional - use it to override the default directory
-  - Demonstrate real-world usage
-  - Can be executed immediately
+- **Project Examples** (monorepo-example, simple-project, react-app, tp-directory-example, tp-setup-example):
+  - **tp-directory-example** and **tp-setup-example** use the recommended **`tp/workflows/`** and **`tp/schedules/`** structure. Run **`tp run`** (no file) to select from `tp/workflows/`; run **`tp schedule add`** (no path) to select from `tp/schedules/`. **tp-setup-example** mirrors the exact layout and files that **`tp setup`** creates.
+  - Other project examples include actual project files; commands run in workflow file's directory by default (same as schedule files).
+  - `baseDir` is optional - use it to override the default directory.
+  - Demonstrate real-world usage and can be executed immediately.
 
 - **YAML Examples** (basic.yaml, simple.yaml, etc.):
   - Just workflow definitions

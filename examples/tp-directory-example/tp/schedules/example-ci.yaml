@@ -1,0 +1,9 @@
+# Example: CI and deploy schedules
+schedules:
+  - name: Nightly CI
+    cron: "0 2 * * *"
+    workflow: ../workflows/ci.yaml
+
+  - name: Friday Deploy
+    cron: "0 18 * * 5"
+    workflow: ../workflows/deploy.yaml

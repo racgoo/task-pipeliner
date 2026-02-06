@@ -1,0 +1,22 @@
+name: Hello World (with choose)
+
+# Interactive choice: stored as variable and used in later steps
+steps:
+  - run: echo "Hello from task-pipeliner"
+  - choose:
+      message: "Select action:"
+      options:
+        - id: greet
+          label: "Greet"
+        - id: info
+          label: "Show info"
+      as: action
+  - run: echo "You chose: {{ action }}"
+  - when:
+      var:
+        action: greet
+    run: echo "Hi there! Edit tp/workflows/*.yaml and run: tp run tp/workflows/example-hello.yaml"
+  - when:
+      var:
+        action: info
+    run: echo "Tip: Use --profile to skip prompts. See example-build.yaml for profiles."

@@ -1,83 +1,94 @@
-# tp Directory Example
+# tp Directory Example (Recommended Structure)
 
-This example demonstrates how to use the `tp` directory feature for better workflow organization.
+This example uses the **recommended `tp` directory structure**: workflows in **`tp/workflows/`** and schedule files in **`tp/schedules/`**. This is the same layout that **`tp setup`** creates when you run it from your project root (see [tp-setup-example](../tp-setup-example/README.md) for the exact files `tp setup` generates).
 
-## What is the `tp` Directory?
+## Recommended Structure: `tp/workflows/` and `tp/schedules/`
 
-The `tp` directory is a special directory where you can store all your workflow files. When you run `tp run` without specifying a file, task-pipeliner will automatically:
+- **`tp/workflows/`** – Put all workflow files (`.yaml`, `.yml`, `.json`) here. When you run **`tp run`** without a file path, task-pipeliner finds the nearest `tp` directory and lets you **select a workflow from `tp/workflows/`**.
+- **`tp/schedules/`** – Put all schedule files here. When you run **`tp schedule add`** without a file path, you can **select a schedule file from the nearest `tp/schedules/`** directory.
 
-1. Search for the nearest `tp` directory (starting from current directory and traversing up)
-2. List all workflow files (`.yaml`, `.yml`, `.json`) in that directory
-3. Show an interactive, searchable menu to select and run a workflow
+Schedule files reference workflows with relative paths (e.g. `../workflows/build.yaml` from inside `tp/schedules/`).
 
 ## Project Structure
 
 ```
 tp-directory-example/
 ├── tp/
-│   ├── build.yaml          # Build workflow
-│   ├── test.yaml           # Test workflow
-│   ├── deploy.yaml         # Deploy workflow
-│   └── ci.yaml             # CI workflow
+│   ├── workflows/
+│   │   ├── build.yaml      # Build workflow
+│   │   ├── test.yaml       # Test workflow
+│   │   ├── deploy.yaml     # Deploy workflow (choose + when)
+│   │   └── ci.yaml         # CI workflow (parallel)
+│   └── schedules/
+│       ├── example-daily.yaml   # Daily Build, Daily Test (cron)
+│       └── example-ci.yaml     # Nightly CI, Friday Deploy
 └── README.md
 ```
 
 ## Usage
 
-### Method 1: Run from project root
+### Run workflows (interactive selection from `tp/workflows/`)
 
 ```bash
-# From project root
+# From example directory
 cd examples/tp-directory-example
 tp run
 ```
 
-This will show an interactive menu with all workflows in the `tp/` directory:
+This shows an interactive menu with all workflows in **`tp/workflows/`**:
 - `build.yaml - Build Project`
 - `test.yaml - Run Tests`
 - `deploy.yaml - Deploy Application`
 - `ci.yaml - CI Pipeline`
 
-You can:
-- Type to filter workflows in real-time
-- Use arrow keys (↑↓) to navigate
-- Press Enter to select and run
+You can type to filter, use arrow keys (↑↓) to move, and Enter to select and run.
 
-### Method 2: Run from subdirectory
+### Run with explicit path
 
 ```bash
-# From any subdirectory
-cd examples/tp-directory-example/src
+tp run tp/workflows/build.yaml
+tp run tp/workflows/ci.yaml
+```
+
+### Add schedules (from `tp/schedules/` or by path)
+
+```bash
+# With path
+tp schedule add tp/schedules/example-daily.yaml
+
+# Without path: select from nearest tp/schedules/ directory
+tp schedule add
+```
+
+After adding, **each added schedule is shown in the same card format as `tp schedule list`** (cron, human-readable “when” description, next run, enabled state).
+
+### Schedule UI: list, toggle, remove
+
+- **`tp schedule list`** – Each schedule is shown as a card (cron, “when” description, next run, etc.).
+- **`tp schedule toggle`** – After toggling, **ENABLED** or **DISABLED** is shown clearly (bold, colored) and the schedule card is displayed.
+- **`tp schedule remove`** – After removal, the **removed schedule is shown in the same card format** as list.
+
+The same card layout is used by `tp schedule status` and `tp schedule start`, so the UI is consistent everywhere.
+
+### Run from a subdirectory
+
+```bash
+cd examples/tp-directory-example/some-subdir
 tp run
 ```
 
-Even from a subdirectory, task-pipeliner will find the `tp` directory in the parent and show the same menu.
+Task-pipeliner finds the `tp` directory in a parent and lists workflows from `tp/workflows/`.
 
-### Method 3: Still works with explicit file path
+## Quick setup in your own project
+
+To get this structure without copying files by hand, run from your project root:
 
 ```bash
-# Explicit file path still works
-tp run tp/build.yaml
+tp setup
 ```
 
-## Benefits
+This creates `tp/`, `tp/workflows/`, and `tp/schedules/` and adds two example workflows and two example schedule files (echo-based, with choose, when, profiles, prompt). It does not overwrite existing files. See [tp-setup-example](../tp-setup-example/README.md) for the exact contents.
 
-- **Better organization**: All workflows in one place
-- **Quick access**: No need to remember exact file paths
-- **Interactive selection**: See workflow names and descriptions
-- **Search functionality**: Filter workflows by typing
-- **Works from anywhere**: Automatically finds the nearest `tp` directory
+## Workflow files
 
-## Workflow Files
-
-Each workflow file in the `tp/` directory should have a `name` field for better identification:
-
-```yaml
-name: Build Project  # This name appears in the selection menu
-
-steps:
-  - run: npm run build
-```
-
-The selection menu displays: `build.yaml - Build Project`
-
+Each workflow in `tp/workflows/` should have a **`name`** field so the selection menu shows both filename and name (e.g. `build.yaml - Build Project`).

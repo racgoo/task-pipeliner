@@ -76,10 +76,15 @@ schedules:
 ## Adding Schedules
 
 ```bash
+# With file path
 tp schedule add examples/schedule-examples/daily-build.yaml
+
+# Without path: select from nearest tp/schedules/ directory (e.g. after tp setup)
+cd /path/to/project/with/tp/schedules
+tp schedule add
 ```
 
-You'll be prompted to confirm or override the alias for each schedule.
+You'll be prompted to confirm or override the alias for each schedule. **After adding**, each added schedule is shown in the **same card format as `tp schedule list`**: cron expression, human-readable “when” description (e.g. “At 09:00”), next run, enabled state, workflow path, profile if set.
 
 ## Examples
 
@@ -119,13 +124,13 @@ With seconds (6 fields):
 After adding schedules:
 
 ```bash
-tp schedule list        # View all schedules (unified card layout: name, Enabled, Cron, Timezone, Workflow, Profile, Last/Next run)
-tp schedule remove      # Remove a specific schedule
+tp schedule list        # View all schedules (unified card layout: name, Enabled, Cron + human "when" description, Timezone, Workflow, Profile, Last/Next run)
+tp schedule remove      # Remove a specific schedule; after removal, the removed schedule is shown in the same card format
 tp schedule remove-all  # Remove all schedules
-tp schedule toggle      # Enable/disable a schedule
+tp schedule toggle      # Enable/disable a schedule; after toggle, ENABLED/DISABLED is shown clearly (bold, colored) and the schedule card is displayed
 ```
 
-The same card layout is used by `tp schedule status` and `tp schedule start`, so the UI is consistent everywhere.
+**Unified schedule UI:** List, add, toggle, and remove all use the **same schedule card layout**. Each card shows the cron expression, a human-readable description of when it runs (e.g. “Every minute”, “At 09:00”), timezone, workflow path, profile if set, last run, and next run. After **`tp schedule toggle`**, the new state is emphasized (**ENABLED** in green or **DISABLED** in gray) so it’s obvious at a glance. The same layout is used by `tp schedule status` and `tp schedule start`, so the UI is consistent everywhere.
 
 ## Running the Scheduler
 

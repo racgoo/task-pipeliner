@@ -1,0 +1,5 @@
+schedules:
+  # Runs at 09:00 daily; interactive choose is skipped in scheduled runs (no TTY)
+  - name: Daily Hello
+    cron: "0 9 * * *"
+    workflow: ../workflows/example-hello.yaml

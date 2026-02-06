@@ -1,0 +1,39 @@
+name: Example Build (with profiles and choose)
+
+# Profiles: run without prompts via "tp run tp/workflows/example-build.yaml --profile Dev"
+# With profile, choose/prompt are skipped and these variables are used.
+profiles:
+  - name: Dev
+    var:
+      mode: dev
+      label: "dev-build"
+  - name: Prod
+    var:
+      mode: prod
+      label: "prod-build"
+
+steps:
+  - run: echo "Build workflow started..."
+  - choose:
+      message: "Select mode (or run with --profile Dev/Prod to skip):"
+      options:
+        - id: dev
+          label: "Development"
+        - id: prod
+          label: "Production"
+      as: mode
+  - run: echo "Mode: {{ mode }}"
+  - prompt:
+      message: "Enter build label"
+      as: label
+      default: "default"
+  - run: echo "Label: {{ label }}"
+  - when:
+      var:
+        mode: dev
+    run: echo "Dev-only step (e.g. npm run build:dev)"
+  - when:
+      var:
+        mode: prod
+    run: echo "Prod-only step (e.g. npm run build)"
+  - run: echo "Done. Replace run steps with real commands."
