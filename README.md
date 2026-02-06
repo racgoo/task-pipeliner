@@ -122,6 +122,13 @@ task-pipeliner run workflow.yaml
 tp run workflow.yaml
 ```
 
+Verify installation:
+```bash
+task-pipeliner --version
+# or
+tp --version
+```
+
 **Updating:**
 ```bash
 # Update Homebrew's package registry first
@@ -152,6 +159,13 @@ task-pipeliner run workflow.yaml
 tp run workflow.yaml
 ```
 
+Verify installation:
+```bash
+task-pipeliner --version
+# or
+tp --version
+```
+
 **Updating:**
 ```bash
 scoop update task-pipeliner
@@ -174,6 +188,13 @@ After global installation, you can run:
 task-pipeliner run workflow.yaml
 # or use the short alias
 tp run workflow.yaml
+```
+
+Verify installation:
+```bash
+task-pipeliner --version
+# or
+tp --version
 ```
 
 #### Project Installation (Development)

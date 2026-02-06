@@ -122,6 +122,13 @@ task-pipeliner run workflow.yaml
 tp run workflow.yaml
 ```
 
+설치 확인:
+```bash
+task-pipeliner --version
+# 또는
+tp --version
+```
+
 **업데이트:**
 ```bash
 # 먼저 Homebrew의 패키지 레지스트리를 업데이트합니다
@@ -152,6 +159,13 @@ task-pipeliner run workflow.yaml
 tp run workflow.yaml
 ```
 
+설치 확인:
+```bash
+task-pipeliner --version
+# 또는
+tp --version
+```
+
 **업데이트:**
 ```bash
 scoop update task-pipeliner
@@ -174,6 +188,13 @@ pnpm add -g task-pipeliner
 task-pipeliner run workflow.yaml
 # 또는 짧은 별칭 사용
 tp run workflow.yaml
+```
+
+설치 확인:
+```bash
+task-pipeliner --version
+# 또는
+tp --version
 ```
 
 #### 프로젝트 설치 (개발 모드)

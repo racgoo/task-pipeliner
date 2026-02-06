@@ -38,7 +38,7 @@ schedules:
   - name: Daily UTC
     cron: "0 9 * * *"
     workflow: ./daily.yaml
-    timezone: UTC
+    timezone: 0                   # UTC offset in hours. 0 = UTC, +9 = UTC+9, -5 = UTC-5
 ```
 
 ### JSON Example
