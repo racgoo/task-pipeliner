@@ -1,14 +1,7 @@
 import { resolve, isAbsolute, dirname } from 'path';
 import chalk from 'chalk';
-import logUpdate from 'log-update';
 import { ChoicePrompt, TextPrompt } from '../cli/prompts';
-import {
-  createParallelHeaderBox,
-  createParallelFooterMessage,
-  createErrorBox,
-  createStepFooterMessage,
-  formatDuration,
-} from '../cli/ui';
+import { createStepFooterMessage, formatDuration } from '../cli/ui';
 import type { Condition } from '../types/condition';
 import type {
   Step,
@@ -17,9 +10,13 @@ import type {
   PromptStep,
   StepResult,
   RunStep,
-  RunStepOnError,
 } from '../types/workflow';
 import { ConditionEvaluator } from './condition-evaluator';
+import {
+  executeParallelStep as executeParallelStepHandler,
+  PARALLEL_STEP_INDEX_MULTIPLIER,
+} from './executor/parallel-step-handler';
+import { executeRunStep } from './executor/run-step-handler';
 import { WorkflowRecorder } from './recorder';
 import { TaskRunner, type TaskRunResult } from './task-runner';
 import { substituteVariables } from './template';
@@ -54,13 +51,7 @@ export interface ExecutionContext {
   fileName?: string; // YAML file name (for error reporting)
 }
 
-type RunChainNode = Pick<RunStepOnError, 'run' | 'timeout' | 'retry' | 'onError'>;
-
 export class Executor {
-  // Multiply step index by this to encode branch index in parallel execution
-  // Example: step 5, branch 2 = 5000 + 2 = 5002
-  private static readonly PARALLEL_STEP_INDEX_MULTIPLIER = 1000;
-
   private workspace: Workspace;
   private taskRunner: TaskRunner;
   private choicePrompt: ChoicePrompt;
@@ -150,7 +141,7 @@ export class Executor {
     if (context.branchIndex === undefined) {
       return context.stepIndex;
     }
-    return Math.floor(context.stepIndex / Executor.PARALLEL_STEP_INDEX_MULTIPLIER);
+    return Math.floor(context.stepIndex / PARALLEL_STEP_INDEX_MULTIPLIER);
   }
 
   /**
@@ -158,6 +149,33 @@ export class Executor {
    */
   private isRunStep(step: Step): step is RunStep {
     return 'run' in step;
+  }
+
+  /**
+   * Get resolved values for a step (for history record display)
+   */
+  private getRecordResolved(step: Step):
+    | {
+        resolvedCommand?: string;
+        choiceValue?: string;
+        promptValue?: string | boolean;
+      }
+    | undefined {
+    if ('run' in step) {
+      return { resolvedCommand: substituteVariables(step.run.trim(), this.workspace) };
+    }
+    if ('choose' in step) {
+      const choiceValue =
+        step.choose.as && this.workspace.hasVariable(step.choose.as)
+          ? this.workspace.getVariable(step.choose.as)
+          : step.choose.options.find((o) => this.workspace.getChoice(o.id))?.id;
+      return choiceValue !== undefined ? { choiceValue } : undefined;
+    }
+    if ('prompt' in step) {
+      const promptValue = this.workspace.getFact(step.prompt.as);
+      return promptValue !== undefined ? { promptValue } : undefined;
+    }
+    return undefined;
   }
 
   /**
@@ -263,8 +281,9 @@ export class Executor {
 
     const status: 'success' | 'failure' = isSuccessful ? 'success' : 'failure';
 
-    // Record the step and get duration
-    const duration = recorder.recordEnd(step, context, stepResult, status);
+    // Resolved values for history display
+    const resolved = this.getRecordResolved(step);
+    const duration = recorder.recordEnd(step, context, stepResult, status, resolved);
 
     // Display duration for non-run steps (run steps display duration in task-runner)
     if (!this.isRunStep(step)) {
@@ -315,8 +334,8 @@ export class Executor {
       stdout: [],
       stderr: [errorMessage],
     };
-    // Record the error result(all error contains in stderr)
-    recorder.recordEnd(step, context, errorResult, 'failure');
+    const resolved = this.getRecordResolved(step);
+    recorder.recordEnd(step, context, errorResult, 'failure', resolved);
   }
 
   /**
@@ -384,8 +403,19 @@ export class Executor {
 
     // Execute shell command
     if ('run' in step) {
-      const result = await this.executeRunStep(step, context, bufferOutput, hasWhenCondition);
-      // Return TaskRunResult if buffering, boolean otherwise
+      const result = await executeRunStep(
+        {
+          workspace: this.workspace,
+          taskRunner: this.taskRunner,
+          baseDir: this.baseDir,
+          globalShell: this.globalShell,
+          calculateBaseStepIndex: (ctx) => this.calculateBaseStepIndex(ctx),
+        },
+        step,
+        context,
+        bufferOutput,
+        hasWhenCondition
+      );
       return bufferOutput && typeof result === 'object' && 'stdout' in result ? result : result;
     }
 
@@ -403,7 +433,16 @@ export class Executor {
 
     // Execute multiple steps in parallel
     if ('parallel' in step) {
-      await this.executeParallelStep(step, context);
+      await executeParallelStepHandler(
+        {
+          workspace: this.workspace,
+          taskRunner: this.taskRunner,
+          executeStep: (s, ctx, bufferOutput) => this.executeStep(s, ctx, bufferOutput, !!s.when),
+          setStepResult: (stepIndex, success) => this.workspace.setStepResult(stepIndex, success),
+        },
+        step,
+        context
+      );
       return;
     }
 
@@ -412,178 +451,6 @@ export class Executor {
       await this.executeFailStep(step, context);
       return;
     }
-  }
-
-  /**
-   * Execute a single run command (without onError handling)
-   *
-   * Steps:
-   * 1. Calculate base step index (for parallel execution)
-   * 2. Substitute variables in command ({{variable}} syntax)
-   * 3. Resolve shell configuration (step.shell || workflow.shell)
-   * 4. Run command via TaskRunner (with retry logic if specified)
-   */
-  private async executeSingleRun(
-    step: Pick<RunStep, 'run' | 'timeout' | 'retry' | 'shell'>,
-    context: ExecutionContext,
-    bufferOutput: boolean = false,
-    hasWhenCondition: boolean = false
-  ): Promise<boolean | TaskRunResult> {
-    // For parallel steps, extract the base step index
-    const baseStepIndex = this.calculateBaseStepIndex(context);
-
-    // Replace {{variable}} with actual values from workspace.
-    // Trim so block-scalar trailing newline (e.g. run: |- ) does not reach the shell.
-    const command = substituteVariables(step.run.trim(), this.workspace);
-
-    // Resolve shell configuration: step.shell > workflow.shell > platform default
-    const shellConfig = step.shell ?? this.globalShell;
-
-    // Get retry count (default: 0, meaning no retry)
-    const retryValue = step.retry ?? 0;
-    const isInfiniteRetry = retryValue === 'Infinity' || retryValue === Infinity;
-    const retryCount = typeof retryValue === 'number' ? retryValue : 0;
-    const timeoutSeconds = step.timeout;
-
-    // Execute with retry logic
-    let lastResult: boolean | TaskRunResult = false;
-    let attempt = 0;
-
-    while (isInfiniteRetry || attempt <= retryCount) {
-      // Execute the command
-      const result = await this.taskRunner.run(
-        command,
-        baseStepIndex,
-        command,
-        context.branchIndex,
-        bufferOutput,
-        hasWhenCondition,
-        context.lineNumber,
-        context.fileName,
-        this.baseDir,
-        timeoutSeconds,
-        shellConfig
-      );
-
-      // Extract success status
-      const success = typeof result === 'boolean' ? result : result.success;
-      lastResult = result;
-
-      // If successful, break (even for infinite retry)
-      if (success) {
-        break;
-      }
-
-      // If not infinite retry and no more retries, break
-      if (!isInfiniteRetry && attempt >= retryCount) {
-        break;
-      }
-
-      // If failed and retries remaining, wait a bit before retrying
-      attempt++;
-      if (isInfiniteRetry || attempt <= retryCount) {
-        // Small delay before retry (exponential backoff: 1s, 2s, 4s...)
-        const delayMs = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // Max 10 seconds
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-      }
-    }
-
-    return lastResult;
-  }
-
-  /**
-   * Execute a run step with recursive onError chain
-   *
-   * The onError chain is modeled as a linked list of run-like steps:
-   * main -> onError -> onError -> ...
-   * The final success is determined by the last executed command in the chain.
-   */
-  private async executeRunStep(
-    step: Pick<RunStep, 'run' | 'timeout' | 'retry' | 'onError' | 'shell'>,
-    context: ExecutionContext,
-    bufferOutput: boolean = false,
-    hasWhenCondition: boolean = false
-  ): Promise<boolean | TaskRunResult> {
-    // Execute main run first
-    const mainResult = await this.executeSingleRun(
-      {
-        run: step.run,
-        timeout: step.timeout,
-        retry: step.retry,
-        shell: step.shell,
-      },
-      context,
-      bufferOutput,
-      hasWhenCondition
-    );
-
-    const mainSuccess = typeof mainResult === 'boolean' ? mainResult : mainResult.success;
-
-    // Store ONLY main run success status in workspace for this step index.
-    // onError fallback execution does not change step success/failure.
-    this.workspace.setStepResult(context.stepIndex, mainSuccess);
-
-    // If main run succeeded, do not execute onError chain
-    if (mainSuccess || !step.onError) {
-      return mainResult;
-    }
-
-    // If main run failed and onError exists, execute onError chain for side effects only.
-    // The step remains failed regardless of onError results; workspace stepResult is not updated.
-    const rootNode: RunChainNode = {
-      run: step.onError.run,
-      timeout: step.onError.timeout,
-      retry: step.onError.retry,
-      onError: step.onError.onError ?? undefined,
-    };
-
-    const onErrorResult = await this.executeRunChain(
-      rootNode,
-      context,
-      bufferOutput,
-      hasWhenCondition
-    );
-
-    // Return the last onError result (for logging/buffering),
-    // but step success is still determined solely by mainSuccess above.
-    return onErrorResult;
-  }
-
-  /**
-   * Execute a run-like node and its nested onError chain
-   */
-  private async executeRunChain(
-    node: RunChainNode,
-    context: ExecutionContext,
-    bufferOutput: boolean,
-    hasWhenCondition: boolean
-  ): Promise<boolean | TaskRunResult> {
-    const result = await this.executeSingleRun(
-      {
-        run: node.run,
-        timeout: node.timeout,
-        retry: node.retry,
-        shell: undefined, // onError chain doesn't inherit shell from main step
-      },
-      context,
-      bufferOutput,
-      hasWhenCondition
-    );
-
-    const success = typeof result === 'boolean' ? result : result.success;
-
-    // On success, stop the chain
-    if (success || !node.onError) {
-      return result;
-    }
-
-    // On failure and onError exists, execute the next node in the chain
-    return this.executeRunChain(
-      node.onError as RunChainNode,
-      context,
-      bufferOutput,
-      hasWhenCondition
-    );
   }
 
   /**
@@ -672,347 +539,6 @@ export class Executor {
     this.workspace.setVariable(varName, value);
     this.workspace.setFact(varName, value);
     this.workspace.setStepResult(context.stepIndex, true);
-  }
-
-  /**
-   * Create execution contexts for parallel branches
-   * Encodes branch index into stepIndex: baseStepIndex * MULTIPLIER + branchIndex
-   * Each branch inherits line number and file name from the parallel step
-   */
-  private createParallelContexts(
-    step: { parallel: Step[] },
-    baseContext: ExecutionContext
-  ): ExecutionContext[] {
-    return step.parallel.map((_, branchIndex) => ({
-      workspace: this.workspace.clone(),
-      stepIndex: baseContext.stepIndex * Executor.PARALLEL_STEP_INDEX_MULTIPLIER + branchIndex,
-      branchIndex: branchIndex,
-      lineNumber: baseContext.lineNumber, // Inherit line number from parallel step
-      fileName: baseContext.fileName, // Inherit file name from parallel step
-    }));
-  }
-
-  /**
-   * Get display name for a parallel branch step
-   */
-  private getBranchDisplayName(step: Step, index: number): string {
-    if ('run' in step) {
-      return step.run;
-    }
-    if ('choose' in step) {
-      return `Choose: ${step.choose.message}`;
-    }
-    if ('prompt' in step) {
-      return `Prompt: ${step.prompt.message}`;
-    }
-    if ('fail' in step) {
-      return `Fail: ${step.fail.message}`;
-    }
-    return `Branch ${index + 1}`;
-  }
-
-  /**
-   * Execute all parallel branches simultaneously
-   *
-   * Each branch:
-   * 1. Has its own workspace clone (isolated state)
-   * 2. Evaluates its own conditions
-   * 3. Executes in buffer mode (collects output, don't display yet)
-   * 4. Returns result or error
-   *
-   * All branches run at the same time using Promise.all()
-   * Uses log-update to show all branch statuses in real-time
-   */
-  private async executeParallelBranches(
-    steps: Step[],
-    contexts: ExecutionContext[]
-  ): Promise<
-    Array<{
-      index: number;
-      result?: TaskRunResult;
-      error?: unknown;
-      context: ExecutionContext;
-    } | null>
-  > {
-    // Track branch statuses
-    interface BranchStatus {
-      index: number;
-      name: string;
-      status: 'pending' | 'running' | 'success' | 'failed';
-      error?: string;
-    }
-
-    const branchStatuses: BranchStatus[] = [];
-    const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
-    let spinnerFrameIndex = 0;
-
-    // Initialize branch statuses
-    for (let i = 0; i < steps.length; i++) {
-      const parallelStep = steps[i];
-      const branchContext = contexts[i];
-
-      // Evaluate condition for this branch
-      if (parallelStep.when) {
-        const evaluator = new ConditionEvaluator(branchContext.workspace);
-        const conditionResult = evaluator.evaluate(parallelStep.when);
-        if (!conditionResult) {
-          continue; // Skip this branch
-        }
-      }
-
-      const branchName = this.getBranchDisplayName(parallelStep, i);
-      branchStatuses.push({
-        index: i,
-        name: branchName,
-        status: 'pending',
-      });
-    }
-
-    // Start spinner animation
-    const spinnerInterval = setInterval(() => {
-      spinnerFrameIndex = (spinnerFrameIndex + 1) % spinnerFrames.length;
-      this.updateParallelBranchesDisplay(branchStatuses, spinnerFrames[spinnerFrameIndex]);
-    }, 100);
-
-    // Create promises for all branches
-    const promises = branchStatuses.map(async (branchStatus) => {
-      const { index } = branchStatus;
-      const parallelStep = steps[index];
-      const branchContext = contexts[index];
-
-      // Mark as running
-      branchStatus.status = 'running';
-
-      try {
-        // Execute step in buffer mode (collect output, don't display yet)
-        const result = await this.executeStep(parallelStep, branchContext, true);
-
-        // Mark as success
-        branchStatus.status = 'success';
-        this.updateParallelBranchesDisplay(branchStatuses, spinnerFrames[spinnerFrameIndex]);
-
-        return { index, result: result as TaskRunResult, context: branchContext };
-      } catch (error) {
-        // Mark branch as failed
-        branchContext.workspace.setStepResult(branchContext.stepIndex, false);
-
-        // Mark as failed
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        branchStatus.status = 'failed';
-        branchStatus.error = errorMessage;
-        this.updateParallelBranchesDisplay(branchStatuses, spinnerFrames[spinnerFrameIndex]);
-
-        return { index, error, context: branchContext };
-      }
-    });
-
-    // Wait for all branches to complete
-    const results = await Promise.all(promises);
-
-    // Stop spinner and show final status
-    clearInterval(spinnerInterval);
-    this.updateParallelBranchesDisplay(branchStatuses, '', true);
-    logUpdate.done();
-
-    return results;
-  }
-
-  /**
-   * Update parallel branches display using log-update
-   */
-  private updateParallelBranchesDisplay(
-    branchStatuses: Array<{
-      index: number;
-      name: string;
-      status: 'pending' | 'running' | 'success' | 'failed';
-      error?: string;
-    }>,
-    spinner: string,
-    final: boolean = false
-  ): void {
-    const lines = branchStatuses.map((branch) => {
-      const branchNum = branch.index + 1;
-      let icon = '';
-      let text = '';
-
-      switch (branch.status) {
-        case 'pending':
-          icon = '○';
-          text = `Branch ${branchNum}: ${branch.name} - Pending`;
-          break;
-        case 'running':
-          icon = spinner;
-          text = `Branch ${branchNum}: ${branch.name} - Running...`;
-          break;
-        case 'success':
-          icon = '✓';
-          text = `Branch ${branchNum}: ${branch.name} - Completed`;
-          break;
-        case 'failed':
-          icon = '✗';
-          text = `Branch ${branchNum}: ${branch.name} - Failed${branch.error ? `: ${branch.error}` : ''}`;
-          break;
-      }
-
-      return `${icon} ${text}`;
-    });
-
-    if (final) {
-      // Final display - show all statuses
-      logUpdate(lines.join('\n'));
-    } else {
-      // Live update
-      logUpdate(lines.join('\n'));
-    }
-  }
-
-  /**
-   * Display parallel execution results
-   * Status display is already done, now we show the detailed output
-   */
-  private displayParallelResults(
-    results: Array<{
-      index: number;
-      result?: TaskRunResult;
-      error?: unknown;
-      context: ExecutionContext;
-    } | null>,
-    steps: Step[],
-    _context: ExecutionContext
-  ): boolean {
-    let allBranchesSucceeded = true;
-    let hasAnyResult = false;
-
-    // Add a blank line after spinners
-    console.log('');
-
-    for (const result of results) {
-      if (!result) continue;
-
-      hasAnyResult = true;
-      const { index, result: stepResult, error, context: branchContext } = result;
-
-      if (error) {
-        allBranchesSucceeded = false;
-        // Error was already shown by spinner, but show detailed error box
-        const errorMessage = `Branch ${index + 1} failed: ${error instanceof Error ? error.message : String(error)}`;
-        const errorBox = createErrorBox(errorMessage);
-        console.error(errorBox);
-      } else if (stepResult && typeof stepResult === 'object' && 'stdout' in stepResult) {
-        const taskResult = stepResult;
-        allBranchesSucceeded = allBranchesSucceeded && taskResult.success;
-
-        // Only show output if there's actual output or if it failed
-        if (taskResult.stdout.length > 0 || taskResult.stderr.length > 0 || !taskResult.success) {
-          const parallelStep = steps[index];
-          const stepName = this.getBranchDisplayName(parallelStep, index);
-          // Use branch context's line number and file name for display
-          this.taskRunner.displayBufferedOutput(
-            taskResult,
-            stepName,
-            false,
-            branchContext.lineNumber,
-            branchContext.fileName
-          );
-        }
-      }
-    }
-
-    // If no branches executed (all were skipped due to conditions), show a message
-    if (!hasAnyResult) {
-      console.log('⚠️  All parallel branches were skipped (conditions not met)');
-    }
-
-    const parallelFooterMessage = createParallelFooterMessage(allBranchesSucceeded);
-    console.log(parallelFooterMessage);
-
-    return allBranchesSucceeded;
-  }
-
-  /**
-   * Merge facts and variables from parallel branches
-   */
-  private mergeParallelResults(contexts: ExecutionContext[]): void {
-    for (const branchContext of contexts) {
-      const facts = branchContext.workspace.getAllFacts();
-      const variables = branchContext.workspace.getAllVariables();
-
-      for (const [key, value] of facts) {
-        this.workspace.setFact(key, value);
-      }
-      for (const [key, value] of variables) {
-        this.workspace.setVariable(key, value);
-      }
-    }
-  }
-
-  /**
-   * Count how many branches will actually execute (after when condition evaluation)
-   */
-  private countExecutableBranches(steps: Step[], contexts: ExecutionContext[]): number {
-    let count = 0;
-    for (let i = 0; i < steps.length; i++) {
-      const parallelStep = steps[i];
-      const branchContext = contexts[i];
-
-      // Evaluate condition for this branch
-      if (parallelStep.when) {
-        const evaluator = new ConditionEvaluator(branchContext.workspace);
-        const conditionResult = evaluator.evaluate(parallelStep.when);
-        if (!conditionResult) {
-          continue; // Skip this branch
-        }
-      }
-      count++;
-    }
-    return count;
-  }
-
-  /**
-   * Execute a parallel step (run multiple steps simultaneously)
-   *
-   * Process:
-   * 1. Create isolated contexts for each branch (with cloned workspaces)
-   * 2. Count how many branches will actually execute
-   * 3. Show header box with actual executable branch count
-   * 4. Execute all branches in parallel
-   * 5. Display results
-   * 6. Merge facts and variables from all branches back to main workspace
-   * 7. Throw error if any branch failed
-   */
-  private async executeParallelStep(
-    step: { parallel: Step[] },
-    context: ExecutionContext
-  ): Promise<void> {
-    // Create isolated contexts for each branch (each has its own workspace clone)
-    const parallelContexts = this.createParallelContexts(step, context);
-
-    // Count how many branches will actually execute (after when condition evaluation)
-    const executableBranchCount = this.countExecutableBranches(step.parallel, parallelContexts);
-
-    // Show parallel execution header with actual executable branch count
-    const parallelHeaderBox = createParallelHeaderBox(executableBranchCount);
-    console.log(parallelHeaderBox);
-
-    // Execute all branches at the same time
-    const results = await this.executeParallelBranches(step.parallel, parallelContexts);
-
-    // Display results and check if all succeeded
-    const allBranchesSucceeded = this.displayParallelResults(results, step.parallel, context);
-
-    // Store overall result
-    this.workspace.setStepResult(context.stepIndex, allBranchesSucceeded);
-
-    // If any branch failed, throw error
-    if (!allBranchesSucceeded) {
-      const lineInfo = context.lineNumber ? ` (line ${context.lineNumber})` : '';
-      throw new Error(
-        `Parallel step ${context.stepIndex}${lineInfo} failed: one or more branches failed`
-      );
-    }
-
-    // Merge all facts and variables from branches back to main workspace
-    this.mergeParallelResults(parallelContexts);
   }
 
   private async executeFailStep(

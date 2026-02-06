@@ -16,6 +16,12 @@ export interface Record {
   output: StepResult;
   duration: number;
   status: StepStatus;
+  /** Command after variable substitution (run steps) */
+  resolvedCommand?: string;
+  /** Selected option id (choose steps) */
+  choiceValue?: string;
+  /** Entered value (prompt steps) */
+  promptValue?: string | boolean;
 }
 
 /**

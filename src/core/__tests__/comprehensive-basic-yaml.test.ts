@@ -1,9 +1,10 @@
 import { readFileSync } from 'fs';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { parse } from 'yaml';
-import type { Workflow } from '../../types/workflow';
+import type { RunStep, Workflow } from '../../types/workflow';
 import { ConditionEvaluator } from '../condition-evaluator';
 import { Executor } from '../executor';
+import { executeRunStep } from '../executor/run-step-handler';
 import { Workspace } from '../workspace';
 
 // Perfectly reproduce actual execution
@@ -85,8 +86,21 @@ describe('COMPREHENSIVE: Basic YAML - Must Work', () => {
     // Mock choicePrompt
     choicePrompt.prompt = vi.fn().mockResolvedValue({ id: 's', label: 'S' });
 
-    // Step 0
-    await (executor as any).executeRunStep(workflow.steps[0], { workspace, stepIndex: 0 });
+    // Step 0 (use run-step-handler with executor deps)
+    const exec = executor as any;
+    await executeRunStep(
+      {
+        workspace: exec.workspace,
+        taskRunner: exec.taskRunner,
+        baseDir: exec.baseDir,
+        globalShell: exec.globalShell,
+        calculateBaseStepIndex: (ctx) => exec.calculateBaseStepIndex(ctx),
+      },
+      workflow.steps[0] as RunStep,
+      { workspace, stepIndex: 0 },
+      false,
+      false
+    );
     // f1 fact is not set if there's no sets/declares
 
     // Step 1 - executeChooseStep uses this.workspace
@@ -115,10 +129,20 @@ describe('COMPREHENSIVE: Basic YAML - Must Work', () => {
 
     // Step 2 - Execute
     if (result) {
-      await (executor as any).executeRunStep(step2, {
-        workspace: (executor as any).workspace,
-        stepIndex: 2,
-      });
+      const exec = executor as any;
+      await executeRunStep(
+        {
+          workspace: exec.workspace,
+          taskRunner: exec.taskRunner,
+          baseDir: exec.baseDir,
+          globalShell: exec.globalShell,
+          calculateBaseStepIndex: (ctx) => exec.calculateBaseStepIndex(ctx),
+        },
+        step2 as RunStep,
+        { workspace: exec.workspace, stepIndex: 2 },
+        false,
+        false
+      );
     }
 
     expect(executedCommands).toContain('step3');

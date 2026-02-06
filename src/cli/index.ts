@@ -19,24 +19,23 @@
 
 import { exec } from 'child_process';
 import { existsSync, readFileSync } from 'fs';
-import { mkdir, readdir, rm, writeFile } from 'fs/promises';
+import { mkdir, rm, writeFile } from 'fs/promises';
 import { homedir } from 'os';
-import { resolve, join, extname } from 'path';
+import { resolve, join } from 'path';
 import { promisify } from 'util';
-import boxen from 'boxen';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import dayjs from 'dayjs';
 import { getDaemonStatus, isDaemonRunning } from '../core/daemon-manager';
 import { Executor } from '../core/executor';
 import { WorkflowHistoryManager } from '../core/history';
 import { getParser } from '../core/parser';
 import { WorkflowScheduler } from '../core/scheduler';
-import type { History, Record as WorkflowRecord, Step } from '../types/workflow';
+import { displayHistory } from './history-display';
 import { ChoicePrompt } from './prompts';
 import { createScheduleCommand } from './schedule';
-import { formatDuration } from './ui';
-import { findNearestTpDirectory, getVersion, setSilentMode } from './utils';
+import { SETUP_WORKFLOW_EXAMPLES, SETUP_SCHEDULE_EXAMPLES } from './setup-examples';
+import { getVersion, setSilentMode } from './utils';
+import { extractFileName, selectWorkflowFromTpDirectory } from './workflow-select';
 
 const PIPELINER_ROOT = join(homedir(), '.pipeliner');
 
@@ -258,104 +257,6 @@ program.addCommand(createScheduleCommand());
 /**
  * Setup command - Create tp directory with workflows and schedules and example files
  */
-const SETUP_WORKFLOW_EXAMPLES: { filename: string; content: string }[] = [
-  {
-    filename: 'example-hello.yaml',
-    content: `name: Hello World (with choose)
-
-# Interactive choice: stored as variable and used in later steps
-steps:
-  - run: 'echo "Hello from task-pipeliner"'
-  - choose:
-      message: "Select action:"
-      options:
-        - id: greet
-          label: "Greet"
-        - id: info
-          label: "Show info"
-      as: action
-  - run: 'echo "You chose: {{ action }}"'
-  - when:
-      var:
-        action: greet
-    run: 'echo "Hi there! Edit tp/workflows and run: tp run tp/workflows/example-hello.yaml"'
-  - when:
-      var:
-        action: info
-    run: 'echo "Tip: Use --profile. See example-build.yaml for profiles."'
-`,
-  },
-  {
-    filename: 'example-build.yaml',
-    content: `name: Example Build (with profiles and choose)
-
-# Profiles: run without prompts via "tp run tp/workflows/example-build.yaml --profile Dev"
-# With profile, choose/prompt are skipped and these variables are used.
-profiles:
-  - name: Dev
-    var:
-      mode: dev
-      label: "dev-build"
-  - name: Prod
-    var:
-      mode: prod
-      label: "prod-build"
-
-steps:
-  - run: 'echo "Build workflow started..."'
-  - choose:
-      message: "Select mode (or run with --profile Dev/Prod to skip):"
-      options:
-        - id: dev
-          label: "Development"
-        - id: prod
-          label: "Production"
-      as: mode
-  - run: 'echo "Mode: {{ mode }}"'
-  - prompt:
-      message: "Enter build label"
-      as: label
-      default: "default"
-  - run: 'echo "Label: {{ label }}"'
-  - when:
-      var:
-        mode: dev
-    run: 'echo "Dev-only step (e.g. npm run build:dev)"'
-  - when:
-      var:
-        mode: prod
-    run: 'echo "Prod-only step (e.g. npm run build)"'
-  - run: 'echo "Done. Replace run steps with real commands."'
-`,
-  },
-];
-
-const SETUP_SCHEDULE_EXAMPLES: { filename: string; content: string }[] = [
-  {
-    filename: 'example-daily.yaml',
-    content: `schedules:
-  # Runs at 09:00 daily; interactive choose is skipped in scheduled runs (no TTY)
-  - name: Daily Hello
-    cron: "0 9 * * *"
-    workflow: ../workflows/example-hello.yaml
-`,
-  },
-  {
-    filename: 'example-hourly.yaml',
-    content: `schedules:
-  # With profile: choose/prompt are skipped and profile vars used (good for cron)
-  - name: Hourly Build (Dev)
-    cron: "0 * * * *"
-    workflow: ../workflows/example-build.yaml
-    profile: Dev
-  - name: Nightly Build (Prod)
-    cron: "0 2 * * *"
-    workflow: ../workflows/example-build.yaml
-    profile: Prod
-`,
-  },
-];
-
 program
   .command('setup')
   .description(
@@ -540,225 +441,6 @@ historyCommand.action(async () => {
       process.exit(1);
   }
 });
-
-/**
- * Select workflow file from nearest tp/workflows directory
- */
-async function selectWorkflowFromTpDirectory(): Promise<string | null> {
-  const tpDir = findNearestTpDirectory();
-  if (!tpDir) {
-    console.error(chalk.red('\n✗ No tp directory found'));
-    return null;
-  }
-
-  const workflowsDir = join(tpDir, 'workflows');
-  if (!existsSync(workflowsDir)) {
-    console.error(chalk.red(`\n✗ No workflows directory found at ${workflowsDir}`));
-    return null;
-  }
-
-  try {
-    // Read all files in tp/workflows directory
-    const files = await readdir(workflowsDir);
-
-    // Filter for workflow files (yaml, yml, json)
-    const workflowFiles = files.filter((file) => {
-      const ext = extname(file).toLowerCase();
-      return ['.yaml', '.yml', '.json'].includes(ext);
-    });
-
-    if (workflowFiles.length === 0) {
-      console.error(chalk.red(`\n✗ No workflow files found in ${workflowsDir}`));
-      return null;
-    }
-
-    // Parse each file to extract name
-    const choices = await Promise.all(
-      workflowFiles.map(async (file) => {
-        const filePath = join(workflowsDir, file);
-        try {
-          const parser = getParser(filePath);
-          const content = readFileSync(filePath, 'utf-8');
-          const workflow = parser.parse(content);
-          const workflowName = workflow.name ?? 'Untitled';
-          return {
-            id: filePath,
-            label: `${file} - ${workflowName}`,
-          };
-        } catch {
-          // If parsing fails, just show filename
-          return {
-            id: filePath,
-            label: file,
-          };
-        }
-      })
-    );
-
-    // Show selection prompt with search enabled
-    const choicePrompt = new ChoicePrompt(true);
-    const selected = await choicePrompt.prompt('Select a workflow to run', choices);
-
-    return selected.id;
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(chalk.red(`\n✗ Failed to read tp directory: ${errorMessage}`));
-    return null;
-  }
-}
-
-/**
- * Extract filename from file path
- */
-function extractFileName(filePath: string): string {
-  return filePath.split('/').pop() ?? filePath;
-}
-
-/**
- * Display workflow execution history in a formatted way
- */
-function displayHistory(history: History, filename: string): void {
-  console.log();
-
-  // Calculate total duration
-  const totalDuration = history.records.reduce((sum, record) => sum + record.duration, 0);
-  const successCount = history.records.filter((r) => r.status === 'success').length;
-  const failureCount = history.records.filter((r) => r.status === 'failure').length;
-
-  // Format execution summary
-  const startTime = dayjs(history.initialTimestamp).format('YYYY-MM-DD HH:mm:ss');
-  const durationMs = totalDuration;
-  const durationSec = formatDuration(durationMs);
-
-  // Header box (reduced padding and margin)
-  const headerContent = [
-    chalk.bold('Workflow Execution History'),
-    '',
-    `${chalk.cyan('File:')} ${filename}`,
-    `${chalk.cyan('Started:')} ${startTime}`,
-    `${chalk.cyan('Total Duration:')} ${durationSec}`,
-    `${chalk.cyan('Total Steps:')} ${history.records.length}`,
-    `${chalk.green('✓ Successful:')} ${successCount}`,
-    failureCount > 0 ? `${chalk.red('✗ Failed:')} ${failureCount}` : '',
-  ]
-    .filter(Boolean)
-    .join('\n');
-
-  console.log(
-    boxen(headerContent, {
-      borderStyle: 'round',
-      padding: { top: 0, bottom: 0, left: 1, right: 1 },
-      margin: { top: 0, bottom: 0, left: 0, right: 0 },
-      borderColor: 'cyan',
-    })
-  );
-
-  // Display each step
-  history.records.forEach((record, index) => {
-    displayRecord(record, index + 1, history.records.length);
-  });
-
-  console.log();
-}
-
-/**
- * Display a single execution record
- */
-function displayRecord(record: WorkflowRecord, stepNumber: number, totalSteps: number): void {
-  const stepType = getStepType(record.step);
-  const stepDescription = getStepDescription(record.step);
-  const statusIcon = record.status === 'success' ? chalk.green('✓') : chalk.red('✗');
-  const statusText = record.status === 'success' ? chalk.green('Success') : chalk.red('Failed');
-  const duration = formatDuration(record.duration);
-
-  // Step header
-  const stepHeader = [
-    `${statusIcon} ${chalk.bold(`Step ${stepNumber}/${totalSteps}`)} - ${chalk.cyan(stepType)}`,
-    `${chalk.gray('Duration:')} ${duration} | ${chalk.gray('Status:')} ${statusText}`,
-    '',
-    chalk.white(stepDescription),
-  ].join('\n');
-
-  console.log(
-    boxen(stepHeader, {
-      borderStyle: 'round',
-      padding: { top: 0, bottom: 0, left: 1, right: 1 },
-      margin: { top: 0, bottom: 0, left: 0, right: 0 },
-      borderColor: record.status === 'success' ? 'green' : 'red',
-    })
-  );
-
-  // Display output if available
-  if (isTaskRunResult(record.output)) {
-    displayTaskOutput(record.output);
-  }
-}
-
-/**
- * Get step type name
- */
-function getStepType(step: Step): string {
-  if ('run' in step) return 'Run';
-  if ('choose' in step) return 'Choose';
-  if ('prompt' in step) return 'Prompt';
-  if ('parallel' in step) return 'Parallel';
-  if ('fail' in step) return 'Fail';
-  return 'Unknown';
-}
-
-/**
- * Get step description
- */
-function getStepDescription(step: Step): string {
-  if ('run' in step) {
-    return `Command: ${chalk.yellow(step.run)}`;
-  }
-  if ('choose' in step) {
-    return `Message: ${chalk.yellow(step.choose.message)}`;
-  }
-  if ('prompt' in step) {
-    return `Message: ${chalk.yellow(step.prompt.message)} | Variable: ${chalk.cyan(step.prompt.as)}`;
-  }
-  if ('parallel' in step) {
-    return `Parallel execution with ${step.parallel.length} branches`;
-  }
-  if ('fail' in step) {
-    return `Error: ${chalk.red(step.fail.message)}`;
-  }
-  return 'Unknown step type';
-}
-
-/**
- * Check if output is TaskRunResult
- */
-function isTaskRunResult(
-  output: unknown
-): output is { success: boolean; stdout: string[]; stderr: string[] } {
-  return (
-    typeof output === 'object' &&
-    output !== null &&
-    'success' in output &&
-    'stdout' in output &&
-    'stderr' in output
-  );
-}
-
-/**
- * Display task output (stdout/stderr)
- */
-function displayTaskOutput(output: { success: boolean; stdout: string[]; stderr: string[] }): void {
-  if (output.stdout.length > 0) {
-    const stdoutContent = output.stdout.map((line) => chalk.gray(`  ${line}`)).join('\n');
-    console.log(chalk.green('  Output:'));
-    console.log(stdoutContent);
-  }
-
-  if (output.stderr.length > 0) {
-    const stderrContent = output.stderr.map((line) => chalk.gray(`  ${line}`)).join('\n');
-    console.log(chalk.red('  Errors:'));
-    console.log(stderrContent);
-  }
-}
 
 /**
  * Clean command - Remove ~/.pipeliner data (schedules, daemon state, workflow history)

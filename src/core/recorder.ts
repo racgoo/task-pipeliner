@@ -13,8 +13,15 @@ export interface Recorder {
   /**
    * Record a step execution with its result and status
    * Returns the duration of the step execution
+   * @param resolved - Optional resolved values for display (substituted command, choice/prompt result)
    */
-  recordEnd(step: Step, context: ExecutionContext, output: StepResult, status: StepStatus): number;
+  recordEnd(
+    step: Step,
+    context: ExecutionContext,
+    output: StepResult,
+    status: StepStatus,
+    resolved?: { resolvedCommand?: string; choiceValue?: string; promptValue?: string | boolean }
+  ): number;
 }
 
 /**
@@ -44,10 +51,18 @@ class WorkflowRecorder implements Recorder {
     step: Step,
     context: ExecutionContext,
     output: StepResult,
-    status: StepStatus
+    status: StepStatus,
+    resolved?: { resolvedCommand?: string; choiceValue?: string; promptValue?: string | boolean }
   ): number {
     const duration = this.getDuration();
-    this.records.push({ step, context, output, duration, status });
+    this.records.push({
+      step,
+      context,
+      output,
+      duration,
+      status,
+      ...resolved,
+    });
     return duration;
   }
 
