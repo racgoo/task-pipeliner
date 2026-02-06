@@ -75,6 +75,11 @@ tp schedule status # Check daemon status (real-time mode; Ctrl+C exits the view 
 ```
 After `tp schedule add`, `toggle`, or `remove`, the affected schedule(s) are displayed in the same card layout as `tp schedule list` (cron expression, human-readable “when” description, next run, enabled state). Toggle result emphasizes ENABLED or DISABLED so the new state is obvious.
 
+**Schedule status (live view)** — `tp schedule status` shows the daemon and all schedules in a scrollable, auto-updating view. Cron times include timezone (UTC or local). Use ↑/↓ or PgUp/PgDn to scroll when there are many schedules.
+
+<p align="center"><img src="https://github.com/user-attachments/assets/348325d3-d184-4c1e-bc78-040da13e7e7d" width="720" alt="tp schedule status live view" /></p>
+
+
 **Data & upgrades:**
 ```bash
 tp clean   # Remove all data in ~/.pipeliner (schedules, daemon state, workflow history)
