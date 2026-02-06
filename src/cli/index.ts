@@ -433,6 +433,7 @@ const historyCommand = program.command('history').description('Manage workflow e
  */
 historyCommand.action(async () => {
   const choicePrompt = new ChoicePrompt();
+  const searchableChoicePrompt = new ChoicePrompt(true);
   const choice = await choicePrompt.prompt('Select an action', [
     { id: 'show', label: 'Show - View and select a history to view' },
     { id: 'remove', label: 'Remove - Delete a specific history file' },
@@ -456,7 +457,7 @@ historyCommand.action(async () => {
         return;
       }
 
-      const selectedChoice = await choicePrompt.prompt(
+      const selectedChoice = await searchableChoicePrompt.prompt(
         'Select a history to view',
         historyNames.map((name) => ({
           id: name,
@@ -487,7 +488,7 @@ historyCommand.action(async () => {
         return;
       }
 
-      const selectedChoice = await choicePrompt.prompt(
+      const selectedChoice = await searchableChoicePrompt.prompt(
         'Select a history to remove',
         historyNames.map((name) => ({
           id: name,
