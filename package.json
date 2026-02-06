@@ -1,6 +1,6 @@
 {
   "name": "task-pipeliner",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "A task pipeline runner with condition-based workflow execution",
   "type": "module",
   "main": "./dist/index.cjs",
