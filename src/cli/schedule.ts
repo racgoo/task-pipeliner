@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import { existsSync } from 'fs';
 import { readdir } from 'fs/promises';
-import { dirname, extname, isAbsolute, join, resolve } from 'path';
+import { basename, dirname, extname, isAbsolute, join, resolve } from 'path';
 import boxen from 'boxen';
 import chalk from 'chalk';
 import { Command } from 'commander';
@@ -22,7 +22,7 @@ import { WorkflowScheduler } from '../core/scheduler';
 import { Schedule } from '../types/schedule';
 import { ScheduleDefinition } from '../types/schedule-file';
 import { ChoicePrompt } from './prompts';
-import { formatScheduleCard } from './schedule-card-format';
+import { formatScheduleCard, getCronDescription } from './schedule-card-format';
 import { findNearestTpDirectory } from './utils';
 
 /**
@@ -247,6 +247,25 @@ async function addSchedules(scheduleFilePath?: string): Promise<void> {
 }
 
 /**
+ * Build rich label for schedule (alias · filename · cron · human description · status)
+ * @param statusStyle - 'plain' = ✓/✗ (remove list), 'color' = colored "Enabled"/"Disabled" (toggle list)
+ */
+function scheduleChoiceLabel(s: Schedule, statusStyle: 'plain' | 'color' = 'plain'): string {
+  const alias = s.name ?? '(no alias)';
+  const filename = basename(s.workflowPath);
+  const human = getCronDescription(s.cron) ?? s.cron;
+  const status =
+    statusStyle === 'color'
+      ? s.enabled
+        ? chalk.green('Enabled')
+        : chalk.dim('Disabled')
+      : s.enabled
+        ? '✓'
+        : '✗';
+  return `${alias} · ${filename} · ${s.cron} · ${human} · ${status}`;
+}
+
+/**
  * Remove a schedule
  */
 async function removeSchedule(): Promise<void> {
@@ -258,18 +277,14 @@ async function removeSchedule(): Promise<void> {
     return;
   }
 
-  // Prompt for schedule to remove
-  const { scheduleId } = await inquirer.prompt<{ scheduleId: string }>([
-    {
-      type: 'list',
-      name: 'scheduleId',
-      message: 'Select schedule to remove:',
-      choices: schedules.map((s) => ({
-        name: `${s.name ?? s.workflowPath} (${s.cron}) ${s.enabled ? '✓' : '✗'}`,
-        value: s.id,
-      })),
-    },
-  ]);
+  const choices = schedules.map((s) => ({
+    id: s.id,
+    label: scheduleChoiceLabel(s),
+  }));
+  const choicePrompt = new ChoicePrompt(true);
+  const selected = await choicePrompt.prompt('Select schedule to remove:', choices);
+  const scheduleId = selected.id;
+  const scheduleToRemove = schedules.find((s) => s.id === scheduleId);
 
   // Confirm removal
   const { confirm } = await inquirer.prompt<{ confirm: boolean }>([
@@ -289,7 +304,11 @@ async function removeSchedule(): Promise<void> {
   // Remove schedule
   const success = await manager.removeSchedule(scheduleId);
 
-  if (success) {
+  if (success && scheduleToRemove) {
+    const daemonStatus = await getDaemonStatus();
+    console.log('\n✓ Schedule removed\n');
+    console.log(formatScheduleCard(scheduleToRemove, { daemonRunning: daemonStatus.running }));
+  } else if (success) {
     console.log('✓ Schedule removed successfully');
   } else {
     console.log('✗ Schedule not found');
@@ -641,18 +660,13 @@ async function toggleSchedule(): Promise<void> {
     return;
   }
 
-  // Prompt for schedule to toggle
-  const { scheduleId } = await inquirer.prompt<{ scheduleId: string }>([
-    {
-      type: 'list',
-      name: 'scheduleId',
-      message: 'Select schedule to toggle:',
-      choices: schedules.map((s) => ({
-        name: `${s.name ?? s.workflowPath} (${s.cron}) ${s.enabled ? '✓' : '✗'}`,
-        value: s.id,
-      })),
-    },
-  ]);
+  const choices = schedules.map((s) => ({
+    id: s.id,
+    label: scheduleChoiceLabel(s, 'color'),
+  }));
+  const choicePrompt = new ChoicePrompt(true);
+  const selected = await choicePrompt.prompt('Select schedule to toggle:', choices);
+  const scheduleId = selected.id;
 
   const schedule = schedules.find((s) => s.id === scheduleId);
   if (!schedule) {
@@ -664,8 +678,16 @@ async function toggleSchedule(): Promise<void> {
   const newStatus = !schedule.enabled;
   await manager.toggleSchedule(scheduleId, newStatus);
 
+  const daemonStatus = await getDaemonStatus();
+  const updated = { ...schedule, enabled: newStatus };
+
+  const statusLabel = newStatus ? chalk.bold.green('ENABLED') : chalk.bold.gray('DISABLED');
+  const statusHint = newStatus
+    ? chalk.dim(' (will run at the times shown below)')
+    : chalk.dim(' (will not run until you enable it again)');
+  console.log(`\n✓ Schedule is now ${statusLabel}${statusHint}\n`);
   console.log(
-    `✓ Schedule ${newStatus ? 'enabled' : 'disabled'}: ${schedule.name ?? schedule.workflowPath}`
+    formatScheduleCard(updated, { daemonRunning: daemonStatus.running, emphasizeState: true })
   );
 }
 

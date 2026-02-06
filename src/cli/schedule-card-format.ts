@@ -35,6 +35,8 @@ export function getNextRunForSchedule(schedule: Schedule): Date | null {
 export interface FormatScheduleCardOptions {
   /** When true, enabled schedules show as "active" */
   daemonRunning: boolean;
+  /** When true, show a prominent ENABLED/DISABLED badge (e.g. for toggle result) */
+  emphasizeState?: boolean;
 }
 
 /**
@@ -42,10 +44,21 @@ export interface FormatScheduleCardOptions {
  */
 export function formatScheduleCard(schedule: Schedule, options: FormatScheduleCardOptions): string {
   const s = schedule;
-  const { daemonRunning } = options;
-  const toggleLabel = s.enabled ? chalk.green('enabled') : chalk.gray('disabled');
+  const { daemonRunning, emphasizeState } = options;
+  const toggleLabel = s.enabled
+    ? emphasizeState
+      ? chalk.bold.green('ENABLED')
+      : chalk.green('enabled')
+    : emphasizeState
+      ? chalk.bold.gray('DISABLED')
+      : chalk.gray('disabled');
   const isActive = daemonRunning && s.enabled;
   const activeBadge = isActive ? chalk.green('● active') : chalk.gray('○ inactive');
+  const stateBadge = emphasizeState
+    ? s.enabled
+      ? chalk.bold.green('  [ENABLED]')
+      : chalk.bold.gray('  [DISABLED]')
+    : '';
   const name = chalk.bold(s.name ?? s.workflowPath);
   const nextRun = getNextRunForSchedule(s);
   const nextRunStr = nextRun ? dayjs(nextRun).format('YYYY-MM-DD HH:mm:ss') : chalk.dim('—');
@@ -73,7 +86,7 @@ export function formatScheduleCard(schedule: Schedule, options: FormatScheduleCa
   ];
 
   const content = [
-    `${name}  ${activeBadge}`,
+    `${name}  ${activeBadge}${stateBadge}`,
     ...rows.map(([label, value]) => `  ${label.padEnd(10)} ${value}`),
   ].join('\n');
 
