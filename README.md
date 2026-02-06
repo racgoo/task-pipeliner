@@ -9,27 +9,9 @@
 [![npm version](https://img.shields.io/npm/v/task-pipeliner)](https://www.npmjs.com/package/task-pipeliner)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**task-pipeliner** is a modern workflow orchestration tool that lets you define, coordinate, and execute complex workflows using simple YAML or JSON files. With conditional execution, parallel tasks, interactive prompts, and beautiful terminal output, it's perfect for build scripts, deployment workflows, and CI/CD pipelines.
+**task-pipeliner** is a modern workflow orchestration tool that lets you define, coordinate, and execute complex workflows using simple YAML or JSON files. With conditional execution, parallel tasks, interactive prompts, and beautiful terminal output, it's perfect for build scripts, deployment workflows, and CI/CD pipelines. *This project is still in beta; the interface may change slightly.*
 
 **README-Language-Map** [KR [한국어 버전]](https://github.com/racgoo/task-pipeliner/blob/main/README.ko.md) / [EN [English Version]](https://github.com/racgoo/task-pipeliner)
-
-## ✨ Features
-
--  **Condition-based execution** - Run steps based on file existence, user choices, environment variables, and more
-
-- **Parallel execution** - Run multiple tasks simultaneously
-
-- **Interactive prompts** - Ask users for input and choices during execution
-
-- **YAML & JSON support** - Declarative pipelining in YAML & JSON formats
-
-- **Variable substitution** - Use `{{variables}}` throughout your workflows
-
-- **Profiles** - Run workflows non-interactively with pre-set variables (`tp run --profile <name>`); choose/prompt steps are skipped when the variable is set in the profile
-
-- **Execution history** - Track and review past workflow executions with detailed step-by-step records
-
-- **Workflow scheduling** - Schedule workflows to run automatically at specified times using cron expressions
 
 ## 🔗 Resources
 
@@ -90,6 +72,24 @@ tp schedule status # Check daemon status (real-time mode; Ctrl+C exits the view 
 tp clean   # Remove all data in ~/.pipeliner (schedules, daemon state, workflow history)
 ```
 After upgrading to a new version, if you see compatibility issues (e.g. schedules or daemon not working), run `tp clean` to reset local data. The daemon is stopped first if it is running.
+
+## ✨ Features
+
+-  **Condition-based execution** - Run steps based on file existence, user choices, environment variables, and more
+
+- **Parallel execution** - Run multiple tasks simultaneously
+
+- **Interactive prompts** - Ask users for input and choices during execution
+
+- **YAML & JSON support** - Declarative pipelining in YAML & JSON formats
+
+- **Variable substitution** - Use `{{variables}}` throughout your workflows
+
+- **Profiles** - Run workflows non-interactively with pre-set variables (`tp run --profile <name>`); choose/prompt steps are skipped when the variable is set in the profile
+
+- **Execution history** - Track and review past workflow executions with detailed step-by-step records
+
+- **Workflow scheduling** - Schedule workflows to run automatically at specified times using cron expressions
 
 ## 🚀 Quick Start
 

@@ -9,9 +9,23 @@
 [![npm version](https://img.shields.io/npm/v/task-pipeliner)](https://www.npmjs.com/package/task-pipeliner)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**task-pipeliner**는 간단한 YAML 또는 JSON 파일로 복잡한 워크플로우를 정의, 조율, 실행할 수 있는 현대적인 워크플로우 오케스트레이션 도구입니다. 조건부 실행, 병렬 작업, 대화형 프롬프트, 그리고 아름다운 터미널 출력을 제공하여 빌드 스크립트, 배포 워크플로우, CI/CD 파이프라인에 완벽합니다.
+**task-pipeliner**는 간단한 YAML 또는 JSON 파일로 복잡한 워크플로우를 정의, 조율, 실행할 수 있는 현대적인 워크플로우 오케스트레이션 도구입니다. 조건부 실행, 병렬 작업, 대화형 프롬프트, 그리고 아름다운 터미널 출력을 제공하여 빌드 스크립트, 배포 워크플로우, CI/CD 파이프라인에 완벽합니다. *아직 베타 버전이라 인터페이스가 조금씩 수정될 수 있습니다.*
 
 **README-Language-Map** [KR [한국어 버전]](https://github.com/racgoo/task-pipeliner/blob/main/README.ko.md) / [EN [English Version]](https://github.com/racgoo/task-pipeliner)
+
+## 리소스
+
+### 문서 및 도구
+
+- 📚 **[문서](https://task-pipeliner.racgoo.com/)** - 완전한 DSL 참조 및 가이드
+- 🎨 **[워크플로우 생성기](https://task-pipeliner-generator.racgoo.com/)** - 브라우저에서 시각적으로 워크플로우 생성
+
+### 저장소 및 패키지 관리자
+
+- 💻 **[GitHub](https://github.com/racgoo/task-pipeliner)** - 소스 코드 및 이슈 추적
+- 📦 **[npm](https://www.npmjs.com/package/task-pipeliner)** - npm 레지스트리 패키지
+- 🍺 **[Homebrew](https://github.com/racgoo/homebrew-task-pipeliner)** - macOS/Linux용 Homebrew 탭
+- 🪟 **[Scoop](https://github.com/racgoo/scoop-task-pipeliner)** - Windows용 Scoop 버킷
 
 ## ✨ 주요 기능
 
@@ -30,20 +44,6 @@
 - **실행 히스토리** - 상세한 단계별 기록으로 과거 워크플로우 실행 추적 및 검토
 
 - **워크플로우 스케줄링** - cron 표현식을 사용하여 지정된 시간에 워크플로우 자동 실행
-
-## 리소스
-
-### 문서 및 도구
-
-- 📚 **[문서](https://task-pipeliner.racgoo.com/)** - 완전한 DSL 참조 및 가이드
-- 🎨 **[워크플로우 생성기](https://task-pipeliner-generator.racgoo.com/)** - 브라우저에서 시각적으로 워크플로우 생성
-
-### 저장소 및 패키지 관리자
-
-- 💻 **[GitHub](https://github.com/racgoo/task-pipeliner)** - 소스 코드 및 이슈 추적
-- 📦 **[npm](https://www.npmjs.com/package/task-pipeliner)** - npm 레지스트리 패키지
-- 🍺 **[Homebrew](https://github.com/racgoo/homebrew-task-pipeliner)** - macOS/Linux용 Homebrew 탭
-- 🪟 **[Scoop](https://github.com/racgoo/scoop-task-pipeliner)** - Windows용 Scoop 버킷
 
 ### CLI 명령어
 
