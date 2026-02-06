@@ -6,6 +6,12 @@ Check out task-pipeliner usage examples.
 
 Check out the `examples/` directory for complete project examples:
 
+### tp setup and tp directory structure {#tp-setup}
+
+- **`tp setup`** – Run from your project root to create `tp/`, `tp/workflows/`, and `tp/schedules/` and add two example workflows (choose, when, profiles, prompt) and two example schedule files (including profile usage). All steps use `echo` so you can run safely and then replace with real commands. See [Getting Started](/docs/getting-started#project-setup-with-tp-setup-recommended-for-new-projects) and [CLI Reference](/docs/cli-reference#tp-setup).
+- **`tp-setup-example/`** – The exact structure and file contents that `tp setup` generates; use as reference or copy.
+- **`tp-directory-example/`** – Uses the recommended layout: **`tp/workflows/`** for workflow files and **`tp/schedules/`** for schedule files. Run `tp run` (no file) to select from `tp/workflows/`; run `tp schedule add` (no path) to select from `tp/schedules/`.
+
 ### Monorepo Example {#monorepo-example}
 
 - **`monorepo-example/`** - Monorepo workflow with multiple projects
@@ -58,11 +64,13 @@ Check out `examples/json-examples/` for JSON workflow examples (equivalent to YA
 
 ## Schedule Examples
 
-Check out `examples/schedule-examples/` for schedule file examples. Use them with `tp schedule add <file>`.
+Check out `examples/schedule-examples/` for schedule file examples. Use them with `tp schedule add <file>`, or run **`tp schedule add`** with no path to select a file from the nearest **`tp/schedules/`** directory (e.g. after `tp setup`).
 
 - **`daily-build.yaml`** - YAML schedule file (multiple schedules, silent, profile, baseDir)
 - **`daily-build.json`** - JSON schedule file (same content)
 - **`README.md`** - Schedule file format and cron expression reference
+
+**Schedule UI:** After **add**, **toggle**, or **remove**, the affected schedule(s) are shown in the **same card format as `tp schedule list`** (cron, human “when” description, next run, enabled state). After **toggle**, **ENABLED** or **DISABLED** is emphasized (bold, colored). See [Workflow Scheduling](/docs/schedule#unified-schedule-ui-list-add-toggle-remove) for details.
 
 ### Schedule File Example
 
@@ -83,7 +91,7 @@ schedules:
     profile: Production
 ```
 
-Then run: `tp schedule add schedules.yaml`
+Then run: `tp schedule add schedules.yaml` (or `tp schedule add` to select from `tp/schedules/`).
 
 Use `tp schedule list` and `tp schedule status` (or `tp schedule status -n` to show once and exit) to view schedules in a unified card layout. After upgrading, if you see compatibility issues, run `tp clean` to reset `~/.pipeliner` data. See **[Workflow Scheduling](/docs/schedule)** for full documentation, including [Resetting Data (`tp clean`)](/docs/schedule#resetting-data-tp-clean).
 

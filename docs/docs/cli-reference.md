@@ -2,6 +2,24 @@
 
 Complete reference for all task-pipeliner CLI commands.
 
+## Project setup
+
+### `tp setup`
+
+Create the recommended `tp` directory structure and add example files (workflows and schedules) so you can get started quickly.
+
+```bash
+tp setup
+```
+
+**What it does:**
+- Creates `tp/`, `tp/workflows/`, and `tp/schedules/` in the current directory (project root).
+- Adds **two example workflows** in `tp/workflows/` (echo-based): one with choose and when, one with profiles, choose, prompt, and when.
+- Adds **two example schedule files** in `tp/schedules/`: one with a single schedule, one with two schedules using profile (Dev/Prod).
+- Does **not overwrite** existing files; if a directory or file already exists, it is left as-is.
+
+**When to use:** Run from your project root when starting a new project or when you want the recommended layout. After `tp setup`, use `tp run` (no file) to select from `tp/workflows/` and `tp schedule add` (no path) to select from `tp/schedules/`. See [Getting Started](/docs/getting-started#project-setup-with-tp-setup-recommended-for-new-projects) for details.
+
 ## Run Workflows
 
 ### `tp run [file]`
@@ -10,7 +28,7 @@ Run a workflow from a YAML or JSON file.
 
 ```bash
 tp run workflow.yaml        # Run a workflow
-tp run                      # Select and run a workflow from nearest tp directory
+tp run                      # Select and run a workflow from nearest tp/workflows directory
 tp run workflow.yaml --profile Test   # Run with profile (skip choose/prompt for variables set in profile)
 tp run workflow.yaml -p Test         # Short form for profile
 tp run workflow.yaml --silent  # Run in silent mode (suppress all console output)
@@ -22,9 +40,9 @@ tp run workflow.yaml -s     # Short form for silent mode
 - `-s, --silent` - Run in silent mode (suppress all console output)
 
 **Behavior:**
-- If no file is specified, searches for the nearest `tp` directory and shows an interactive menu
-- Profiles allow non-interactive execution by pre-filling variables
-- Silent mode suppresses all output (useful for CI/CD)
+- If no file is specified, searches for the nearest `tp` directory and lists workflows from **`tp/workflows/`**, then shows an interactive menu to select one.
+- Profiles allow non-interactive execution by pre-filling variables.
+- Silent mode suppresses all output (useful for CI/CD).
 
 ## Open Resources
 
@@ -88,12 +106,14 @@ Shows all schedules in a unified card layout with status information.
 Add schedules from a schedule file (YAML or JSON).
 
 ```bash
-tp schedule add schedules.yaml
+tp schedule add schedules.yaml   # With path
+tp schedule add                  # No path: select from nearest tp/schedules/ directory
 ```
 
-- Prompts for file path if not provided
-- Validates cron expressions and workflow file existence
-- Allows alias override for each schedule
+- If no file path is provided, task-pipeliner finds the nearest `tp` directory and lets you **select a schedule file from `tp/schedules/`**.
+- Validates cron expressions and workflow file existence.
+- Allows alias override for each schedule.
+- **After adding**, each added schedule is shown in the **same card format as `tp schedule list`** (cron, human “when” description, next run, enabled state).
 
 ### `tp schedule remove`
 
@@ -105,7 +125,7 @@ tp schedule remove
 tp schedule rm
 ```
 
-Shows an interactive menu to select which schedule to remove.
+Shows an interactive menu to select which schedule to remove. **After removal**, the removed schedule is displayed in the same card format as list.
 
 ### `tp schedule remove-all`
 
@@ -125,7 +145,7 @@ Enable or disable a schedule.
 tp schedule toggle
 ```
 
-Shows an interactive menu to select which schedule to toggle.
+Shows an interactive menu to select which schedule to toggle. **After toggling**, the new state (**ENABLED** or **DISABLED**) is shown clearly (bold, colored), and the schedule card is displayed. This makes it obvious at a glance whether the schedule is now enabled or disabled.
 
 ### `tp schedule start`
 
@@ -199,14 +219,15 @@ tp clean
 
 | Command | Description |
 |---------|-------------|
-| `tp run [file]` | Run a workflow |
+| `tp setup` | Create tp/, tp/workflows, tp/schedules and example files |
+| `tp run [file]` | Run a workflow (no file = select from tp/workflows/) |
 | `tp run --profile <name>` | Run with profile (non-interactive) |
 | `tp run --silent` | Run in silent mode |
 | `tp open generator` | Open visual generator |
 | `tp open docs` | Open documentation |
 | `tp history` | View execution history |
 | `tp schedule` | View all schedules |
-| `tp schedule add <file>` | Add schedules from file |
+| `tp schedule add [file]` | Add schedules (no file = select from tp/schedules/) |
 | `tp schedule start -d` | Start daemon in background |
 | `tp schedule stop` | Stop daemon |
 | `tp schedule status` | Check daemon status |

@@ -6,6 +6,12 @@ task-pipeliner 사용 예제를 확인하세요.
 
 완전한 프로젝트 예제는 `examples/` 디렉토리를 확인하세요:
 
+### tp setup 및 tp 디렉터리 구조 {#tp-setup}
+
+- **`tp setup`** – 프로젝트 루트에서 실행하면 `tp/`, `tp/workflows/`, `tp/schedules/`와 예시 워크플로우 2개(choose, when, profiles, prompt), 예시 스케줄 파일 2개(프로필 사용 포함)가 생성됩니다. 모든 단계는 `echo`로 되어 있어 안전하게 실행한 뒤 실제 명령으로 바꿀 수 있습니다. [시작하기](/docs/getting-started#project-setup-with-tp-setup-recommended-for-new-projects), [CLI 참조](/docs/cli-reference#tp-setup)를 참조하세요.
+- **`tp-setup-example/`** – `tp setup`이 생성하는 구조와 파일 내용을 그대로 담은 예제. 참고용으로 보거나 복사할 수 있습니다.
+- **`tp-directory-example/`** – 권장 레이아웃 사용: 워크플로우는 **`tp/workflows/`**, 스케줄 파일은 **`tp/schedules/`**. `tp run`(파일 없이)으로 `tp/workflows/`에서 선택하고, `tp schedule add`(경로 없이)로 `tp/schedules/`에서 선택할 수 있습니다.
+
 ### 모노레포 예제 {#monorepo-example}
 
 - **`monorepo-example/`** - 여러 프로젝트가 있는 모노레포 워크플로우
@@ -58,11 +64,13 @@ task-pipeliner 사용 예제를 확인하세요.
 
 ## 스케줄 예제
 
-스케줄 파일 예제는 `examples/schedule-examples/`에서 확인하세요. `tp schedule add <파일>`로 등록할 수 있습니다.
+스케줄 파일 예제는 `examples/schedule-examples/`에서 확인하세요. `tp schedule add <파일>`로 등록하거나, **`tp schedule add`**를 경로 없이 실행해 가장 가까운 **`tp/schedules/`** 디렉터리에서 파일을 선택할 수 있습니다(예: `tp setup` 후).
 
 - **`daily-build.yaml`** - YAML 스케줄 파일 (여러 스케줄, silent, profile, baseDir)
 - **`daily-build.json`** - JSON 스케줄 파일 (동일 내용)
 - **`README.md`** - 스케줄 파일 형식 및 cron 표현식 참조
+
+**스케줄 UI:** **add**, **toggle**, **remove** 후에는 해당 스케줄이 **`tp schedule list`와 같은 카드 형식**으로 표시됩니다(크론, 언제 실행되는지 설명, 다음 실행, 활성 여부). **toggle** 후에는 **ENABLED** 또는 **DISABLED**가 강조(굵게·색상)됩니다. 자세한 내용은 [워크플로우 스케줄링](/docs/schedule#통일된-스케줄-ui-list-add-toggle-remove)을 참조하세요.
 
 ### 스케줄 파일 예시
 
@@ -83,7 +91,7 @@ schedules:
     profile: Production
 ```
 
-실행: `tp schedule add schedules.yaml`
+실행: `tp schedule add schedules.yaml` (또는 `tp schedule add`로 `tp/schedules/`에서 선택).
 
 `tp schedule list`, `tp schedule status`(한 번만 보려면 `tp schedule status -n`)로 통일된 카드 레이아웃의 스케줄을 볼 수 있습니다. 업그레이드 후 호환 문제가 있으면 `tp clean`으로 `~/.pipeliner` 데이터를 초기화하세요. 자세한 내용은 **[워크플로우 스케줄링](/docs/schedule)** 문서와 [데이터 초기화 (`tp clean`)](/docs/schedule#데이터-초기화-tp-clean)를 참조하세요.
 

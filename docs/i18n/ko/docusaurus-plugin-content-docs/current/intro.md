@@ -199,10 +199,11 @@ tp run workflow.yaml -s
 
 - 🎨 **[시각적 생성기](https://task-pipeliner-generator.racgoo.com/)** - 브라우저에서 워크플로우를 시각적으로 생성하고 YAML/JSON으로 다운로드
 - 💻 **[CLI 명령어 참조](/docs/cli-reference)** - 모든 CLI 명령어에 대한 완전한 참조
-  - `tp run` - 워크플로우 실행
+  - **`tp setup`** - `tp/`, `tp/workflows/`, `tp/schedules/` 및 예시 파일 생성 (신규 프로젝트 권장)
+  - `tp run` - 워크플로우 실행 (파일 없음 = `tp/workflows/`에서 선택)
   - `tp open generator/docs` - 리소스 열기
   - `tp history` - 실행 히스토리 관리
-  - `tp schedule` - cron으로 워크플로우 스케줄링
+  - `tp schedule` - cron으로 워크플로우 스케줄링 (`tp schedule add` 경로 없음 = `tp/schedules/`에서 선택); list·add·toggle·remove는 통일된 카드 UI 사용
   - `tp clean` - 모든 로컬 데이터 삭제
 
 ## 다음 단계

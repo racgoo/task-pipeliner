@@ -199,10 +199,11 @@ All workflow executions are automatically recorded and saved to `~/.pipeliner/wo
 
 - 🎨 **[Visual Generator](https://task-pipeliner-generator.racgoo.com/)** - Create workflows visually in your browser and download as YAML/JSON
 - 💻 **[CLI Commands Reference](/docs/cli-reference)** - Complete reference for all CLI commands
-  - `tp run` - Run workflows
+  - **`tp setup`** - Create `tp/`, `tp/workflows/`, `tp/schedules/` and add example files (recommended for new projects)
+  - `tp run` - Run workflows (no file = select from `tp/workflows/`)
   - `tp open generator/docs` - Open resources
   - `tp history` - Manage execution history
-  - `tp schedule` - Schedule workflows with cron
+  - `tp schedule` - Schedule workflows with cron (`tp schedule add` with no path = select from `tp/schedules/`); list, add, toggle, and remove use a unified card UI
   - `tp clean` - Remove all local data
 
 ## Next Steps

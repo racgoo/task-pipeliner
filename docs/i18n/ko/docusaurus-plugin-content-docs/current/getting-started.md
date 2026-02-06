@@ -212,28 +212,48 @@ tp run workflow.yaml --silent
 tp run workflow.yaml -s
 ```
 
-**`tp` 디렉토리 사용하기 (권장):**
+**`tp setup`으로 프로젝트 셋업 (신규 프로젝트 권장):**
 
-더 나은 조직화를 위해 프로젝트에 `tp` 디렉토리를 만들고 모든 워크플로우 파일을 그곳에 배치할 수 있습니다. 파일을 지정하지 않고 `tp run`을 실행하면 task-pipeliner가 자동으로 가장 가까운 `tp` 디렉토리(현재 디렉토리부터 시작하여 상위로 탐색)를 찾아 대화형으로 워크플로우를 선택할 수 있게 해줍니다.
+프로젝트 루트에서 **`tp setup`**을 실행하면 권장 디렉터리 구조와 예시 파일을 한 번에 만듭니다.
+
+- **디렉터리:** `tp/`, `tp/workflows/`, `tp/schedules/`
+- **예시 워크플로우 2개** (`tp/workflows/`, echo 기반): choose·when 예시, profiles·choose·prompt·when 예시
+- **예시 스케줄 파일 2개** (`tp/schedules/`): 단일 스케줄 예시, 프로필(Dev/Prod) 사용 예시
+
+이미 있는 파일은 덮어쓰지 않습니다. `tp setup` 후 `tp run`으로 `tp/workflows/`에서 선택하고, `tp schedule add`(경로 없이)로 `tp/schedules/`에서 선택할 수 있습니다.
 
 ```bash
-# tp 디렉토리를 만들고 워크플로우 파일 추가
-mkdir tp
-mv workflow.yaml tp/
+# 프로젝트 루트에서
+tp setup
+tp run              # tp/workflows/에서 선택
+tp schedule add     # tp/schedules/에서 선택
+```
 
-# 파일을 지정하지 않고 실행 - 대화형 선택
+**`tp` 디렉토리 사용하기 (권장 구조):**
+
+권장 레이아웃은 `tp` 아래에 두 개의 하위 디렉터리를 두는 방식입니다.
+
+- **`tp/workflows/`** – 워크플로우 파일(`.yaml`, `.yml`, `.json`)을 여기에 둡니다. **`tp run`**을 파일 없이 실행하면 task-pipeliner가 가장 가까운 `tp` 디렉터리를 찾고 **`tp/workflows/`**에서 실행할 워크플로우를 선택할 수 있게 합니다.
+- **`tp/schedules/`** – 스케줄 파일을 여기에 둡니다. **`tp schedule add`**를 파일 경로 없이 실행하면 가장 가까운 **`tp/schedules/`**에서 스케줄 파일을 선택할 수 있습니다.
+
+```bash
+# 방법 1: tp setup 사용 (tp/workflows, tp/schedules + 예시 생성)
+tp setup
+
+# 방법 2: 수동으로 구조 만들기
+mkdir -p tp/workflows tp/schedules
+mv workflow.yaml tp/workflows/
+
+# 파일 없이 실행 – tp/workflows에서 대화형 선택
 tp run
 ```
 
-이 기능은:
-1. 가장 가까운 `tp` 디렉토리를 찾습니다 (현재 디렉토리 또는 상위 디렉토리)
-2. 해당 디렉토리의 모든 워크플로우 파일 (`.yaml`, `.yml`, `.json`)을 나열합니다
-3. 다음 기능을 제공하는 대화형 검색 가능한 메뉴를 표시합니다:
-   - 타이핑하여 실시간으로 워크플로우 필터링
-   - 화살표 키 (↑↓)로 탐색
-   - Enter를 눌러 선택하고 실행
+파일 없이 `tp run`을 실행하면:
+1. 가장 가까운 `tp` 디렉터리를 찾습니다 (현재 또는 상위).
+2. **`tp/workflows/`** 안의 모든 워크플로우 파일을 나열합니다.
+3. 타이핑으로 필터, 화살표(↑↓)로 이동, Enter로 선택·실행하는 대화형 메뉴를 띄웁니다.
 
-대화형 메뉴는 파일 이름과 워크플로우의 `name` (YAML/JSON 내용에서)을 모두 표시하여 쉽게 식별할 수 있습니다.
+메뉴에는 파일 이름과 워크플로우의 `name`(YAML/JSON)이 함께 표시되어 구분하기 쉽습니다.
 
 **사일런트 모드:**
 `--silent` (또는 `-s`) 플래그는 워크플로우 실행 중 모든 콘솔 출력을 억제합니다. 종료 코드만 필요한 CI/CD 파이프라인이나 상세한 출력이 필요 없는 자동화 스크립트에 유용합니다.

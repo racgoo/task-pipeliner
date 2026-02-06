@@ -126,12 +126,30 @@ schedules:
 ## 스케줄 추가
 
 ```bash
+# 파일 경로 지정
 tp schedule add schedules.yaml
+
+# 경로 없음: 가장 가까운 tp/schedules/ 디렉터리에서 스케줄 파일 선택 (예: tp setup 후)
+tp schedule add
 ```
 
-파일 경로를 생략하면 입력 프롬프트가 뜹니다. 추가 시 각 스케줄의 별칭을 확인하거나 바꿀 수 있습니다.
+파일 경로를 생략하면 task-pipeliner가 가장 가까운 `tp` 디렉터리를 찾고 **`tp/schedules/`**에서 스케줄 파일을 선택할 수 있게 합니다. 추가 시 각 스케줄의 별칭을 확인하거나 바꿀 수 있습니다. **추가 후**에는 추가된 스케줄이 **`tp schedule list`와 같은 카드 형식**으로 표시됩니다(크론, 언제 실행되는지 설명, 다음 실행, 활성 여부, 워크플로우 경로, 프로필 등).
 
 ## 스케줄 관리
+
+### 통일된 스케줄 UI (list, add, toggle, remove)
+
+목록, 추가, 토글, 삭제 모두 **동일한 스케줄 카드 레이아웃**을 사용합니다. 각 카드에는 다음이 표시됩니다.
+
+- 크론 표현식과 **사람이 읽기 쉬운 "언제" 설명** (예: "매분", "09:00에")
+- 다음 실행 시각, 마지막 실행, 타임존, 워크플로우 경로, 프로필(설정 시)
+- 활성/비활성 상태
+
+**`tp schedule add` 후:** 추가된 스케줄이 이 카드 형식으로 표시됩니다.  
+**`tp schedule toggle` 후:** 새 상태(**ENABLED** 초록 또는 **DISABLED** 회색)가 **강조**되어 한눈에 구분할 수 있고, 이어서 스케줄 카드가 표시됩니다.  
+**`tp schedule remove` 후:** 삭제된 스케줄이 list와 같은 카드 형식으로 표시되어 무엇이 삭제되었는지(크론, 실행 시점 등) 확인할 수 있습니다.
+
+`tp schedule status`, `tp schedule start`에서도 같은 레이아웃을 사용해 UI가 일관됩니다.
 
 ### 스케줄 목록 보기
 
@@ -141,8 +159,7 @@ tp schedule list
 tp schedule ls
 ```
 
-- **통일된 카드 레이아웃**으로 모든 스케줄을 표시합니다 (각 카드: 이름, active/inactive 배지, Enabled, Cron+사람이 읽기 쉬운 설명, Timezone, Workflow 경로, Profile, Last run, Next run).
-- `tp schedule status`, `tp schedule start`에서도 같은 카드 레이아웃을 사용해 UI가 일관됩니다.
+통일된 카드 레이아웃으로 모든 스케줄을 표시합니다(각 카드: 이름, active/inactive 배지, Enabled, Cron+사람이 읽기 쉬운 설명, Timezone, Workflow 경로, Profile, Last run, Next run).
 
 ### 스케줄 삭제
 
@@ -152,7 +169,7 @@ tp schedule remove
 tp schedule rm
 ```
 
-메뉴에서 삭제할 스케줄을 선택합니다.
+메뉴에서 삭제할 스케줄을 선택합니다. **삭제 후** 삭제된 스케줄이 list와 같은 카드 형식으로 표시됩니다.
 
 ### 모든 스케줄 삭제
 
@@ -168,7 +185,7 @@ tp schedule remove-all
 tp schedule toggle
 ```
 
-메뉴에서 스케줄을 선택해 활성/비활성을 전환합니다.
+메뉴에서 스케줄을 선택해 활성/비활성을 전환합니다. **전환 후** 새 상태(**ENABLED** 또는 **DISABLED**)가 굵게·색상으로 명확히 표시되고, 스케줄 카드가 표시됩니다.
 
 ## 스케줄러 실행
 

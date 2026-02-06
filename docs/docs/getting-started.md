@@ -212,28 +212,48 @@ tp run workflow.yaml --silent
 tp run workflow.yaml -s
 ```
 
-**Using the `tp` Directory (Recommended):**
+**Project setup with `tp setup` (recommended for new projects):**
 
-For better organization, you can create a `tp` directory in your project and place all workflow files there. When you run `tp run` without specifying a file, task-pipeliner will automatically search for the nearest `tp` directory (starting from the current directory and traversing up) and let you select a workflow interactively.
+Run **`tp setup`** from your project root to create the recommended directory structure and example files in one step:
+
+- **Directories:** `tp/`, `tp/workflows/`, `tp/schedules/`
+- **Two example workflows** in `tp/workflows/` (echo-based): one with **choose** and **when**, one with **profiles**, **choose**, **prompt**, and **when**
+- **Two example schedule files** in `tp/schedules/`: one with a single schedule, one with two schedules using **profile** (Dev/Prod)
+
+Existing files are not overwritten. After running `tp setup`, use `tp run` to select from `tp/workflows/` and `tp schedule add` (no path) to select from `tp/schedules/`.
 
 ```bash
-# Create a tp directory and add workflow files
-mkdir tp
-mv workflow.yaml tp/
+# From your project root
+tp setup
+tp run              # Select from tp/workflows/
+tp schedule add     # Select from tp/schedules/
+```
 
-# Run without specifying a file - interactive selection
+**Using the `tp` directory (recommended structure):**
+
+The recommended layout uses two subdirectories under `tp`:
+
+- **`tp/workflows/`** – Place all workflow files (`.yaml`, `.yml`, `.json`) here. When you run **`tp run`** without a file, task-pipeliner finds the nearest `tp` directory and lets you **select a workflow from `tp/workflows/`**.
+- **`tp/schedules/`** – Place schedule files here. When you run **`tp schedule add`** without a file path, you can **select a schedule file from the nearest `tp/schedules/`** directory.
+
+```bash
+# Option 1: Use tp setup (creates tp/workflows and tp/schedules + examples)
+tp setup
+
+# Option 2: Create the structure manually
+mkdir -p tp/workflows tp/schedules
+mv workflow.yaml tp/workflows/
+
+# Run without a file – interactive selection from tp/workflows
 tp run
 ```
 
-This will:
-1. Find the nearest `tp` directory (current directory or any parent directory)
-2. List all workflow files (`.yaml`, `.yml`, `.json`) in that directory
-3. Show an interactive, searchable menu where you can:
-   - Type to filter workflows in real-time
-   - Use arrow keys (↑↓) to navigate
-   - Press Enter to select and run
+When you run `tp run` without a file:
+1. The nearest `tp` directory is found (current directory or any parent).
+2. All workflow files in **`tp/workflows/`** are listed.
+3. An interactive, searchable menu is shown: type to filter, use arrow keys (↑↓) to move, Enter to select and run.
 
-The interactive menu displays both the filename and the workflow's `name` (from the YAML/JSON content) for easy identification.
+The menu displays both the filename and the workflow `name` from the YAML/JSON for easy identification.
 
 **Silent Mode:**
 The `--silent` (or `-s`) flag suppresses all console output during workflow execution. This is useful for CI/CD pipelines where you only need exit codes, or automated scripts that don't need verbose output.

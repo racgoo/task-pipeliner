@@ -2,6 +2,24 @@
 
 task-pipeliner의 모든 CLI 명령어에 대한 완전한 참조입니다.
 
+## 프로젝트 셋업
+
+### `tp setup`
+
+권장 `tp` 디렉터리 구조와 예시 파일(워크플로우·스케줄)을 만들어 빠르게 시작할 수 있게 합니다.
+
+```bash
+tp setup
+```
+
+**하는 일:**
+- 현재 디렉터리(프로젝트 루트)에 `tp/`, `tp/workflows/`, `tp/schedules/`를 만듭니다.
+- **예시 워크플로우 2개**를 `tp/workflows/`에 추가합니다(echo 기반, choose·when 예시, profiles·choose·prompt·when 예시).
+- **예시 스케줄 파일 2개**를 `tp/schedules/`에 추가합니다(단일 스케줄, 프로필 Dev/Prod 사용 예시).
+- **이미 있는 파일은 덮어쓰지 않습니다.** 디렉터리나 파일이 있으면 그대로 둡니다.
+
+**사용 시점:** 새 프로젝트를 시작할 때나 권장 레이아웃이 필요할 때 프로젝트 루트에서 실행하세요. `tp setup` 후 `tp run`(파일 없이)으로 `tp/workflows/`에서 선택하고, `tp schedule add`(경로 없이)로 `tp/schedules/`에서 선택할 수 있습니다. 자세한 내용은 [시작하기](/docs/getting-started#project-setup-with-tp-setup-recommended-for-new-projects)를 참조하세요.
+
 ## 워크플로우 실행
 
 ### `tp run [file]`
@@ -10,7 +28,7 @@ YAML 또는 JSON 파일에서 워크플로우를 실행합니다.
 
 ```bash
 tp run workflow.yaml        # 워크플로우 실행
-tp run                      # 가장 가까운 tp 디렉토리에서 워크플로우 선택하여 실행
+tp run                      # 가장 가까운 tp/workflows 디렉터리에서 워크플로우 선택하여 실행
 tp run workflow.yaml --profile Test   # 프로필로 실행 (프로필에 설정된 변수는 choose/prompt 생략)
 tp run workflow.yaml -p Test         # 프로필 짧은 형식
 tp run workflow.yaml --silent  # 사일런트 모드로 실행 (모든 콘솔 출력 억제)
@@ -22,9 +40,9 @@ tp run workflow.yaml -s     # 사일런트 모드 짧은 형식
 - `-s, --silent` - 사일런트 모드로 실행 (모든 콘솔 출력 억제)
 
 **동작:**
-- 파일이 지정되지 않으면 가장 가까운 `tp` 디렉토리를 찾아 대화형 메뉴를 표시합니다
-- 프로필을 사용하면 변수를 미리 채워서 비대화형으로 실행할 수 있습니다
-- 사일런트 모드는 모든 출력을 억제합니다 (CI/CD에 유용)
+- 파일이 지정되지 않으면 가장 가까운 `tp` 디렉터리를 찾고 **`tp/workflows/`**의 워크플로우를 나열한 뒤 대화형 메뉴를 표시합니다.
+- 프로필을 사용하면 변수를 미리 채워서 비대화형으로 실행할 수 있습니다.
+- 사일런트 모드는 모든 출력을 억제합니다 (CI/CD에 유용).
 
 ## 리소스 열기
 
@@ -88,12 +106,14 @@ tp schedule ls
 스케줄 파일(YAML 또는 JSON)에서 스케줄을 추가합니다.
 
 ```bash
-tp schedule add schedules.yaml
+tp schedule add schedules.yaml   # 경로 지정
+tp schedule add                  # 경로 없음: 가장 가까운 tp/schedules/에서 선택
 ```
 
-- 파일 경로가 제공되지 않으면 프롬프트를 표시합니다
-- cron 표현식과 워크플로우 파일 존재 여부를 검증합니다
-- 각 스케줄의 별칭을 변경할 수 있습니다
+- 파일 경로를 주지 않으면 task-pipeliner가 가장 가까운 `tp` 디렉터리를 찾고 **`tp/schedules/`**에서 스케줄 파일을 선택할 수 있게 합니다.
+- cron 표현식과 워크플로우 파일 존재 여부를 검증합니다.
+- 각 스케줄의 별칭을 변경할 수 있습니다.
+- **추가 후** 추가된 스케줄은 **`tp schedule list`와 같은 카드 형식**(크론, 언제 실행되는지 설명, 다음 실행, 활성 여부)으로 표시됩니다.
 
 ### `tp schedule remove`
 
@@ -105,7 +125,7 @@ tp schedule remove
 tp schedule rm
 ```
 
-삭제할 스케줄을 선택하는 대화형 메뉴를 표시합니다.
+삭제할 스케줄을 선택하는 대화형 메뉴를 표시합니다. **삭제 후** 삭제된 스케줄이 list와 같은 카드 형식으로 표시됩니다.
 
 ### `tp schedule remove-all`
 
@@ -125,7 +145,7 @@ tp schedule remove-all
 tp schedule toggle
 ```
 
-전환할 스케줄을 선택하는 대화형 메뉴를 표시합니다.
+전환할 스케줄을 선택하는 대화형 메뉴를 표시합니다. **전환 후** 새 상태(**ENABLED** 또는 **DISABLED**)가 굵게·색상으로 명확히 표시되고 스케줄 카드가 표시되어, 활성/비활성이 한눈에 구분됩니다.
 
 ### `tp schedule start`
 
@@ -199,14 +219,15 @@ tp clean
 
 | 명령어 | 설명 |
 |--------|------|
-| `tp run [file]` | 워크플로우 실행 |
+| `tp setup` | tp/, tp/workflows, tp/schedules 및 예시 파일 생성 |
+| `tp run [file]` | 워크플로우 실행 (파일 없음 = tp/workflows/에서 선택) |
 | `tp run --profile <name>` | 프로필로 실행 (비대화형) |
 | `tp run --silent` | 사일런트 모드로 실행 |
 | `tp open generator` | 시각적 생성기 열기 |
 | `tp open docs` | 문서 열기 |
 | `tp history` | 실행 히스토리 보기 |
 | `tp schedule` | 모든 스케줄 보기 |
-| `tp schedule add <file>` | 파일에서 스케줄 추가 |
+| `tp schedule add [file]` | 스케줄 추가 (파일 없음 = tp/schedules/에서 선택) |
 | `tp schedule start -d` | 백그라운드에서 데몬 시작 |
 | `tp schedule stop` | 데몬 종료 |
 | `tp schedule status` | 데몬 상태 확인 |

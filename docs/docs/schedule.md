@@ -132,12 +132,30 @@ This way, `tp schedule add` works correctly regardless of where you run it from.
 ## Adding Schedules
 
 ```bash
+# With file path
 tp schedule add schedules.yaml
+
+# Without path: select a schedule file from the nearest tp/schedules/ directory (e.g. after tp setup)
+tp schedule add
 ```
 
-If you omit the file path, you'll be prompted to enter it. Each schedule's alias can be confirmed or overridden when adding.
+If you omit the file path, task-pipeliner looks for the nearest `tp` directory and lets you **select a schedule file from `tp/schedules/`**. Each schedule's alias can be confirmed or overridden when adding. **After adding**, each added schedule is shown in the **same card format as `tp schedule list`**: cron expression, human-readable “when” description (e.g. “At 09:00”), next run, enabled state, workflow path, and profile if set.
 
 ## Managing Schedules
+
+### Unified schedule UI (list, add, toggle, remove)
+
+List, add, toggle, and remove all use the **same schedule card layout**. Each card shows:
+
+- Cron expression and a **human-readable “when” description** (e.g. “Every minute”, “At 09:00”)
+- Next run time, last run, timezone, workflow path, profile (if set)
+- Enabled/disabled state
+
+**After `tp schedule add`:** Each added schedule is displayed in this card format.  
+**After `tp schedule toggle`:** The new state is **emphasized** (**ENABLED** in green or **DISABLED** in gray) so it’s obvious at a glance; the schedule card is then shown.  
+**After `tp schedule remove`:** The removed schedule is shown in the same card format so you can see what was removed (cron, when it ran, etc.).
+
+The same layout is used by `tp schedule status` and `tp schedule start`, so the UI is consistent everywhere.
 
 ### List All Schedules
 
@@ -147,8 +165,7 @@ tp schedule list
 tp schedule ls
 ```
 
-- Shows all schedules in a **unified card layout** (each card: name, active/inactive badge, Enabled, Cron with human-readable description, Timezone, Workflow path, Profile, Last run, Next run).
-- The same card layout is used by `tp schedule status` and `tp schedule start`, so the UI is consistent everywhere.
+Shows all schedules in the unified card layout (each card: name, active/inactive badge, Enabled, Cron with human-readable description, Timezone, Workflow path, Profile, Last run, Next run).
 
 ### Remove a Schedule
 
@@ -158,7 +175,7 @@ tp schedule remove
 tp schedule rm
 ```
 
-An interactive menu lets you select which schedule to remove.
+An interactive menu lets you select which schedule to remove. **After removal**, the removed schedule is displayed in the same card format as list.
 
 ### Remove All Schedules
 
@@ -174,7 +191,7 @@ A confirmation prompt is shown before removing all schedules.
 tp schedule toggle
 ```
 
-Select a schedule to toggle its enabled/disabled state.
+Select a schedule to toggle its enabled/disabled state. **After toggling**, the new state (**ENABLED** or **DISABLED**) is shown clearly in bold and color, and the schedule card is displayed.
 
 ## Running the Scheduler
 
