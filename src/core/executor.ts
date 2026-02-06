@@ -432,8 +432,9 @@ export class Executor {
     // For parallel steps, extract the base step index
     const baseStepIndex = this.calculateBaseStepIndex(context);
 
-    // Replace {{variable}} with actual values from workspace
-    const command = substituteVariables(step.run, this.workspace);
+    // Replace {{variable}} with actual values from workspace.
+    // Trim so block-scalar trailing newline (e.g. run: |- ) does not reach the shell.
+    const command = substituteVariables(step.run.trim(), this.workspace);
 
     // Resolve shell configuration: step.shell > workflow.shell > platform default
     const shellConfig = step.shell ?? this.globalShell;

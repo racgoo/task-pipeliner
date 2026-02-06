@@ -1,12 +1,24 @@
-import { stringify, parse } from 'yaml';
+import { stringify, parse, Document, visit, isScalar } from 'yaml';
 import type { Workflow } from '../types/workflow';
 import type { ScheduleFile } from '../types/schedule';
 
 /**
- * Generate YAML from workflow object
+ * Generate YAML from workflow object.
+ * run (and onError.run) script values:
+ * - No single quote → single-quoted (QUOTE_SINGLE)
+ * - Contains single quote → literal block (|-) so no escaping; exact string as-is
  */
 export function generateYAML(workflow: Workflow): string {
-  return stringify(workflow, {
+  const doc = new Document(workflow);
+  visit(doc, {
+    Pair(_key, pair) {
+      if (isScalar(pair.key) && pair.key.value === 'run' && isScalar(pair.value)) {
+        const val = String(pair.value.value ?? '');
+        pair.value.type = val.includes("'") ? 'BLOCK_LITERAL' : 'QUOTE_SINGLE';
+      }
+    },
+  });
+  return doc.toString({
     indent: 2,
     lineWidth: 0,
   });
