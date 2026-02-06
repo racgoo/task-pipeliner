@@ -19,7 +19,7 @@
 
 import { exec } from 'child_process';
 import { existsSync, readFileSync } from 'fs';
-import { readdir, rm } from 'fs/promises';
+import { mkdir, readdir, rm, writeFile } from 'fs/promises';
 import { homedir } from 'os';
 import { resolve, join, extname } from 'path';
 import { promisify } from 'util';
@@ -60,6 +60,7 @@ program
       '  • Beautiful terminal output\n' +
       '  • Supports both YAML (.yaml, .yml) and JSON (.json) formats\n\n' +
       'Quick Start:\n' +
+      '  0. (Optional) tp setup — create tp/, tp/workflows, tp/schedules and add 2 example workflows + 2 example schedules (echo-based dummies)\n\n' +
       '  1. Create a workflow.yaml or workflow.json file:\n' +
       '     steps:\n' +
       '       - run: echo "Hello, World!"\n' +
@@ -82,20 +83,22 @@ program
       '     tp history remove    # Remove a specific history\n' +
       '     tp history remove-all # Remove all histories\n\n' +
       '  4. Schedule workflows (cron):\n' +
-      '     tp schedule add schedule.yaml   # Add schedules from a file\n' +
+      '     tp schedule add schedule.yaml   # Add schedules from a file (or tp/schedules/*.yaml after tp setup)\n' +
       '     tp schedule list                # List schedules\n' +
       '     tp schedule start -d            # Start daemon in background\n' +
       '     tp schedule status              # View daemon and schedule status\n\n' +
       '  5. Other commands:\n' +
+      '     tp setup           # Create tp/workflows, tp/schedules with example files\n' +
       '     tp open docs       # Open documentation in browser\n' +
       '     tp open generator  # Open visual workflow generator\n' +
-      '     tp clean            # Remove ~/.pipeliner data (schedules, daemon, history)\n\n' +
+      '     tp clean           # Remove ~/.pipeliner data (schedules, daemon, history)\n\n' +
       '  Note: After upgrading to a new version, if you see compatibility issues (e.g. schedules or daemon), run "tp clean" to reset ~/.pipeliner data.\n\n'
   )
   .version(getVersion())
   .addHelpText(
     'after',
     '\nExamples:\n' +
+      '  $ tp setup\n' +
       '  $ tp run workflow.yaml\n' +
       '  $ tp run workflow.yaml --profile Production\n' +
       '  $ tp schedule add schedule.yaml\n' +
@@ -251,6 +254,115 @@ program
  * Manages workflow schedules
  */
 program.addCommand(createScheduleCommand());
+
+/**
+ * Setup command - Create tp directory with workflows and schedules and example files
+ */
+const SETUP_WORKFLOW_EXAMPLES: { filename: string; content: string }[] = [
+  {
+    filename: 'example-hello.yaml',
+    content: `name: Hello World
+
+steps:
+  - run: echo "Hello from task-pipeliner"
+  - run: echo "Edit tp/workflows/*.yaml and run: tp run tp/workflows/example-hello.yaml"
+`,
+  },
+  {
+    filename: 'example-build.yaml',
+    content: `name: Example Build
+
+steps:
+  - run: echo "Build step 1..."
+  - run: echo "Build step 2..."
+  - run: echo "Done. Replace with real commands (e.g. npm run build)"
+`,
+  },
+];
+
+const SETUP_SCHEDULE_EXAMPLES: { filename: string; content: string }[] = [
+  {
+    filename: 'example-daily.yaml',
+    content: `schedules:
+  - name: Daily Hello
+    cron: "0 9 * * *"
+    workflow: ../workflows/example-hello.yaml
+`,
+  },
+  {
+    filename: 'example-hourly.yaml',
+    content: `schedules:
+  - name: Hourly Build
+    cron: "0 * * * *"
+    workflow: ../workflows/example-build.yaml
+`,
+  },
+];
+
+program
+  .command('setup')
+  .description(
+    'Create tp directory with workflows and schedules folders and add 2 example files in each (echo-based dummies). Run from project root for easy initial setup.'
+  )
+  .action(async () => {
+    const cwd = process.cwd();
+    const tpDir = join(cwd, 'tp');
+    const workflowsDir = join(tpDir, 'workflows');
+    const schedulesDir = join(tpDir, 'schedules');
+
+    if (existsSync(tpDir)) {
+      console.log(chalk.gray(`\n  tp directory already exists at ${tpDir}`));
+    } else {
+      await mkdir(tpDir, { recursive: true });
+      console.log(chalk.green(`\n✓ Created ${tpDir}`));
+    }
+
+    const ensureDir = async (dir: string, label: string) => {
+      if (existsSync(dir)) {
+        console.log(chalk.gray(`  ${label} already exists`));
+      } else {
+        await mkdir(dir, { recursive: true });
+        console.log(chalk.green(`✓ Created ${label}`));
+      }
+    };
+
+    await ensureDir(workflowsDir, 'tp/workflows');
+    await ensureDir(schedulesDir, 'tp/schedules');
+
+    const created: string[] = [];
+
+    for (const { filename, content } of SETUP_WORKFLOW_EXAMPLES) {
+      const filePath = join(workflowsDir, filename);
+      if (existsSync(filePath)) {
+        console.log(chalk.gray(`  Skipped (exists): tp/workflows/${filename}`));
+      } else {
+        await writeFile(filePath, content, 'utf-8');
+        created.push(`tp/workflows/${filename}`);
+      }
+    }
+
+    for (const { filename, content } of SETUP_SCHEDULE_EXAMPLES) {
+      const filePath = join(schedulesDir, filename);
+      if (existsSync(filePath)) {
+        console.log(chalk.gray(`  Skipped (exists): tp/schedules/${filename}`));
+      } else {
+        await writeFile(filePath, content, 'utf-8');
+        created.push(`tp/schedules/${filename}`);
+      }
+    }
+
+    if (created.length > 0) {
+      console.log(chalk.green(`\n✓ Added ${created.length} example file(s):`));
+      created.forEach((p) => console.log(chalk.dim(`   ${p}`)));
+    }
+
+    console.log(
+      chalk.dim(
+        '\n  Next: tp run tp/workflows/example-hello.yaml  |  tp schedule add tp/schedules/example-daily.yaml  |  tp schedule list'
+      )
+    );
+    console.log();
+  });
 
 /**
  * History command group
