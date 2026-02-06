@@ -444,7 +444,7 @@ export class Executor {
     const command = substituteVariables(step.run, this.workspace);
 
     // Resolve shell configuration: step.shell > workflow.shell > platform default
-    const shellConfig = step.shell || this.globalShell;
+    const shellConfig = step.shell ?? this.globalShell;
 
     // Get retry count (default: 0, meaning no retry)
     const retryValue = step.retry ?? 0;

@@ -18,7 +18,7 @@ function findVariableValue(
   if (workspace.hasVariable(variableName)) {
     const value = workspace.getVariable(variableName);
     // Return empty string if value is explicitly set to empty, otherwise use default
-    return value !== null && value !== undefined ? value : defaultValue;
+    return value ?? defaultValue;
   }
 
   // Second, check facts
@@ -31,7 +31,7 @@ function findVariableValue(
   if (workspace.hasChoice(variableName)) {
     const value = workspace.getChoice(variableName);
     // Return empty string if value is explicitly set to empty, otherwise use default
-    return value !== null && value !== undefined ? value : defaultValue;
+    return value ?? defaultValue;
   }
 
   // If not found, return the original template text

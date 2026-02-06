@@ -1,6 +1,7 @@
 import { spawn } from 'child_process';
 import { existsSync } from 'fs';
-import { dirname, isAbsolute, resolve } from 'path';
+import { readdir } from 'fs/promises';
+import { dirname, extname, isAbsolute, join, resolve } from 'path';
 import boxen from 'boxen';
 import chalk from 'chalk';
 import { Command } from 'commander';
@@ -20,7 +21,9 @@ import { ScheduleManager } from '../core/schedule-manager';
 import { WorkflowScheduler } from '../core/scheduler';
 import { Schedule } from '../types/schedule';
 import { ScheduleDefinition } from '../types/schedule-file';
+import { ChoicePrompt } from './prompts';
 import { formatScheduleCard } from './schedule-card-format';
+import { findNearestTpDirectory } from './utils';
 
 /**
  * Create schedule command
@@ -36,7 +39,9 @@ export function createScheduleCommand(): Command {
   // Add subcommand
   scheduleCmd
     .command('add [scheduleFile]')
-    .description('Add schedules from a schedule file (YAML or JSON)')
+    .description(
+      'Add schedules from a schedule file (YAML or JSON). If no file given, select from nearest tp/schedules directory.'
+    )
     .action(async (scheduleFilePath?: string) => {
       await addSchedules(scheduleFilePath);
     });
@@ -131,23 +136,34 @@ function resolveWorkflowPath(scheduleFilePath: string, scheduleDef: ScheduleDefi
 async function addSchedules(scheduleFilePath?: string): Promise<void> {
   const manager = new ScheduleManager();
 
-  // Prompt for schedule file path if not provided
+  // When no path given, select from nearest tp/schedules directory
   if (!scheduleFilePath) {
-    const { path } = await inquirer.prompt<{ path: string }>([
-      {
-        type: 'input',
-        name: 'path',
-        message: 'Schedule file path (YAML or JSON):',
-        validate: (input: string) => {
-          const resolved = resolve(input);
-          if (!existsSync(resolved)) {
-            return `File not found: ${resolved}`;
-          }
-          return true;
-        },
-      },
-    ]);
-    scheduleFilePath = path;
+    const tpDir = findNearestTpDirectory();
+    if (!tpDir) {
+      console.error(chalk.red('\n✗ No tp directory found'));
+      process.exit(1);
+    }
+    const schedulesDir = join(tpDir, 'schedules');
+    if (!existsSync(schedulesDir)) {
+      console.error(chalk.red(`\n✗ No schedules directory found at ${schedulesDir}`));
+      process.exit(1);
+    }
+    const files = await readdir(schedulesDir);
+    const scheduleFiles = files.filter((file) => {
+      const ext = extname(file).toLowerCase();
+      return ['.yaml', '.yml', '.json'].includes(ext);
+    });
+    if (scheduleFiles.length === 0) {
+      console.error(chalk.red(`\n✗ No schedule files found in ${schedulesDir}`));
+      process.exit(1);
+    }
+    const choices = scheduleFiles.map((file) => ({
+      id: join(schedulesDir, file),
+      label: file,
+    }));
+    const choicePrompt = new ChoicePrompt(true);
+    const selected = await choicePrompt.prompt('Select a schedule file to add', choices);
+    scheduleFilePath = selected.id;
   }
 
   const resolvedPath = resolve(scheduleFilePath);

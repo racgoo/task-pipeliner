@@ -119,13 +119,13 @@ program
   .description('Run a workflow from a YAML or JSON file')
   .argument(
     '[file]',
-    'Path to the workflow file (YAML or JSON, relative or absolute). If omitted, will search for workflows in the nearest tp directory.'
+    'Path to the workflow file (YAML or JSON, relative or absolute). If omitted, will select from workflows in the nearest tp/workflows directory.'
   )
   .option('-s, --silent', 'Run in silent mode (suppress console output)')
   .option('-p, --profile <name>', 'Run in profile mode (use profile name)')
   .addHelpText(
     'after',
-    '\nExamples:\n  $ tp run workflow.yaml\n  $ tp run workflow.json\n  $ tp run ./my-workflow.yaml\n  $ tp run examples/simple-project/workflow.json\n  $ tp run                    # Select from workflows in nearest tp directory\n  $ tp run workflow.yaml --silent\n  $ tp run workflow.yaml -s\n\nWorkflow File Structure:\n  A workflow file must contain a "steps" array with step definitions.\n  Each step can be:\n  • run: Execute a shell command\n  • choose: Prompt user to select from options\n  • prompt: Ask user for text input\n  • parallel: Run multiple steps simultaneously\n  • fail: Stop workflow with error message\n\n  Steps can have "when" conditions to control execution:\n  • file: Check if file/directory exists\n  • var: Check variable value or existence\n  • all/any/not: Combine conditions\n\n  Supported formats: YAML (.yaml, .yml) and JSON (.json)\n  See README.md for complete DSL documentation.'
+    '\nExamples:\n  $ tp run workflow.yaml\n  $ tp run workflow.json\n  $ tp run ./my-workflow.yaml\n  $ tp run examples/simple-project/workflow.json\n  $ tp run                    # Select from workflows in nearest tp/workflows\n  $ tp run workflow.yaml --silent\n  $ tp run workflow.yaml -s\n\nWorkflow File Structure:\n  A workflow file must contain a "steps" array with step definitions.\n  Each step can be:\n  • run: Execute a shell command\n  • choose: Prompt user to select from options\n  • prompt: Ask user for text input\n  • parallel: Run multiple steps simultaneously\n  • fail: Stop workflow with error message\n\n  Steps can have "when" conditions to control execution:\n  • file: Check if file/directory exists\n  • var: Check variable value or existence\n  • all/any/not: Combine conditions\n\n  Supported formats: YAML (.yaml, .yml) and JSON (.json)\n  See README.md for complete DSL documentation.'
   )
   .action(async (file: string | undefined, options: { silent?: boolean; profile?: string }) => {
     try {
@@ -372,7 +372,7 @@ historyCommand.action(async () => {
 });
 
 /**
- * Select workflow file from nearest tp directory
+ * Select workflow file from nearest tp/workflows directory
  */
 async function selectWorkflowFromTpDirectory(): Promise<string | null> {
   const tpDir = findNearestTpDirectory();
@@ -381,9 +381,15 @@ async function selectWorkflowFromTpDirectory(): Promise<string | null> {
     return null;
   }
 
+  const workflowsDir = join(tpDir, 'workflows');
+  if (!existsSync(workflowsDir)) {
+    console.error(chalk.red(`\n✗ No workflows directory found at ${workflowsDir}`));
+    return null;
+  }
+
   try {
-    // Read all files in tp directory
-    const files = await readdir(tpDir);
+    // Read all files in tp/workflows directory
+    const files = await readdir(workflowsDir);
 
     // Filter for workflow files (yaml, yml, json)
     const workflowFiles = files.filter((file) => {
@@ -392,14 +398,14 @@ async function selectWorkflowFromTpDirectory(): Promise<string | null> {
     });
 
     if (workflowFiles.length === 0) {
-      console.error(chalk.red(`\n✗ No workflow files found in ${tpDir}`));
+      console.error(chalk.red(`\n✗ No workflow files found in ${workflowsDir}`));
       return null;
     }
 
     // Parse each file to extract name
     const choices = await Promise.all(
       workflowFiles.map(async (file) => {
-        const filePath = join(tpDir, file);
+        const filePath = join(workflowsDir, file);
         try {
           const parser = getParser(filePath);
           const content = readFileSync(filePath, 'utf-8');

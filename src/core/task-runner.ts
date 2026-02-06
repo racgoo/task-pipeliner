@@ -70,7 +70,7 @@ export class TaskRunner {
       // Display output immediately (normal execution)
       return this.runRealtime(
         command,
-        stepName || command,
+        stepName ?? command,
         hasCondition,
         lineNumber,
         fileName,
@@ -296,7 +296,7 @@ export class TaskRunner {
     } else {
       // Use user's current shell (from $SHELL or platform default)
       // This ensures commands run in the same shell environment as the user
-      const userShell = process.env.SHELL || (process.platform === 'win32' ? 'cmd.exe' : '/bin/sh');
+      const userShell = process.env.SHELL ?? (process.platform === 'win32' ? 'cmd.exe' : '/bin/sh');
       const shellArg = process.platform === 'win32' ? '/c' : '-c';
       const options: SpawnOptions = {
         stdio: ['inherit', 'pipe', 'pipe'],
