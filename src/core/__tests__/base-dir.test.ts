@@ -137,18 +137,17 @@ steps:
 `;
 
     const workflow = parse(yamlContent) as Workflow;
+    // Don't set _filePath
 
     await executor.execute(workflow);
 
-    // baseDir should be workflow file directory
-    const expectedBaseDir = dirname(workflowPath);
+    // No baseDir in YAML and no _filePath → baseDir stays undefined (shell uses process.cwd())
     const actualBaseDir = (executor as any).baseDir;
-    expect(actualBaseDir).toBe(expectedBaseDir);
+    expect(actualBaseDir).toBeUndefined();
 
-    // Command should be called with workflow file directory as cwd
     expect(mockRun).toHaveBeenCalled();
     const lastCall = mockRun.mock.calls[mockRun.mock.calls.length - 1];
-    expect(lastCall[8]).toBe(expectedBaseDir);
+    expect(lastCall[8]).toBeUndefined();
   });
 
   it('should fallback to current working directory when baseDir and _filePath are not specified', async () => {
