@@ -97,6 +97,16 @@ class WorkflowRecorder implements Recorder {
   public getDuration(): number {
     return Date.now() - this.recordStartTimestamp;
   }
+
+  /**
+   * Get the current history object (without saving to disk)
+   */
+  public getHistory(): History {
+    return {
+      initialTimestamp: this.initialTimestamp,
+      records: this.records,
+    };
+  }
 }
 
 export { WorkflowRecorder };

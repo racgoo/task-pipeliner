@@ -7,6 +7,7 @@ import boxen from 'boxen';
 import chalk from 'chalk';
 import dayjs from 'dayjs';
 import type { History, Record as WorkflowRecord, Step } from '../types/workflow';
+import { generateTimeline } from './timeline';
 import { formatDuration } from './ui';
 
 /**
@@ -46,6 +47,12 @@ export function displayHistory(history: History, filename: string): void {
   history.records.forEach((record, index) => {
     displayRecord(record, index + 1, history.records.length);
   });
+
+  // Display timeline
+  const timeline = generateTimeline(history);
+  if (timeline) {
+    console.log(timeline);
+  }
 
   console.log();
 }

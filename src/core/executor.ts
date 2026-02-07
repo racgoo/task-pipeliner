@@ -1,6 +1,7 @@
 import { resolve, isAbsolute, dirname } from 'path';
 import chalk from 'chalk';
 import { ChoicePrompt, TextPrompt } from '../cli/prompts';
+import { generateTimeline } from '../cli/timeline';
 import { createStepFooterMessage, formatDuration } from '../cli/ui';
 import type { Condition } from '../types/condition';
 import type {
@@ -236,6 +237,13 @@ export class Executor {
     const totalDuration = Date.now() - workflowStartTime;
     const totalDurationStr = formatDuration(totalDuration);
     console.log(chalk.cyan(`\nTotal execution time: ${totalDurationStr}`));
+
+    // Generate and display timeline
+    const history = recorder.getHistory();
+    const timeline = generateTimeline(history);
+    if (timeline) {
+      console.log(timeline);
+    }
 
     // Save the recorded results
     await recorder.save();
