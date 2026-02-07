@@ -217,6 +217,8 @@ Ask user for text input.
 
 Execute multiple steps simultaneously.
 
+**Important:** `parallel` can only be used inside the `steps` array at the workflow level. Nested `parallel` (parallel inside parallel) is **not allowed**.
+
 ### Syntax
 
 ```yaml
@@ -229,10 +231,13 @@ Execute multiple steps simultaneously.
 
 ### Properties
 
-- `parallel` (required): `array` of steps - Steps to execute in parallel. **Only `run`, nested `parallel`, and `fail` steps are allowed.** `choose` and `prompt` are **not allowed** inside `parallel` (user input cannot run in parallel).
+- `parallel` (required): `array` of steps - Steps to execute in parallel. **Only `run` and `fail` steps are allowed inside `parallel`.** `choose`, `prompt`, and nested `parallel` are **not allowed** inside `parallel`.
 - `when` (optional): `Condition` - Execute parallel block only if condition is met
 
-**Restriction:** Do not use `choose` or `prompt` inside `parallel`; the workflow validator will reject it.
+**Restrictions:**
+- `parallel` can only be used in the `steps` array at the workflow level
+- Do not use `choose` or `prompt` inside `parallel`; the workflow validator will reject it
+- Do not nest `parallel` inside `parallel`; nested parallel execution is not supported
 
 ### Examples
 
@@ -243,12 +248,12 @@ Execute multiple steps simultaneously.
     - run: 'npm run test:integration'
     - run: 'npm run lint'
 
-# Nested parallel (allowed); only run / parallel / fail inside parallel
+# Parallel with fail step
 - parallel:
     - run: 'npm run test'
-    - parallel:
-        - run: 'npm run lint'
-        - run: 'npm run typecheck'
+    - run: 'npm run lint'
+    - fail:
+        message: "This will fail"
 ```
 
 ---

@@ -110,13 +110,17 @@ See the [Profiles](/docs/dsl-reference/profiles) documentation for full details 
 
 - **Type**: `array` of `Step` objects
 - **Description**: List of steps to execute sequentially
-- **Execution**: Steps run in order, one after another (unless parallel)
+- **Execution**: Steps run in order, one after another (unless using `parallel` step)
 - **Minimum**: At least 1 step is required
+- **Note**: The `parallel` step type can only be used at this level (inside `steps` array). Nested `parallel` (parallel inside parallel) is not allowed.
 - **Example**:
   ```yaml
   steps:
     - run: 'echo "Step 1"'
     - run: 'echo "Step 2"'
+    - parallel:
+        - run: 'echo "Parallel 1"'
+        - run: 'echo "Parallel 2"'
   ```
 
 ## Step Types

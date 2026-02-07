@@ -110,13 +110,17 @@ steps:                                 # 필수: 실행할 단계 배열
 
 - **타입**: `Step` 객체의 `array`
 - **설명**: 순차적으로 실행할 단계 목록
-- **실행**: 단계는 순서대로 하나씩 실행됩니다 (병렬이 아닌 경우)
+- **실행**: 단계는 순서대로 하나씩 실행됩니다 (`parallel` 스텝을 사용하지 않는 경우)
 - **최소 개수**: 최소 1개의 단계가 필요합니다
+- **참고**: `parallel` 스텝 타입은 이 레벨(`steps` 배열 안)에서만 사용할 수 있습니다. 중첩 `parallel` (parallel 안에 parallel)은 허용되지 않습니다.
 - **예제**:
   ```yaml
   steps:
     - run: 'echo "Step 1"'
     - run: 'echo "Step 2"'
+    - parallel:
+        - run: 'echo "Parallel 1"'
+        - run: 'echo "Parallel 2"'
   ```
   ```json
   {

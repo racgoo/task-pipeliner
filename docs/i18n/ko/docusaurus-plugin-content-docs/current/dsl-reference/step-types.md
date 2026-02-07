@@ -333,6 +333,8 @@ steps:
 
 여러 단계를 동시에 실행합니다. `steps`와 마찬가지로 `parallel`은 내부에 step 배열을 가지며, 각 step은 `-`로 시작합니다. 이 step들이 모두 동시에 실행됩니다.
 
+**중요:** `parallel`은 워크플로우 레벨의 `steps` 배열 안에서만 사용할 수 있습니다. 중첩 `parallel` (parallel 안에 parallel)은 **허용되지 않습니다**.
+
 ### 문법
 
 ```yaml
@@ -356,10 +358,13 @@ steps:
 
 ### 속성
 
-- `parallel` (필수): 단계들의 `array` - 병렬로 실행할 단계. **`run`, 중첩 `parallel`, `fail` 스텝만 허용됩니다.** `choose`와 `prompt`는 `parallel` **안에서 사용할 수 없습니다** (사용자 입력은 병렬로 실행되지 않음).
+- `parallel` (필수): 단계들의 `array` - 병렬로 실행할 단계. **`run`과 `fail` 스텝만 허용됩니다.** `choose`, `prompt`, 그리고 중첩 `parallel`은 `parallel` **안에서 사용할 수 없습니다**.
 - `when` (선택): `Condition` - 조건이 충족될 때만 병렬 블록 실행
 
-**제한:** `parallel` 안에서 `choose`나 `prompt`를 사용하면 안 되며, 워크플로우 검증 시 에러가 발생합니다.
+**제한 사항:**
+- `parallel`은 워크플로우 레벨의 `steps` 배열에서만 사용할 수 있습니다
+- `parallel` 안에서 `choose`나 `prompt`를 사용하면 안 되며, 워크플로우 검증 시 에러가 발생합니다
+- `parallel` 안에 `parallel`을 중첩할 수 없습니다. 중첩 병렬 실행은 지원되지 않습니다
 
 ### 예제
 
@@ -389,12 +394,12 @@ steps:
     - run: 'npm run test'
     - run: 'npm run lint'
 
-# 중첩 parallel (허용); parallel 내부에는 run / parallel / fail만 사용
+# 병렬 실행에 fail 스텝 포함
 - parallel:
     - run: 'npm run test'
-    - parallel:
-        - run: 'npm run lint'
-        - run: 'npm run typecheck'
+    - run: 'npm run lint'
+    - fail:
+        message: "이것은 실패합니다"
 ```
 
 ### 동작
