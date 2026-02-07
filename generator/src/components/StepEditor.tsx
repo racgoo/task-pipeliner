@@ -433,8 +433,8 @@ function PromptStepEditor({
   );
 }
 
-/** Step types allowed inside parallel (choose/prompt are not allowed) */
-type ParallelBranchType = 'run' | 'parallel' | 'fail';
+/** Step types allowed inside parallel (only run and fail are allowed, nested parallel is not allowed) */
+type ParallelBranchType = 'run' | 'fail';
 
 function ParallelStepEditor({
   step,
@@ -443,14 +443,27 @@ function ParallelStepEditor({
   step: Extract<Step, { parallel: Step[] }>;
   onUpdate: (step: Step) => void;
 }) {
+  const [expandedBranches, setExpandedBranches] = useState<Set<number>>(
+    new Set(step.parallel.map((_, i) => i))
+  );
+
+  const toggleBranch = (index: number) => {
+    setExpandedBranches((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  };
+
   const addBranch = (type: ParallelBranchType = 'run') => {
     let newStep: Step;
     switch (type) {
       case 'run':
         newStep = { run: '' };
-        break;
-      case 'parallel':
-        newStep = { parallel: [] };
         break;
       case 'fail':
         newStep = { fail: { message: '' } };
@@ -458,10 +471,13 @@ function ParallelStepEditor({
       default:
         newStep = { run: '' };
     }
+    const newIndex = step.parallel.length;
     onUpdate({
       ...step,
       parallel: [...step.parallel, newStep],
     });
+    // Expand the newly added branch
+    setExpandedBranches((prev) => new Set([...prev, newIndex]));
   };
 
   const updateBranch = (index: number, branchStep: Step) => {
@@ -475,6 +491,18 @@ function ParallelStepEditor({
       ...step,
       parallel: step.parallel.filter((_, i) => i !== index),
     });
+    // Update expanded branches after removal
+    setExpandedBranches((prev) => {
+      const next = new Set<number>();
+      prev.forEach((i) => {
+        if (i < index) {
+          next.add(i);
+        } else if (i > index) {
+          next.add(i - 1);
+        }
+      });
+      return next;
+    });
   };
 
   const changeBranchType = (index: number, newType: ParallelBranchType) => {
@@ -482,9 +510,6 @@ function ParallelStepEditor({
     switch (newType) {
       case 'run':
         newStep = { run: '' };
-        break;
-      case 'parallel':
-        newStep = { parallel: [] };
         break;
       case 'fail':
         newStep = { fail: { message: '' } };
@@ -495,57 +520,83 @@ function ParallelStepEditor({
     updateBranch(index, newStep);
   };
 
-  const getBranchType = (branchStep: Step): ParallelBranchType => {
+  const getBranchType = (branchStep: Step): ParallelBranchType | null => {
     if ('run' in branchStep) return 'run';
-    if ('parallel' in branchStep) return 'parallel';
     if ('fail' in branchStep) return 'fail';
-    return 'run';
+    // parallel, choose, prompt are not allowed inside parallel
+    return null;
   };
 
-  const isInvalidBranch = (branchStep: Step) => 'choose' in branchStep || 'prompt' in branchStep;
+  const isInvalidBranch = (branchStep: Step) => 
+    'choose' in branchStep || 'prompt' in branchStep || 'parallel' in branchStep;
 
   return (
     <div className="parallel-step-editor">
       <div className="branches-section">
         <div className="branches-header">
-          <div className="branches-header-row">
+            <div className="branches-header-row">
             <label>Parallel Branches</label>
             <div className="branch-type-buttons">
               <button onClick={() => addBranch('run')}>+ Run</button>
-              <button onClick={() => addBranch('parallel')}>+ Parallel</button>
               <button onClick={() => addBranch('fail')}>+ Fail</button>
             </div>
           </div>
           <p className="parallel-restriction-hint">
-            Only Run, nested Parallel, and Fail are allowed inside parallel. Choose and Prompt cannot run in parallel.
+            Only Run and Fail are allowed inside parallel. Choose, Prompt, and nested Parallel are not allowed.
           </p>
         </div>
-        {step.parallel.map((branchStep, index) => (
-          <div key={index} className="branch-editor">
-            <div className="branch-header">
-              <div className="branch-header-left">
-                <span>Branch {index + 1}</span>
-                <select
-                  value={getBranchType(branchStep)}
-                  onChange={(e) => changeBranchType(index, e.target.value as ParallelBranchType)}
-                  className="branch-type-select"
-                >
-                  <option value="run">Run</option>
-                  <option value="parallel">Parallel</option>
-                  <option value="fail">Fail</option>
-                </select>
-                {isInvalidBranch(branchStep) && (
-                  <span className="branch-invalid-hint" title="Choose/Prompt are not allowed inside parallel">
-                    (invalid)
+        {step.parallel.map((branchStep, index) => {
+          const isExpanded = expandedBranches.has(index);
+          return (
+            <div key={index} className="branch-editor">
+              <div 
+                className="branch-header" 
+                onClick={(e) => {
+                  // Don't toggle if clicking on select or button
+                  if ((e.target as HTMLElement).closest('.branch-type-select, button')) {
+                    return;
+                  }
+                  toggleBranch(index);
+                }}
+                style={{ cursor: 'pointer' }}
+              >
+                <div className="branch-header-left">
+                  <span className="branch-chevron">
+                    {isExpanded ? '▼' : '▶'}
                   </span>
-                )}
+                  <span>Branch {index + 1}</span>
+                  <select
+                    value={getBranchType(branchStep) || 'run'}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      changeBranchType(index, e.target.value as ParallelBranchType);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="branch-type-select"
+                  >
+                    <option value="run">Run</option>
+                    <option value="fail">Fail</option>
+                  </select>
+                  {isInvalidBranch(branchStep) && (
+                    <span className="branch-invalid-hint" title="Choose, Prompt, and nested Parallel are not allowed inside parallel">
+                      (invalid)
+                    </span>
+                  )}
+                </div>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeBranch(index);
+                  }}
+                >
+                  Remove
+                </button>
               </div>
-              <button onClick={() => removeBranch(index)}>Remove</button>
-            </div>
-            <div className="branch-content">
+              {isExpanded && (
+                <div className="branch-content">
               {isInvalidBranch(branchStep) && (
                 <div className="branch-invalid-banner">
-                  Choose and Prompt are not allowed inside parallel. Change type to Run, Parallel, or Fail above.
+                  Choose, Prompt, and nested Parallel are not allowed inside parallel. Change type to Run or Fail above.
                 </div>
               )}
               {'run' in branchStep && (
@@ -558,17 +609,21 @@ function ParallelStepEditor({
                 <PromptStepEditor step={branchStep} onUpdate={(s) => updateBranch(index, s)} />
               )}
               {'parallel' in branchStep && (
-                <ParallelStepEditor step={branchStep} onUpdate={(s) => updateBranch(index, s)} />
+                <div className="branch-invalid-banner">
+                  Nested parallel is not allowed. Please change this branch type to Run or Fail.
+                </div>
               )}
               {'fail' in branchStep && (
                 <FailStepEditor step={branchStep} onUpdate={(s) => updateBranch(index, s)} />
               )}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
         {step.parallel.length === 0 && (
           <div className="empty-branches">
-            <p>No branches yet. Add a Run, Parallel, or Fail branch to get started.</p>
+            <p>No branches yet. Add a Run or Fail branch to get started.</p>
           </div>
         )}
       </div>

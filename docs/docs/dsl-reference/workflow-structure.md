@@ -87,6 +87,34 @@ steps:                                 # Required: Array of steps to execute
   baseDir: /app/frontend     # Absolute path
   ```
 
+### `shell` (Optional)
+
+- **Type**: `array` of `string`
+- **Description**: Global shell configuration for all `run` commands in the workflow
+- **Format**: `[program, ...args]` - First element is the shell program, rest are arguments
+- **Priority**: Step-level `shell` > Workflow-level `shell` > User's current shell
+- **User's current shell** (when omitted):
+  - **Linux/macOS**: Uses `$SHELL` environment variable (e.g., `/bin/zsh`, `/bin/bash`)
+  - **Windows**: Uses `%COMSPEC%` (typically `cmd.exe`)
+  - **Behavior**: Commands run in the same shell environment as where you execute `tp run`
+- **Example**:
+  ```yaml
+  # Unix/Linux/macOS
+  shell: [bash, -lc]         # Use bash login shell
+  shell: [zsh, -c]           # Use zsh
+  shell: [sh, -c]            # Use sh (POSIX)
+  
+  # Windows
+  shell: [cmd, /c]           # Command Prompt
+  shell: [powershell, -Command]  # Windows PowerShell
+  shell: [pwsh, -Command]    # PowerShell Core
+  ```
+- **Cross-platform examples**:
+  - **Linux/macOS**: `[bash, -lc]`, `[zsh, -c]`, `[/bin/bash, -c]`
+  - **Windows**: `[cmd, /c]`, `[powershell, -Command]`, `[pwsh, -Command]`
+  - **Git Bash (Windows)**: `[bash, -c]`
+  - **WSL**: `[wsl, bash, -c]` or use `wsl` command directly
+
 ### `profiles` (Optional)
 
 - **Type**: `array` of `{ name: string, var: object }`

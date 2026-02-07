@@ -1,6 +1,8 @@
 # Introduction to task-pipeliner
 
-**task-pipeliner** is a modern workflow orchestration tool that lets you define, coordinate, and execute complex workflows using simple YAML or JSON files. Instead of complex build scripts or CI/CD configurations, you can orchestrate your entire workflow lifecycle using a simple and readable YAML or JSON syntax.
+**Version:** 0.3.6
+
+**task-pipeliner** is a modern workflow orchestration tool that lets you define, coordinate, and execute complex workflows using simple YAML or JSON files. Instead of complex build scripts or CI/CD configurations, you can orchestrate your entire workflow lifecycle using a simple and readable YAML or JSON syntax. *This project is still in beta; the interface may change slightly.*
 
 ## Why task-pipeliner?
 
@@ -195,9 +197,22 @@ Define named sets of variables in your workflow and run with `tp run --profile <
 
 All workflow executions are automatically recorded and saved to `~/.pipeliner/workflow-history/`. You can review past executions and debug issues.
 
-## Tools
+## 🔗 Resources
 
-- 🎨 **[Visual Generator](https://task-pipeliner-generator.racgoo.com/)** - Create workflows visually in your browser and download as YAML/JSON
+### Documentation & Tools
+
+- 📚 **[Documentation](https://task-pipeliner.racgoo.com/)** - Complete DSL reference and guides
+- 🎨 **[Visual Generator](https://task-pipeliner-generator.racgoo.com/)** - Create workflows visually in your browser
+
+### Repositories & Package Managers
+
+- 💻 **[GitHub](https://github.com/racgoo/task-pipeliner)** - Source code and issue tracking
+- 📦 **[npm](https://www.npmjs.com/package/task-pipeliner)** - Package on npm registry
+- 🍺 **[Homebrew](https://github.com/racgoo/homebrew-task-pipeliner)** - Homebrew tap for macOS/Linux
+- 🪟 **[Scoop](https://github.com/racgoo/scoop-task-pipeliner)** - Scoop bucket for Windows
+
+### CLI Commands
+
 - 💻 **[CLI Commands Reference](/docs/cli-reference)** - Complete reference for all CLI commands
   - **`tp setup`** - Create `tp/`, `tp/workflows/`, `tp/schedules/` and add example files (recommended for new projects)
   - `tp run` - Run workflows (no file = select from `tp/workflows/`)
@@ -206,6 +221,8 @@ All workflow executions are automatically recorded and saved to `~/.pipeliner/wo
   - `tp schedule` - Schedule workflows with cron (`tp schedule add` with no path = select from `tp/schedules/`); list, add, toggle, and remove use a unified card UI
   - `tp clean` - Remove all local data
 
+**README-Language-Map** [KR [한국어 버전]](https://github.com/racgoo/task-pipeliner/blob/main/README.ko.md) / [EN [English Version]](https://github.com/racgoo/task-pipeliner)
+
 ## Next Steps
 
 - **[Getting Started](/docs/getting-started)** - From installation to your first workflow
@@ -213,6 +230,25 @@ All workflow executions are automatically recorded and saved to `~/.pipeliner/wo
 - **[Execution History](/docs/history)** - Manage past execution records
 - **[Workflow Scheduling](/docs/schedule)** - Schedule workflows with cron
 - **[Examples](/docs/examples)** - Real-world use cases and examples
+
+## 🏗️ Architecture
+
+- **CLI**: Node.js + TypeScript with Commander.js
+- **Task Execution**: Node.js child processes with streaming output
+- **UI**: Boxen and Chalk for beautiful terminal output
+- **Prompts**: Inquirer.js for interactive prompts
+
+## 🤝 Contributing
+
+Contributions are welcome! Please leave an ISSUE.
+
+## 📄 License
+
+Copyright (c) 2026 racgoo
+
+## 📧 Contact
+
+For inquiries, please email lhsung98@naver.com!
 
 ## Community
 

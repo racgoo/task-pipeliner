@@ -340,6 +340,16 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex: 1;
+}
+
+.branch-chevron {
+  width: 1rem;
+  flex-shrink: 0;
+  color: var(--color-text-secondary, #666);
+  font-size: 0.75rem;
+  transition: var(--transition, all 0.2s ease-in-out);
+  user-select: none;
 }
 
 .branch-type-select {
@@ -366,6 +376,16 @@
   margin-bottom: var(--spacing-md, 1rem);
   padding-bottom: var(--spacing-xs, 0.5rem);
   border-bottom: 1px solid var(--color-border, #e0e0e0);
+  transition: var(--transition, all 0.2s ease-in-out);
+}
+
+.branch-header:hover {
+  background: var(--color-bg-hover, #f5f5f5);
+  padding-left: var(--spacing-xs, 0.5rem);
+  padding-right: var(--spacing-xs, 0.5rem);
+  margin-left: calc(-1 * var(--spacing-xs, 0.5rem));
+  margin-right: calc(-1 * var(--spacing-xs, 0.5rem));
+  border-radius: var(--border-radius, 6px);
 }
 
 .branch-header span {
@@ -397,6 +417,22 @@
   background: var(--color-bg-panel, white);
   padding: var(--spacing-md, 1rem);
   border-radius: var(--border-radius, 6px);
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+    padding-top: var(--spacing-md, 1rem);
+    padding-bottom: var(--spacing-md, 1rem);
+  }
 }
 
 .empty-branches {

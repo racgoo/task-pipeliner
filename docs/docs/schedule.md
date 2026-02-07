@@ -225,6 +225,10 @@ tp schedule status      # Live view (updates every second); Ctrl+C exits the vie
 tp schedule status -n   # Show status once and exit (no live refresh)
 ```
 
+**Schedule status (live view)** — `tp schedule status` shows the daemon and all schedules in a scrollable, auto-updating view. Cron times include timezone (UTC or local). Use ↑/↓ or PgUp/PgDn to scroll when there are many schedules.
+
+<p align="center"><img src="https://github.com/user-attachments/assets/348325d3-d184-4c1e-bc78-040da13e7e7d" width="720" alt="tp schedule status live view" /></p>
+
 - Uses the **same card layout** as `tp schedule list` and `tp schedule start`: daemon state (active/inactive), PID, start time and uptime, then each schedule with Enabled, Cron (with human-readable description), Timezone, Workflow, Profile, Last run, Next run.
 - Press `Ctrl+C` to exit the status view only; the daemon keeps running if it was started with `tp schedule start -d`.
 
