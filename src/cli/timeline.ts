@@ -64,10 +64,11 @@ export function generateTimeline(history: History): string {
     const group = stepGroups[i];
     // Check if this is a parallel group:
     // Parallel branches have branchIndex !== undefined and stepIndex >= 1000
-    // A parallel group must have at least 2 branches (group.length > 1)
-    const isParallel =
-      group.length > 1 &&
-      group.some((r) => r.context.branchIndex !== undefined && r.context.stepIndex >= 1000);
+    // A parallel group must have at least 1 branch with branchIndex
+    const hasParallelBranches = group.some(
+      (r) => r.context.branchIndex !== undefined && r.context.stepIndex >= 1000
+    );
+    const isParallel = hasParallelBranches && group.length >= 1;
 
     if (isParallel && group.length > 0) {
       // Use all records in the group (they are all parallel branches)
@@ -188,11 +189,13 @@ function groupRecordsByStepIndex(records: Record[]): Record[][] {
         });
         groups.push(parallelBranches);
 
-        // If there are sequential steps with the same baseStepIndex (shouldn't happen, but handle it)
+        // Filter out the parallel step itself (if it was recorded) - we only want the branches
+        // Parallel step itself has stepIndex < PARALLEL_STEP_INDEX_MULTIPLIER and step type is 'parallel'
         const sequentialRecords = group.filter(
           (r) =>
-            r.context.branchIndex === undefined ||
-            r.context.stepIndex < PARALLEL_STEP_INDEX_MULTIPLIER
+            (r.context.branchIndex === undefined ||
+              r.context.stepIndex < PARALLEL_STEP_INDEX_MULTIPLIER) &&
+            !('parallel' in r.step) // Exclude the parallel step itself
         );
         if (sequentialRecords.length > 0) {
           sequentialRecords.sort((a, b) => a.context.stepIndex - b.context.stepIndex);
@@ -366,9 +369,19 @@ function generateTimelineTable(
     return row + ' '.repeat(paddingNeeded);
   };
 
+  // Top border row - matches footer structure
+  // Top: "┌─" (2) + "─"×stepColumnWidth + "─┬─" (3) + "─"×startColumnWidth + "─┬─" (3) + "─"×durationColumnWidth + "─┬─" (3) + "─"×barWidth + "─┐" (2)
+  const topStepDashes = '─'.repeat(stepColumnWidth);
+  const topStartDashes = '─'.repeat(startColumnWidth);
+  const topDurationDashes = '─'.repeat(durationColumnWidth);
+  const topBarDashes = '─'.repeat(barWidth);
+  let topRow = `┌─${topStepDashes}─┬─${topStartDashes}─┬─${topDurationDashes}─┬─${topBarDashes}─┐`;
+  topRow = ensureExactWidth(topRow, exactRowWidth, true);
+  lines.push(topRow);
+
   // Header - use plain text first, then apply chalk
   const stepHeader = padRight('Step / Task', stepColumnWidth);
-  const startHeader = padRight('Start', startColumnWidth);
+  const startHeader = padLeft('Start', startColumnWidth);
   const durationHeader = padRight('Duration', durationColumnWidth);
   const timelineHeader = padRight('Timeline', barWidth);
   let headerRow = `│ ${chalk.bold(stepHeader)} │ ${chalk.bold(startHeader)} │ ${chalk.bold(durationHeader)} │ ${chalk.bold(timelineHeader)} │`;
@@ -421,9 +434,10 @@ function generateTimelineTable(
       barWidth,
       step.duration,
       slowestDuration,
-      false,
+      false, // isParallelBranch
       overlapIndex,
-      sameStartSteps.length
+      sameStartSteps.length,
+      step.isParallel // isParallelStep
     );
     let mainRow = `│ ${padRight(stepName, stepColumnWidth)} │ ${padLeft(`${startSec}s`, startColumnWidth)} │ ${padLeft(coloredDuration, durationColumnWidth)} │ ${timelineBar} │`;
 
@@ -442,6 +456,7 @@ function generateTimelineTable(
 
     // Parallel branches - render tasks below the step
     // Rule: First task uses "  ⎧ ", Last task uses "  ⎩ "
+    // Ensure parallel branches are always displayed if step is marked as parallel
     if (step.isParallel && step.parallelBranches && step.parallelBranches.length > 0) {
       for (let i = 0; i < step.parallelBranches.length; i++) {
         const branch = step.parallelBranches[i];
@@ -454,17 +469,22 @@ function generateTimelineTable(
           barWidth,
           branch.duration,
           slowestDuration,
-          true // isParallelBranch
+          true, // isParallelBranch
+          0, // overlapIndex
+          1, // overlapCount
+          false // isParallelStep
         );
-        // Rule: First task: "  ⎧ ", Last task: "  ⎩ "
+        // Rule: First task: "│  ⎧ ", Middle tasks: "│  ├ ", Last task: "│  ⎩ "
+        // Use connecting lines to show branches are connected
         const connector =
-          i === 0 ? '  ⎧ ' : i === step.parallelBranches.length - 1 ? '  ⎩ ' : '    '; // Middle tasks: just spaces (no connector)
-        const branchNameWidth = stepColumnWidth - 4; // Leave space for "  ⎧ " or "  ⎩ " (4 chars)
+          i === 0 ? '│  ⎧ ' : i === step.parallelBranches.length - 1 ? '│  ⎩ ' : '│  ├ '; // Middle tasks: use ├ to show connection
+        const branchNameWidth = stepColumnWidth - 3; // Leave space for connector (4 chars: "│  ⎧ ", "│  ⎩ ", "│  ├ ")
         const branchName = padRight(chalk.blue(branch.name), branchNameWidth);
         const branchDurationColor = getDurationColor(branch.duration, slowestDuration);
         const coloredBranchDuration = branchDurationColor(`${branchDurationSec}s`);
 
-        let branchRow = `│${connector}${branchName} │ ${padLeft(`${branchStartSec}s`, startColumnWidth)} │ ${padLeft(coloredBranchDuration, durationColumnWidth)} │ ${branchTimelineBar} │`;
+        // For parallel branches, connector already includes │, so don't add another one
+        let branchRow = `${connector}${branchName} │ ${padLeft(`${branchStartSec}s`, startColumnWidth)} │ ${padLeft(coloredBranchDuration, durationColumnWidth)} │ ${branchTimelineBar} │`;
 
         // Ensure exact width
         branchRow = ensureExactWidth(branchRow, exactRowWidth);
@@ -476,17 +496,11 @@ function generateTimelineTable(
             chalk.blue(branch.name),
             branchNameWidth - 3
           );
-          branchRow = `│${connector}${padRight(truncatedBranchName, branchNameWidth)} │ ${padLeft(`${branchStartSec}s`, startColumnWidth)} │ ${padLeft(coloredBranchDuration, durationColumnWidth)} │ ${branchTimelineBar} │`;
+          branchRow = `${connector}${padRight(truncatedBranchName, branchNameWidth)} │ ${padLeft(`${branchStartSec}s`, startColumnWidth)} │ ${padLeft(coloredBranchDuration, durationColumnWidth)} │ ${branchTimelineBar} │`;
           branchRow = ensureExactWidth(branchRow, exactRowWidth);
         }
         lines.push(branchRow);
       }
-
-      // Empty row after parallel group
-      const emptyBar = ' '.repeat(barWidth);
-      let emptyRow = `│ ${' '.repeat(stepColumnWidth)} │ ${' '.repeat(startColumnWidth)} │ ${' '.repeat(durationColumnWidth)} │ ${emptyBar} │`;
-      emptyRow = ensureExactWidth(emptyRow, exactRowWidth);
-      lines.push(emptyRow);
     }
   }
 
@@ -534,7 +548,8 @@ function generateTimelineBar(
   slowestDuration: number,
   isParallelBranch: boolean = false,
   overlapIndex: number = 0,
-  overlapCount: number = 1
+  overlapCount: number = 1,
+  isParallelStep: boolean = false
 ): string {
   const startRatio = startTime / totalDuration;
   const endTime = startTime + duration;
@@ -567,6 +582,10 @@ function generateTimelineBar(
   // Determine bar color
   let barColor: (text: string) => string;
   if (isParallelBranch) {
+    // Parallel branches - use cyan color for better visibility
+    barColor = chalk.cyan;
+  } else if (isParallelStep) {
+    // Parallel step itself - use blue color
     barColor = chalk.blue;
   } else if (stepDuration === 0) {
     barColor = chalk.gray;

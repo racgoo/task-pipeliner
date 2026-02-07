@@ -21,6 +21,13 @@ export interface IParallelStepHandlerDeps {
   };
   executeStep(step: Step, context: ExecutionContext, bufferOutput: boolean): Promise<StepResult>;
   setStepResult(stepIndex: number, success: boolean): void;
+  recordBranch?(
+    step: Step,
+    context: ExecutionContext,
+    output: StepResult,
+    status: 'success' | 'failure',
+    resolved?: { resolvedCommand?: string }
+  ): void;
 }
 
 function createParallelContexts(
@@ -168,6 +175,12 @@ async function executeParallelBranches(
       branchStatus.status = 'success';
       updateParallelBranchesDisplay(branchStatuses, spinnerFrames[spinnerFrameIndex]);
 
+      // Record the branch execution if recordBranch is provided
+      if (deps.recordBranch) {
+        const resolved = 'run' in parallelStep ? { resolvedCommand: parallelStep.run } : undefined;
+        deps.recordBranch(parallelStep, branchContext, result, 'success', resolved);
+      }
+
       return { index, result: result as TaskRunResult, context: branchContext };
     } catch (error) {
       branchContext.workspace.setStepResult(branchContext.stepIndex, false);
@@ -176,6 +189,12 @@ async function executeParallelBranches(
       branchStatus.status = 'failed';
       branchStatus.error = errorMessage;
       updateParallelBranchesDisplay(branchStatuses, spinnerFrames[spinnerFrameIndex]);
+
+      // Record the branch execution failure if recordBranch is provided
+      if (deps.recordBranch) {
+        const resolved = 'run' in parallelStep ? { resolvedCommand: parallelStep.run } : undefined;
+        deps.recordBranch(parallelStep, branchContext, undefined, 'failure', resolved);
+      }
 
       return { index, error, context: branchContext };
     }

@@ -225,10 +225,17 @@ export class Executor {
 
       try {
         // Execute the step (run, choose, prompt, parallel, or fail)
-        const stepResult = await this.executeStep(step, context, false, hasWhenCondition);
-        this.handleStepResult(step, context, i, stepResult, recorder);
+        const stepResult = await this.executeStep(step, context, false, hasWhenCondition, recorder);
+        // Don't record parallel step itself - only record the branches
+        // Parallel branches are recorded inside executeParallelStepHandler
+        if (!('parallel' in step)) {
+          this.handleStepResult(step, context, i, stepResult, recorder);
+        }
       } catch (error) {
-        this.handleStepError(step, context, i, error, recorder);
+        // Don't record parallel step itself on error either
+        if (!('parallel' in step)) {
+          this.handleStepError(step, context, i, error, recorder);
+        }
         throw error;
       }
     }
@@ -399,12 +406,14 @@ export class Executor {
    *
    * @param bufferOutput - If true, collect output instead of displaying immediately (for parallel)
    * @param hasWhenCondition - If true, step has a condition (affects UI color)
+   * @param recorder - Recorder instance for recording step execution (optional, for parallel branches)
    */
   private async executeStep(
     step: Step,
     context: ExecutionContext,
     bufferOutput: boolean = false,
-    hasWhenCondition: boolean = false
+    hasWhenCondition: boolean = false,
+    recorder?: WorkflowRecorder
   ): Promise<StepResult> {
     // Fix YAML parsing issues (when indentation is wrong)
     step = this.fixMalformedStep(step);
@@ -445,8 +454,22 @@ export class Executor {
         {
           workspace: this.workspace,
           taskRunner: this.taskRunner,
-          executeStep: (s, ctx, bufferOutput) => this.executeStep(s, ctx, bufferOutput, !!s.when),
+          executeStep: (s, ctx, bufferOutput) =>
+            this.executeStep(s, ctx, bufferOutput, !!s.when, recorder),
           setStepResult: (stepIndex, success) => this.workspace.setStepResult(stepIndex, success),
+          recordBranch: recorder
+            ? (branchStep, branchContext, branchOutput, branchStatus, resolved) => {
+                recorder.recordStart();
+                const resolvedValues = resolved || this.getRecordResolved(branchStep);
+                recorder.recordEnd(
+                  branchStep,
+                  branchContext,
+                  branchOutput,
+                  branchStatus,
+                  resolvedValues
+                );
+              }
+            : undefined,
         },
         step,
         context
