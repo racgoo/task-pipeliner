@@ -13,11 +13,14 @@
 
 **README-Language-Map** [KR [한국어 버전]](https://github.com/racgoo/task-pipeliner/blob/main/README.ko.md) / [EN [English Version]](https://github.com/racgoo/task-pipeliner)
 
+> **📖 For detailed documentation, please refer to the [official documentation](https://task-pipeliner.racgoo.com/)!**  
+> This README provides a quick start and basic usage. For DSL syntax, advanced features, examples, and more, please visit the documentation site.
+
 ## 🔗 Resources
 
 ### Documentation & Tools
 
-- 📚 **[Documentation](https://task-pipeliner.racgoo.com/)** - Complete DSL reference and guides
+- **[📖 Official Documentation](https://task-pipeliner.racgoo.com/)** - **Complete DSL reference, guides, examples, and all feature descriptions** ⭐
 - 🎨 **[Visual Generator](https://task-pipeliner-generator.racgoo.com/)** - Create workflows visually in your browser
 
 ### Repositories & Package Managers
@@ -28,6 +31,8 @@
 - 🪟 **[Scoop](https://github.com/racgoo/scoop-task-pipeliner)** - Scoop bucket for Windows
 
 ### CLI Commands
+
+> 💡 **For detailed CLI command descriptions, see the [CLI Reference documentation](https://task-pipeliner.racgoo.com/docs/cli-reference).**
 
 **Project setup (recommended for new projects):**
 ```bash
@@ -87,6 +92,8 @@ tp clean   # Remove all data in ~/.pipeliner (schedules, daemon state, workflow 
 After upgrading to a new version, if you see compatibility issues (e.g. schedules or daemon not working), run `tp clean` to reset local data. The daemon is stopped first if it is running.
 
 ## ✨ Features
+
+> 💡 **For detailed descriptions and examples of each feature, see the [DSL Reference documentation](https://task-pipeliner.racgoo.com/docs/dsl-reference/workflow-structure).**
 
 -  **Condition-based execution** - Run steps based on file existence, user choices, environment variables, and more
 
@@ -221,6 +228,8 @@ npx tp run workflow.yaml
 
 ### Basic Usage
 
+> 💡 **For more examples and advanced usage, see the [Getting Started guide](https://task-pipeliner.racgoo.com/docs/getting-started) and [Examples documentation](https://task-pipeliner.racgoo.com/docs/examples).**
+
 Create a `workflow.yaml` or `workflow.json` file:
 
 **YAML Format (`workflow.yaml`):**
@@ -348,6 +357,21 @@ The `--silent` (or `-s`) flag suppresses all console output during workflow exec
 
 Note: Silent mode suppresses all output including command output, step headers, and error messages. The workflow still executes normally and returns appropriate exit codes.
 
+## 📚 Learn More
+
+This README covers only the basics. For more detailed information, see the following documentation:
+
+- **[Getting Started](https://task-pipeliner.racgoo.com/docs/getting-started)** - From installation to your first workflow
+- **[DSL Reference](https://task-pipeliner.racgoo.com/docs/dsl-reference/workflow-structure)** - Complete syntax guide
+  - [Workflow Structure](https://task-pipeliner.racgoo.com/docs/dsl-reference/workflow-structure)
+  - [Step Types](https://task-pipeliner.racgoo.com/docs/dsl-reference/step-types)
+  - [Conditions](https://task-pipeliner.racgoo.com/docs/dsl-reference/conditions)
+  - [Variables](https://task-pipeliner.racgoo.com/docs/dsl-reference/variables)
+  - [Profiles](https://task-pipeliner.racgoo.com/docs/dsl-reference/profiles)
+- **[CLI Reference](https://task-pipeliner.racgoo.com/docs/cli-reference)** - Detailed descriptions of all CLI commands
+- **[Examples](https://task-pipeliner.racgoo.com/docs/examples)** - Real-world use cases and examples
+- **[Execution History](https://task-pipeliner.racgoo.com/docs/history)** - Managing past execution records
+- **[Workflow Scheduling](https://task-pipeliner.racgoo.com/docs/schedule)** - Automatic execution with cron
 
 ## 🤝 Contributing
 
