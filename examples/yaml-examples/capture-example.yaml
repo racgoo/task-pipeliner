@@ -1,0 +1,94 @@
+name: Capture Examples
+
+# This example demonstrates various stdout capture strategies
+# to extract values from command output and store them as variables.
+
+steps:
+  # 1. Full capture - Store entire stdout
+  - run: 'echo "Hello\nWorld\nTest"'
+    captures:
+      - as: full_output
+
+  # 2. Regex capture - Extract first capture group
+  - run: 'echo "channel=production user=admin"'
+    captures:
+      - regex: "channel=(\\S+)"
+        as: channel
+      - regex: "user=(\\S+)"
+        as: user
+
+  # 3. JSON capture - Extract using JSONPath
+  - run: 'echo "{\"meta\":{\"version\":\"1.0.0\",\"channel\":\"production\"}}"'
+    captures:
+      - json: "$.meta.version"
+        as: version
+      - json: "$.meta.channel"
+        as: json_channel
+
+  # 4. YAML capture - Extract using JSONPath
+  - run: |
+      echo "meta:"
+      echo "  version: 2.0.0"
+      echo "  env: staging"
+    captures:
+      - yaml: "$.meta.version"
+        as: yaml_version
+      - yml: "$.meta.env"
+        as: yaml_env
+
+  # 5. KV capture - Extract from key-value pairs (.env style)
+  - run: |
+      echo "DATABASE_URL=postgres://localhost:5432/mydb"
+      echo "API_KEY=secret123"
+      echo "# This is a comment"
+      echo "ENV=production"
+    captures:
+      - kv: DATABASE_URL
+        as: db_url
+      - kv: API_KEY
+        as: api_key
+      - kv: ENV
+        as: environment
+
+  # 6. Before/After/Between capture
+  - run: 'echo "prefix user=admin suffix"'
+    captures:
+      - after: "user="
+        as: after_result
+
+  - run: |
+      echo "content before marker"
+      echo "end marker"
+      echo "content after"
+    captures:
+      - before: "end marker"
+        as: before_result
+
+  - run: |
+      echo "before start:middle content end after"
+    captures:
+      - after: "start:"
+      - before: " end"
+        as: between_result
+
+  # 7. Line capture - Extract specific line range
+  - run: |
+      echo "line 1"
+      echo "line 2"
+      echo "line 3"
+      echo "line 4"
+      echo "line 5"
+    captures:
+      - line:
+          from: 2
+          to: 4
+        as: line_block
+
+  # 8. Use captured values in subsequent steps
+  - run: 'echo "Version: {{version}}, Channel: {{channel}}"'
+  - run: 'echo "DB URL: {{db_url}}, API Key: {{api_key}}"'
+  - run: 'echo "Environment: {{environment}}"'
+  - run: 'echo "YAML Version: {{yaml_version}}, YAML Env: {{yaml_env}}"'
+  - run: 'echo "After result: {{after_result}}"'
+
+

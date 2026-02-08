@@ -32,6 +32,9 @@ importers:
       inquirer:
         specifier: ^8.2.6
         version: 8.2.7(@types/node@20.19.30)
+      jsonpath-plus:
+        specifier: ^8.0.0
+        version: 8.1.0
       log-update:
         specifier: ^4.0.0
         version: 4.0.0
@@ -1457,6 +1460,11 @@ packages:
 
   json5@1.0.2:
     resolution: {integrity: sha512-g1MWMLBiz8FKi1e4w0UyVL3w+iJceWAFBAaBnnGKOpNa5f8TLktkbre1+s6oICydWAm+HRUGTmI+//xv2hvXYA==}
+    hasBin: true
+
+  jsonpath-plus@8.1.0:
+    resolution: {integrity: sha512-qVTiuKztFGw0dGhYi3WNqvddx3/SHtyDT0xJaeyz4uP0d1tkpG+0y5uYQ4OcIo1TLAz3PE/qDOW9F0uDt3+CTw==}
+    engines: {node: '>=14.0.0'}
     hasBin: true
 
   keyv@4.5.4:
@@ -3502,6 +3510,8 @@ snapshots:
   json5@1.0.2:
     dependencies:
       minimist: 1.2.8
+
+  jsonpath-plus@8.1.0: {}
 
   keyv@4.5.4:
     dependencies:

@@ -18,6 +18,18 @@ export interface RunStepOnError {
   onError?: RunStepOnError;
 }
 
+export type Capture =
+  | { as: string } // Full capture
+  | { regex: string; as: string }
+  | { json: string; as: string }
+  | { yaml: string; as: string }
+  | { yml: string; as: string }
+  | { kv: string; as: string }
+  | { after: string; as: string }
+  | { before: string; as: string }
+  | { after: string; before: string; as: string }
+  | { line: { from: number; to: number }; as: string };
+
 export interface RunStep {
   run: string;
   when?: Condition;
@@ -26,6 +38,7 @@ export interface RunStep {
   shell?: string[];
   continue?: boolean;
   onError?: RunStepOnError;
+  captures?: Capture[];
 }
 
 /**

@@ -2,7 +2,7 @@
 
 > 조건 기반 실행과 아름다운 CLI 출력을 제공하는 강력한 워크플로우 오케스트레이션 도구
 
-**버전:** 0.3.7
+**버전:** 0.3.8
 
 ![fox2](https://github.com/user-attachments/assets/fdf8d786-6a91-4d2d-9dc1-72be6f3ccd98)
 
@@ -43,6 +43,8 @@
 - **YAML & JSON 지원** - 선언적인 파이프라이닝을 YAML & JSON 형식으로 제공
 
 - **변수 치환** - 워크플로우 전반에서 `{{variables}}` 사용
+
+- **Stdout 캡쳐** - 다양한 캡쳐 전략(정규식, JSON/YAML, 키-값 등)을 사용하여 명령 출력에서 값을 추출하여 변수로 저장
 
 - **프로필** - 미리 정의한 변수로 비대화형 실행 (`tp run --profile <name>`); 프로필에 설정된 변수에 대해서는 choose/prompt 단계 생략
 
@@ -257,6 +259,13 @@ steps:
       var:
         action: test
     run: 'npm test'
+  
+  # 명령 출력에서 값 추출
+  - run: 'cat package.json'
+    captures:
+      - json: "$.version"
+        as: version
+  - run: 'echo "Version: {{version}}"'
 ```
 
 **JSON 형식 (`workflow.json`):**

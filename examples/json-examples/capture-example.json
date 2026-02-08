@@ -1,0 +1,119 @@
+{
+  "name": "Capture Examples",
+  "steps": [
+    {
+      "run": "echo \"Hello\\nWorld\\nTest\"",
+      "captures": [
+        {
+          "as": "full_output"
+        }
+      ]
+    },
+    {
+      "run": "echo \"channel=production user=admin\"",
+      "captures": [
+        {
+          "regex": "channel=(\\S+)",
+          "as": "channel"
+        },
+        {
+          "regex": "user=(\\S+)",
+          "as": "user"
+        }
+      ]
+    },
+    {
+      "run": "echo \"{\\\"meta\\\":{\\\"version\\\":\\\"1.0.0\\\",\\\"channel\\\":\\\"production\\\"}}\"",
+      "captures": [
+        {
+          "json": "$.meta.version",
+          "as": "version"
+        },
+        {
+          "json": "$.meta.channel",
+          "as": "json_channel"
+        }
+      ]
+    },
+    {
+      "run": "echo -e \"meta:\\n  version: 2.0.0\\n  env: staging\"",
+      "captures": [
+        {
+          "yaml": "$.meta.version",
+          "as": "yaml_version"
+        },
+        {
+          "yml": "$.meta.env",
+          "as": "yaml_env"
+        }
+      ]
+    },
+    {
+      "run": "echo -e \"DATABASE_URL=postgres://localhost:5432/mydb\\nAPI_KEY=secret123\\n# This is a comment\\nENV=production\"",
+      "captures": [
+        {
+          "kv": "DATABASE_URL",
+          "as": "db_url"
+        },
+        {
+          "kv": "API_KEY",
+          "as": "api_key"
+        },
+        {
+          "kv": "ENV",
+          "as": "environment"
+        }
+      ]
+    },
+    {
+      "run": "echo \"prefix user=admin suffix\"",
+      "captures": [
+        {
+          "after": "user=",
+          "as": "after_result"
+        }
+      ]
+    },
+    {
+      "run": "echo -e \"content before marker\\nend marker\\ncontent after\"",
+      "captures": [
+        {
+          "before": "end marker",
+          "as": "before_result"
+        }
+      ]
+    },
+    {
+      "run": "echo \"before start:middle content end after\"",
+      "captures": [
+        {
+          "after": "start:",
+          "before": " end",
+          "as": "between_result"
+        }
+      ]
+    },
+    {
+      "run": "echo -e \"line 1\\nline 2\\nline 3\\nline 4\\nline 5\"",
+      "captures": [
+        {
+          "line": {
+            "from": 2,
+            "to": 4
+          },
+          "as": "line_block"
+        }
+      ]
+    },
+    {
+      "run": "echo \"Version: {{version}}, Channel: {{channel}}\""
+    },
+    {
+      "run": "echo \"DB URL: {{db_url}}, API Key: {{api_key}}\""
+    },
+    {
+      "run": "echo \"Environment: {{environment}}\""
+    }
+  ]
+}
+

@@ -43,6 +43,21 @@ export interface RunStepOnError {
   onError?: RunStepOnError; // nested fallback chain
 }
 
+/**
+ * Capture strategies for extracting values from stdout
+ */
+export type Capture =
+  | { as: string } // Full stdout capture (no filtering)
+  | { regex: string; as: string } // Regex capture (first capture group)
+  | { json: string; as: string } // JSONPath extraction from JSON
+  | { yaml: string; as: string } // JSONPath extraction from YAML
+  | { yml: string; as: string } // Alias for yaml
+  | { kv: string; as: string } // Key-value extraction (.env style)
+  | { after: string; as: string } // Extract after marker
+  | { before: string; as: string } // Extract before marker
+  | { after: string; before: string; as: string } // Extract between markers
+  | { line: { from: number; to: number }; as: string }; // Extract line range
+
 export interface RunStep {
   run: string; // command to run
   when?: Condition; // mainly used for choice conditions
@@ -62,6 +77,11 @@ export interface RunStep {
    */
   continue?: boolean;
   onError?: RunStepOnError;
+  /**
+   * Capture stdout output and store as variables
+   * Each capture defines a strategy to extract a value from stdout
+   */
+  captures?: Capture[];
 }
 
 /**

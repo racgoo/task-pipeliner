@@ -40,6 +40,10 @@ Check out `examples/yaml-examples/` for YAML workflow examples:
 - **`base-dir-example.yaml`** - baseDir configuration example
 - **`timeout-retry-example.yaml`** - Timeout, retry, and onError error handling features
 - **`pm2-like-example.yaml`** - PM2-like process manager using infinite retry to keep services running
+- **`capture-example.yaml`** - Stdout capture examples
+  - Extract values from command output using various capture strategies
+  - Full, Regex, JSON/YAML, KV, Before/After/Between, and Line capture
+  - Use captured values in subsequent steps
 
 ### CI/CD Pipeline {#cicd-pipeline}
 
@@ -59,6 +63,7 @@ Check out `examples/json-examples/` for JSON workflow examples (equivalent to YA
 - **`conditions.json`** - Condition evaluation examples
 - **`prompt.json`** - User input prompts
 - **`variables.json`** - Variable substitution examples
+- **`capture-example.json`** - Stdout capture examples (equivalent to YAML version)
 
 **Note:** Both YAML and JSON formats are fully supported. Choose the format that fits your preference - YAML for readability, JSON for programmatic generation.
 
@@ -183,6 +188,37 @@ steps:
     onError:
       run: 'pnpm lint:fix'
       continue: true
+```
+
+### Stdout Capture
+
+```yaml
+name: Capture Example
+
+steps:
+  # Extract values from command output
+  - run: 'echo "channel=production user=admin"'
+    captures:
+      - regex: "channel=(\\S+)"
+        as: channel
+      - regex: "user=(\\S+)"
+        as: user
+
+  # Extract from JSON
+  - run: 'echo "{\"version\":\"1.0.0\"}"'
+    captures:
+      - json: "$.version"
+        as: version
+
+  # Extract from .env style file
+  - run: 'cat .env'
+    captures:
+      - kv: DATABASE_URL
+        as: db_url
+
+  # Use captured values
+  - run: 'echo "Deploying {{version}} to {{channel}}"'
+  - run: 'echo "DB: {{db_url}}"'
 ```
 
 ## Next Steps

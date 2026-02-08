@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import type { Step, RunStepOnError } from '../types/workflow';
+import type { Step, RunStepOnError, Capture } from '../types/workflow';
 import VariableHighlightInput from './VariableHighlightInput';
 import './StepEditor.css';
 
@@ -290,6 +290,348 @@ function RunStepEditor({
         <div className="field-hint">
           When checked, the workflow always proceeds to the next step after this run (even if it fails). When unchecked, it uses the default behavior: continue on success, stop on failure.
         </div>
+      </div>
+      <CapturesEditor
+        captures={step.captures || []}
+        onChange={(captures) =>
+          onUpdate({
+            ...step,
+            captures: captures.length > 0 ? captures : undefined,
+          })
+        }
+      />
+    </div>
+  );
+}
+
+function CapturesEditor({
+  captures,
+  onChange,
+}: {
+  captures: Capture[];
+  onChange: (captures: Capture[]) => void;
+}) {
+  const addCapture = (type: string) => {
+    let newCapture: Capture;
+    switch (type) {
+      case 'full':
+        newCapture = { as: '' };
+        break;
+      case 'regex':
+        newCapture = { regex: '', as: '' };
+        break;
+      case 'json':
+        newCapture = { json: '', as: '' };
+        break;
+      case 'yaml':
+        newCapture = { yaml: '', as: '' };
+        break;
+      case 'yml':
+        newCapture = { yml: '', as: '' };
+        break;
+      case 'kv':
+        newCapture = { kv: '', as: '' };
+        break;
+      case 'after':
+        newCapture = { after: '', as: '' };
+        break;
+      case 'before':
+        newCapture = { before: '', as: '' };
+        break;
+      case 'between':
+        newCapture = { after: '', before: '', as: '' };
+        break;
+      case 'line':
+        newCapture = { line: { from: 1, to: 1 }, as: '' };
+        break;
+      default:
+        return;
+    }
+    onChange([...captures, newCapture]);
+  };
+
+  const updateCapture = (index: number, updates: Partial<Capture>) => {
+    const updated = [...captures];
+    updated[index] = { ...updated[index], ...updates } as Capture;
+    onChange(updated);
+  };
+
+  const removeCapture = (index: number) => {
+    onChange(captures.filter((_, i) => i !== index));
+  };
+
+  const getCaptureType = (capture: Capture): string => {
+    if ('regex' in capture) return 'regex';
+    if ('json' in capture) return 'json';
+    if ('yaml' in capture) return 'yaml';
+    if ('yml' in capture) return 'yml';
+    if ('kv' in capture) return 'kv';
+    if ('after' in capture && 'before' in capture) return 'between';
+    if ('after' in capture) return 'after';
+    if ('before' in capture) return 'before';
+    if ('line' in capture) return 'line';
+    return 'full';
+  };
+
+  return (
+    <div className="form-group">
+      <label>Captures (optional)</label>
+      <div className="field-hint">
+        Extract values from stdout and store them as variables for use in subsequent steps.
+      </div>
+      {captures.map((capture, index) => {
+        const type = getCaptureType(capture);
+        return (
+          <div key={index} className="capture-item" style={{ marginBottom: '12px', padding: '12px', border: '1px solid #ddd', borderRadius: '4px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <strong>{type.charAt(0).toUpperCase() + type.slice(1)} Capture</strong>
+              <button onClick={() => removeCapture(index)} style={{ padding: '4px 8px' }}>
+                Remove
+              </button>
+            </div>
+            {type === 'full' && (
+              <div className="form-group">
+                <label>Variable Name</label>
+                <input
+                  type="text"
+                  value={capture.as || ''}
+                  onChange={(e) => updateCapture(index, { as: e.target.value })}
+                  placeholder="variable_name"
+                />
+              </div>
+            )}
+            {type === 'regex' && 'regex' in capture && (
+              <>
+                <div className="form-group">
+                  <label>Regex Pattern</label>
+                  <input
+                    type="text"
+                    value={capture.regex || ''}
+                    onChange={(e) => updateCapture(index, { regex: e.target.value })}
+                    placeholder='channel=(\\S+)'
+                  />
+                  <div className="field-hint">First capture group will be extracted</div>
+                </div>
+                <div className="form-group">
+                  <label>Variable Name</label>
+                  <input
+                    type="text"
+                    value={capture.as || ''}
+                    onChange={(e) => updateCapture(index, { as: e.target.value })}
+                    placeholder="channel"
+                  />
+                </div>
+              </>
+            )}
+            {(type === 'json' || type === 'yaml' || type === 'yml') && (
+              <>
+                <div className="form-group">
+                  <label>JSONPath Expression</label>
+                  <input
+                    type="text"
+                    value={
+                      type === 'json' && 'json' in capture
+                        ? capture.json
+                        : type === 'yaml' && 'yaml' in capture
+                          ? capture.yaml
+                          : type === 'yml' && 'yml' in capture
+                            ? capture.yml
+                            : ''
+                    }
+                    onChange={(e) => {
+                      if (type === 'json') {
+                        updateCapture(index, { json: e.target.value });
+                      } else if (type === 'yaml') {
+                        updateCapture(index, { yaml: e.target.value });
+                      } else {
+                        updateCapture(index, { yml: e.target.value });
+                      }
+                    }}
+                    placeholder="$.meta.version"
+                  />
+                  <div className="field-hint">JSONPath expression to extract value</div>
+                </div>
+                <div className="form-group">
+                  <label>Variable Name</label>
+                  <input
+                    type="text"
+                    value={capture.as || ''}
+                    onChange={(e) => updateCapture(index, { as: e.target.value })}
+                    placeholder="version"
+                  />
+                </div>
+              </>
+            )}
+            {type === 'kv' && 'kv' in capture && (
+              <>
+                <div className="form-group">
+                  <label>Key</label>
+                  <input
+                    type="text"
+                    value={capture.kv || ''}
+                    onChange={(e) => updateCapture(index, { kv: e.target.value })}
+                    placeholder="DATABASE_URL"
+                  />
+                  <div className="field-hint">Key name from .env style key=value pairs</div>
+                </div>
+                <div className="form-group">
+                  <label>Variable Name</label>
+                  <input
+                    type="text"
+                    value={capture.as || ''}
+                    onChange={(e) => updateCapture(index, { as: e.target.value })}
+                    placeholder="db_url"
+                  />
+                </div>
+              </>
+            )}
+            {type === 'after' && 'after' in capture && !('before' in capture) && (
+              <>
+                <div className="form-group">
+                  <label>After Marker</label>
+                  <input
+                    type="text"
+                    value={capture.after || ''}
+                    onChange={(e) => updateCapture(index, { after: e.target.value })}
+                    placeholder="user="
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Variable Name</label>
+                  <input
+                    type="text"
+                    value={capture.as || ''}
+                    onChange={(e) => updateCapture(index, { as: e.target.value })}
+                    placeholder="user_value"
+                  />
+                </div>
+              </>
+            )}
+            {type === 'before' && 'before' in capture && (
+              <>
+                <div className="form-group">
+                  <label>Before Marker</label>
+                  <input
+                    type="text"
+                    value={capture.before || ''}
+                    onChange={(e) => updateCapture(index, { before: e.target.value })}
+                    placeholder="end marker"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Variable Name</label>
+                  <input
+                    type="text"
+                    value={capture.as || ''}
+                    onChange={(e) => updateCapture(index, { as: e.target.value })}
+                    placeholder="before_content"
+                  />
+                </div>
+              </>
+            )}
+            {type === 'between' && 'after' in capture && 'before' in capture && (
+              <>
+                <div className="form-group">
+                  <label>After Marker</label>
+                  <input
+                    type="text"
+                    value={capture.after || ''}
+                    onChange={(e) => updateCapture(index, { after: e.target.value })}
+                    placeholder="start:"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Before Marker</label>
+                  <input
+                    type="text"
+                    value={capture.before || ''}
+                    onChange={(e) => updateCapture(index, { before: e.target.value })}
+                    placeholder=" end"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Variable Name</label>
+                  <input
+                    type="text"
+                    value={capture.as || ''}
+                    onChange={(e) => updateCapture(index, { as: e.target.value })}
+                    placeholder="between_content"
+                  />
+                </div>
+              </>
+            )}
+            {type === 'line' && 'line' in capture && (
+              <>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>From Line (1-based)</label>
+                    <input
+                      type="number"
+                      value={capture.line?.from || 1}
+                      onChange={(e) =>
+                        updateCapture(index, {
+                          line: {
+                            from: parseInt(e.target.value, 10) || 1,
+                            to: capture.line?.to || 1,
+                          },
+                        })
+                      }
+                      min="1"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>To Line (1-based, inclusive)</label>
+                    <input
+                      type="number"
+                      value={capture.line?.to || 1}
+                      onChange={(e) =>
+                        updateCapture(index, {
+                          line: {
+                            from: capture.line?.from || 1,
+                            to: parseInt(e.target.value, 10) || 1,
+                          },
+                        })
+                      }
+                      min="1"
+                    />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Variable Name</label>
+                  <input
+                    type="text"
+                    value={capture.as || ''}
+                    onChange={(e) => updateCapture(index, { as: e.target.value })}
+                    placeholder="line_block"
+                  />
+                </div>
+              </>
+            )}
+          </div>
+        );
+      })}
+      <div style={{ marginTop: '8px' }}>
+        <select
+          onChange={(e) => {
+            if (e.target.value) {
+              addCapture(e.target.value);
+              e.target.value = '';
+            }
+          }}
+          style={{ marginRight: '8px', padding: '4px' }}
+        >
+          <option value="">Add Capture...</option>
+          <option value="full">Full Capture</option>
+          <option value="regex">Regex Capture</option>
+          <option value="json">JSON Capture</option>
+          <option value="yaml">YAML Capture</option>
+          <option value="yml">YML Capture</option>
+          <option value="kv">KV Capture</option>
+          <option value="after">After Capture</option>
+          <option value="before">Before Capture</option>
+          <option value="between">Between Capture</option>
+          <option value="line">Line Capture</option>
+        </select>
       </div>
     </div>
   );

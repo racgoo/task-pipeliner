@@ -2,7 +2,7 @@
 
 > A powerful workflow orchestration tool with condition-based execution and beautiful CLI output
 
-**Version:** 0.3.7
+**Version:** 0.3.8
 
 ![fox2](https://github.com/user-attachments/assets/fdf8d786-6a91-4d2d-9dc1-72be6f3ccd98)
 
@@ -104,6 +104,8 @@ After upgrading to a new version, if you see compatibility issues (e.g. schedule
 - **YAML & JSON support** - Declarative pipelining in YAML & JSON formats
 
 - **Variable substitution** - Use `{{variables}}` throughout your workflows
+
+- **Stdout capture** - Extract values from command output into variables using various capture strategies (regex, JSON/YAML, key-value, etc.)
 
 - **Profiles** - Run workflows non-interactively with pre-set variables (`tp run --profile <name>`); choose/prompt steps are skipped when the variable is set in the profile
 
@@ -258,6 +260,13 @@ steps:
       var:
         action: test
     run: 'npm test'
+  
+  # Extract values from command output
+  - run: 'cat package.json'
+    captures:
+      - json: "$.version"
+        as: version
+  - run: 'echo "Version: {{version}}"'
 ```
 
 **JSON Format (`workflow.json`):**

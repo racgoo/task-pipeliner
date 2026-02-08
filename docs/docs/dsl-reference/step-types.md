@@ -25,6 +25,25 @@ Execute a shell command.
   retry?: <number> | "Infinity"  # Optional: Number of retries on failure (default: 0). Use "Infinity" for infinite retries
   shell?: <array>      # Optional: Shell configuration (overrides workflow.shell)
   continue?: <bool>    # Optional: Continue workflow even if this step fails
+  captures?:           # Optional: Extract stdout values into variables
+    - as: <variable>   # Full capture: Store entire stdout
+    - regex: <pattern> # Regex capture: Extract first capture group
+      as: <variable>
+    - json: <jsonpath> # JSON capture: Extract using JSONPath
+      as: <variable>
+    - yaml: <jsonpath> # YAML capture: Extract using JSONPath (yml alias also supported)
+      as: <variable>
+    - kv: <key>        # KV capture: Extract value from key=value pairs (.env style)
+      as: <variable>
+    - after: <marker>  # After capture: Extract text after marker
+      before?: <marker> # Optional: Also extract before marker (between capture)
+      as: <variable>
+    - before: <marker> # Before capture: Extract text before marker
+      as: <variable>
+    - line:            # Line capture: Extract lines by range
+        from: <number> # 1-based, inclusive
+        to: <number>   # 1-based, inclusive
+      as: <variable>
   onError?:            # Optional: Error handling behavior
     run: <command>     # Fallback command to run when the main run command fails (side effect)
     timeout?: <number> # Optional: Timeout for this fallback command
@@ -43,6 +62,7 @@ Execute a shell command.
   - `continue: true` - Always proceed to the next step (even if this step fails)
   - `continue: false` - Always stop the workflow after this step (even if this step succeeds)
   - `continue` not set (default) - Proceed on success, stop on failure
+- `captures` (optional): `array` of capture objects - Extract values from stdout and store them as variables. See [Capture Strategies](#capture-strategies) below for details.
 - `onError.run` (optional): `string` - Fallback command executed when the main `run` command (after its retries) fails. **`onError` only performs side effects (cleanup, rollback, logging, etc.) and does not change whether the step is considered successful or failed.** If the main `run` fails, this step is treated as failed regardless of `onError` success.
 - `onError.timeout` (optional): `number` - Timeout for this fallback command.
 - `onError.retry` (optional): `number | "Infinity"` - Retry count for this fallback command. Use `"Infinity"` for infinite retries.
@@ -112,6 +132,183 @@ Execute a shell command.
 
 - run: 'Write-Host "Running with PowerShell Core"'
   shell: [pwsh, -Command]
+
+# Capture stdout values into variables
+# Full capture: Store entire stdout
+- run: 'cat config.txt'
+  captures:
+    - as: config_content
+
+# Regex capture: Extract first capture group
+- run: 'echo "channel=production user=admin"'
+  captures:
+    - regex: "channel=(\\S+)"
+      as: channel
+    - regex: "user=(\\S+)"
+      as: user
+
+# JSON capture: Extract using JSONPath
+- run: 'echo "{\"version\":\"1.0.0\"}"'
+  captures:
+    - json: "$.version"
+      as: version
+
+# YAML capture: Extract using JSONPath
+- run: |
+    echo "version: 1.0.0"
+    echo "env: production"
+  captures:
+    - yaml: "$.version"
+      as: yaml_version
+
+# KV capture: Extract from key-value pairs (.env style)
+- run: 'cat .env'
+  captures:
+    - kv: DATABASE_URL
+      as: db_url
+    - kv: API_KEY
+      as: api_key
+
+# Before/After/Between capture
+- run: 'echo "prefix user=admin suffix"'
+  captures:
+    - after: "user="
+      as: user_value
+
+- run: |
+    echo "content before"
+    echo "end marker"
+  captures:
+    - before: "end marker"
+      as: before_content
+
+- run: 'echo "start:middle content end"'
+  captures:
+    - after: "start:"
+    - before: " end"
+      as: between_content
+
+# Line capture: Extract lines by range (1-based, inclusive)
+- run: |
+    echo "line 1"
+    echo "line 2"
+    echo "line 3"
+  captures:
+    - line:
+        from: 2
+        to: 3
+      as: line_block
+
+# Use captured values in subsequent steps
+- run: 'echo "Version: {{version}}, Channel: {{channel}}"'
+- run: 'echo "DB: {{db_url}}"'
+```
+
+### Capture Strategies
+
+The `captures` field allows you to extract values from command stdout and store them as variables for use in subsequent steps.
+
+#### Full Capture
+
+Store the entire stdout as a single string.
+
+```yaml
+- run: 'cat file.txt'
+  captures:
+    - as: file_content
+```
+
+#### Regex Capture
+
+Extract the first capture group from a regex match.
+
+```yaml
+- run: 'echo "channel=production"'
+  captures:
+    - regex: "channel=(\\S+)"
+      as: channel
+```
+
+#### JSON Capture
+
+Extract values from JSON output using JSONPath expressions.
+
+```yaml
+- run: 'echo "{\"meta\":{\"version\":\"1.0.0\"}}"'
+  captures:
+    - json: "$.meta.version"
+      as: version
+```
+
+#### YAML Capture
+
+Extract values from YAML output using JSONPath expressions. Both `yaml` and `yml` are supported (aliases).
+
+```yaml
+- run: |
+    echo "meta:"
+    echo "  version: 1.0.0"
+  captures:
+    - yaml: "$.meta.version"
+      as: version
+    # or use yml alias
+    - yml: "$.meta.version"
+      as: version2
+```
+
+#### KV Capture
+
+Extract values from key-value pairs in `.env` style format. Supports `KEY=value` and `KEY = value` (with spaces). Automatically skips comments and empty lines.
+
+```yaml
+- run: 'cat .env'
+  captures:
+    - kv: DATABASE_URL
+      as: db_url
+    - kv: API_KEY
+      as: api_key
+```
+
+#### Before/After/Between Capture
+
+Extract text before, after, or between markers.
+
+```yaml
+# After marker
+- run: 'echo "prefix value suffix"'
+  captures:
+    - after: "prefix "
+      as: after_value
+
+# Before marker
+- run: 'echo "content before end"'
+  captures:
+    - before: " end"
+      as: before_value
+
+# Between markers
+- run: 'echo "start:middle content:end"'
+  captures:
+    - after: "start:"
+    - before: ":end"
+      as: between_value
+```
+
+#### Line Capture
+
+Extract a range of lines (1-based, inclusive).
+
+```yaml
+- run: |
+    echo "line 1"
+    echo "line 2"
+    echo "line 3"
+    echo "line 4"
+  captures:
+    - line:
+        from: 2
+        to: 3
+      as: line_block
 ```
 
 ---

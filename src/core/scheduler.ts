@@ -205,6 +205,10 @@ export class WorkflowScheduler {
       const content = await readFile(workflowPath, 'utf-8');
       const workflow = parser.parse(content);
 
+      // Set workflow file path for baseDir resolution
+      workflow._filePath = workflowPath;
+      workflow._fileName = workflowPath.split(/[/\\]/).pop() || 'workflow';
+
       // Execute workflow with options
       const executor = new Executor();
 

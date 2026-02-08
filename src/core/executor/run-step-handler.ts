@@ -1,4 +1,5 @@
 import type { RunStep, RunStepOnError } from '../../types/workflow';
+import { parseCapture } from '../capture-parser';
 import type { ExecutionContext } from '../executor';
 import { TaskRunner, type TaskRunResult } from '../task-runner';
 import { substituteVariables } from '../template';
@@ -112,12 +113,17 @@ async function executeRunChain(
  */
 export async function executeRunStep(
   deps: IRunStepHandlerDeps,
-  step: Pick<RunStep, 'run' | 'timeout' | 'retry' | 'onError' | 'shell'>,
+  step: Pick<RunStep, 'run' | 'timeout' | 'retry' | 'onError' | 'shell' | 'captures'>,
   context: ExecutionContext,
   bufferOutput: boolean = false,
   hasWhenCondition: boolean = false
 ): Promise<boolean | TaskRunResult> {
   const { workspace } = deps;
+
+  // If captures are present, we need to collect stdout, so force bufferOutput to true
+  // Explicitly handle false vs undefined: if bufferOutput is explicitly false, keep it false unless captures exist
+  const shouldBufferOutput =
+    bufferOutput === true || (step.captures && step.captures.length > 0) ? true : false;
 
   const mainResult = await executeSingleRun(
     deps,
@@ -128,12 +134,38 @@ export async function executeRunStep(
       shell: step.shell,
     },
     context,
-    bufferOutput,
+    shouldBufferOutput,
     hasWhenCondition
   );
 
   const mainSuccess = typeof mainResult === 'boolean' ? mainResult : mainResult.success;
   workspace.setStepResult(context.stepIndex, mainSuccess);
+
+  // Display buffered output if we buffered it (for captures or parallel execution)
+  if (shouldBufferOutput && typeof mainResult === 'object' && 'stdout' in mainResult) {
+    const command = substituteVariables(step.run.trim(), workspace);
+    const displayName =
+      step.run.trim() !== command ? `${command}\n  (template: ${step.run})` : command;
+    deps.taskRunner.displayBufferedOutput(
+      mainResult,
+      displayName,
+      false, // isNested
+      context.lineNumber,
+      context.fileName
+    );
+  }
+
+  // Process captures if present and result is TaskRunResult
+  if (step.captures && typeof mainResult === 'object' && 'stdout' in mainResult) {
+    const stdout = mainResult.stdout || [];
+    for (const capture of step.captures) {
+      const parsedValue = parseCapture(capture, stdout);
+      if (parsedValue !== null && capture.as) {
+        workspace.setVariable(capture.as, parsedValue);
+      }
+      // If parsing failed, skip this capture and continue with next one
+    }
+  }
 
   if (mainSuccess || !step.onError) return mainResult;
 

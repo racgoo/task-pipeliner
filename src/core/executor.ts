@@ -71,13 +71,21 @@ export class Executor {
    * Resolve baseDir path from workflow configuration
    *
    * baseDir determines where commands will be executed:
-   * - If absolute path: use as-is
-   * - If relative path: resolve relative to YAML file location
-   * - If no _filePath: resolve relative to current working directory
+   * - If baseDir is specified:
+   *   - Absolute path: use as-is
+   *   - Relative path: resolve relative to YAML file location (or cwd if no _filePath)
+   * - If baseDir is not specified:
+   *   - If _filePath exists: use workflow file's directory as baseDir
+   *   - Otherwise: use process.cwd() (default shell behavior)
    */
   private resolveBaseDir(workflow: Workflow): void {
     if (!workflow.baseDir) {
-      return; // No baseDir specified, use default (process.cwd())
+      // No baseDir specified: use workflow file directory if available, otherwise process.cwd()
+      if (workflow._filePath) {
+        this.baseDir = dirname(workflow._filePath);
+      }
+      // If no _filePath, baseDir stays undefined and shell will use process.cwd()
+      return;
     }
 
     // Absolute path: use directly
