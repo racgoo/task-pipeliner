@@ -111,6 +111,15 @@ These are workflow definitions only - no project files included.
   - Setting working directory
   - Relative and absolute paths
 
+- **`capture-example.yaml`** - Stdout capture examples
+  - Full capture: Store entire stdout as string
+  - Regex capture: Extract first capture group from regex match
+  - JSON/YAML capture: Extract values using JSONPath expressions
+  - KV capture: Extract values from key-value pairs (.env style)
+  - Before/After/Between capture: Extract text between markers
+  - Line capture: Extract lines by range (1-based, inclusive)
+  - Using captured values in subsequent steps
+
 ## Running Examples
 
 From project root:

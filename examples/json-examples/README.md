@@ -59,6 +59,9 @@ task-pipeliner run basic.json
 - **cicd.json** - CI/CD pipeline example
 - **react.json** - React-specific build and deployment workflow
 - **base-dir-example.json** - baseDir configuration example
+- **capture-example.json** - Stdout capture examples
+  - Full, Regex, JSON/YAML, KV, Before/After/Between, and Line capture strategies
+  - Extract values from command output and use them as variables
 
 ## YAML vs JSON
 
