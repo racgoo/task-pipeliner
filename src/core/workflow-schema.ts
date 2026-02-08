@@ -75,6 +75,76 @@ const RunStepOnErrorSchema: z.ZodTypeAny = z.lazy(() =>
   })
 );
 
+// Capture schemas
+const FullCaptureSchema = z.object({
+  as: z.string(),
+});
+
+const RegexCaptureSchema = z.object({
+  regex: z.string(),
+  as: z.string(),
+});
+
+const JsonCaptureSchema = z.object({
+  json: z.string(),
+  as: z.string(),
+});
+
+const YamlCaptureSchema = z.object({
+  yaml: z.string(),
+  as: z.string(),
+});
+
+const YmlCaptureSchema = z.object({
+  yml: z.string(),
+  as: z.string(),
+});
+
+const KvCaptureSchema = z.object({
+  kv: z.string(),
+  as: z.string(),
+});
+
+const AfterCaptureSchema = z.object({
+  after: z.string(),
+  as: z.string(),
+});
+
+const BeforeCaptureSchema = z.object({
+  before: z.string(),
+  as: z.string(),
+});
+
+const BetweenCaptureSchema = z.object({
+  after: z.string(),
+  before: z.string(),
+  as: z.string(),
+});
+
+const LineCaptureSchema = z.object({
+  line: z.object({
+    from: z.number(),
+    to: z.number(),
+  }),
+  as: z.string(),
+});
+
+// CaptureSchema union: FullCaptureSchema must be last because it only has 'as',
+// while all other schemas have specific fields that distinguish them.
+// Zod union matches in order, so more specific schemas must come first.
+const CaptureSchema = z.union([
+  RegexCaptureSchema,
+  JsonCaptureSchema,
+  YamlCaptureSchema,
+  YmlCaptureSchema,
+  KvCaptureSchema,
+  BetweenCaptureSchema, // Has both 'after' and 'before', must come before individual ones
+  AfterCaptureSchema,
+  BeforeCaptureSchema,
+  LineCaptureSchema,
+  FullCaptureSchema, // Last: only has 'as', matches when no other field is present
+]);
+
 const RunStepSchema = z.object({
   run: z.string(),
   when: ConditionSchema.optional(),
@@ -83,6 +153,7 @@ const RunStepSchema = z.object({
   shell: z.array(z.string()).min(1, 'shell must have at least one element').optional(),
   continue: z.boolean().optional(),
   onError: RunStepOnErrorSchema.optional(),
+  captures: z.array(CaptureSchema).optional(),
 });
 
 const ChooseStepSchema = z.object({

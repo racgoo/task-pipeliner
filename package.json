@@ -65,6 +65,7 @@
     "cronstrue": "^3.11.0",
     "dayjs": "^1.11.19",
     "inquirer": "^8.2.6",
+    "jsonpath-plus": "^8.0.0",
     "log-update": "^4.0.0",
     "node-cron": "^4.2.1",
     "ora": "^5.4.1",
