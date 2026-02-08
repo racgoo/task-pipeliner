@@ -44,6 +44,8 @@
 
 - **변수 치환** - 워크플로우 전반에서 `{{variables}}` 사용
 
+- **Stdout 캡쳐** - 다양한 캡쳐 전략(정규식, JSON/YAML, 키-값 등)을 사용하여 명령 출력에서 값을 추출하여 변수로 저장
+
 - **프로필** - 미리 정의한 변수로 비대화형 실행 (`tp run --profile <name>`); 프로필에 설정된 변수에 대해서는 choose/prompt 단계 생략
 
 - **실행 히스토리** - 상세한 단계별 기록으로 과거 워크플로우 실행 추적 및 검토
@@ -257,6 +259,13 @@ steps:
       var:
         action: test
     run: 'npm test'
+  
+  # 명령 출력에서 값 추출
+  - run: 'cat package.json'
+    captures:
+      - json: "$.version"
+        as: version
+  - run: 'echo "Version: {{version}}"'
 ```
 
 **JSON 형식 (`workflow.json`):**

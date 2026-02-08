@@ -105,6 +105,8 @@ After upgrading to a new version, if you see compatibility issues (e.g. schedule
 
 - **Variable substitution** - Use `{{variables}}` throughout your workflows
 
+- **Stdout capture** - Extract values from command output into variables using various capture strategies (regex, JSON/YAML, key-value, etc.)
+
 - **Profiles** - Run workflows non-interactively with pre-set variables (`tp run --profile <name>`); choose/prompt steps are skipped when the variable is set in the profile
 
 - **Execution history** - Track and review past workflow executions with detailed step-by-step records
@@ -258,6 +260,13 @@ steps:
       var:
         action: test
     run: 'npm test'
+  
+  # Extract values from command output
+  - run: 'cat package.json'
+    captures:
+      - json: "$.version"
+        as: version
+  - run: 'echo "Version: {{version}}"'
 ```
 
 **JSON Format (`workflow.json`):**
