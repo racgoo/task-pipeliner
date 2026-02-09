@@ -1,0 +1,22 @@
+name: GitHub List PRs
+
+# 1) Load GITHUB_TOKEN from env.example (cat + KV capture)
+# 2) Prompt for repo and optional state (open|closed|all)
+# 3) List pull requests via GitHub CLI (gh). Run from this directory. Requires: gh (https://cli.github.com/)
+
+baseDir: ./
+
+steps:
+  - run: 'cat env.example'
+    captures:
+      - kv: GITHUB_TOKEN
+        as: GITHUB_TOKEN
+  - prompt:
+      message: "Repository (owner/repo, e.g. octocat/Hello-World):"
+      as: repo
+  - prompt:
+      message: "State (open, closed, or all):"
+      default: open
+      as: pr_state
+  - run: 'GH_TOKEN="{{GITHUB_TOKEN}}" gh pr list -R "{{repo}}" --state "{{pr_state}}"'
+  - run: 'echo "Done."'

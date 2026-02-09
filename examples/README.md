@@ -2,7 +2,7 @@
 
 This directory contains example workflows and projects demonstrating task-pipeliner.
 
-**Note (third-party examples):** Examples that call external services (Slack, AWS, etc.) may need changes depending on those services’ API versions and specs. They have not been verified to work in all environments; use them as a starting point and adjust as needed.
+**Note (third-party examples):** Examples that call external services (Slack, AWS, Discord, GitHub, etc.) may need changes depending on those services’ API versions and specs. They have not been verified to work in all environments; use them as a starting point and adjust as needed.
 
 ## Quick Start Examples
 
@@ -138,6 +138,24 @@ task-pipeliner run workflow.yaml
 ```
 
 **Location**: `examples/discord/` – [discord/README.md](discord/README.md), [discord/message/README.md](discord/message/README.md), [discord/channels/README.md](discord/channels/README.md).
+
+### 9. GitHub examples
+
+GitHub integration examples live under `examples/github/` in feature subdirectories.
+
+- **issue/** – Create an issue: token in `env.example` (cat + KV capture), prompt for repo, title, body, then `gh issue create`.
+- **pr/** – Create a PR: token in `env.example`, prompt for repo, head/base branch, title, body, then `gh pr create`.
+- **pr-list/** – List PRs: token in `env.example`, prompt for repo and state (open/closed/all), then `gh pr list`.
+
+Requires [GitHub CLI](https://cli.github.com/) (`gh`).
+
+```bash
+cd examples/github/issue    # or pr, pr-list
+# Edit env.example: set GITHUB_TOKEN (Personal access token with repo scope)
+task-pipeliner run workflow.yaml
+```
+
+**Location**: `examples/github/` – [github/README.md](github/README.md), [github/issue/README.md](github/issue/README.md), [github/pr/README.md](github/pr/README.md), [github/pr-list/README.md](github/pr-list/README.md).
 
 ## YAML Examples
 

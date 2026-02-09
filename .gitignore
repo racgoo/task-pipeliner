@@ -9,6 +9,7 @@ dist/
 # Example env files (real secrets; do not commit)
 examples/slack/**/env
 examples/aws/**/env
+examples/github/**/env
 env
 
 

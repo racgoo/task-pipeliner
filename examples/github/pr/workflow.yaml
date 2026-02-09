@@ -1,0 +1,31 @@
+name: GitHub Create PR
+
+# 1) Load GITHUB_TOKEN from env.example (cat + KV capture)
+# 2) Prompt for repo, head branch, base branch, PR title, body
+# 3) Create pull request via GitHub CLI (gh). Run from this directory. Requires: gh (https://cli.github.com/)
+
+baseDir: ./
+
+steps:
+  - run: 'cat env.example'
+    captures:
+      - kv: GITHUB_TOKEN
+        as: GITHUB_TOKEN
+  - prompt:
+      message: "Repository (owner/repo, e.g. octocat/Hello-World):"
+      as: repo
+  - prompt:
+      message: "Head branch (branch with your changes):"
+      as: head_branch
+  - prompt:
+      message: "Base branch (target branch, e.g. main):"
+      default: main
+      as: base_branch
+  - prompt:
+      message: "PR title:"
+      as: pr_title
+  - prompt:
+      message: "PR body (optional, one line):"
+      as: pr_body
+  - run: 'GH_TOKEN="{{GITHUB_TOKEN}}" gh pr create -R "{{repo}}" --head "{{head_branch}}" --base "{{base_branch}}" --title "{{pr_title}}" --body "{{pr_body}}"'
+  - run: 'echo "PR created."'
