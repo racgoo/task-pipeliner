@@ -1,0 +1,21 @@
+name: Discord List Channels
+
+# 1) Load DISCORD_TOKEN and DISCORD_GUILD_ID from env.example via cat + KV capture
+# 2) Optionally prompt for guild ID (or use value from env.example)
+# 3) Call Discord API to list channels. Edit env.example with your token. Run from this directory. Requires Node.js 18+.
+
+baseDir: ./
+
+steps:
+  - run: 'cat env.example'
+    captures:
+      - kv: DISCORD_TOKEN
+        as: DISCORD_TOKEN
+      - kv: DISCORD_GUILD_ID
+        as: DISCORD_GUILD_ID
+  - prompt:
+      message: "Guild (server) ID to list channels:"
+      default: "{{DISCORD_GUILD_ID}}"
+      as: guild_id
+  - run: 'node list-channels.js "{{DISCORD_TOKEN}}" "{{guild_id}}"'
+  - run: 'echo "Done."'

@@ -1,0 +1,2 @@
+Hello from task-pipeliner AWS S3 example.
+Uploaded at: sample file for demo

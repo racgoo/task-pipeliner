@@ -1,0 +1,18 @@
+name: Slack Webhook (curl only)
+
+# 1) Load SLACK_WEBHOOK_URL from env.example via cat + KV capture
+# 2) Prompt for the message to send
+# 3) Send to Slack with curl (no Node.js). Edit env.example with your URL. Run from this directory.
+
+baseDir: ./
+
+steps:
+  - run: 'cat env.example'
+    captures:
+      - kv: SLACK_WEBHOOK_URL
+        as: SLACK_WEBHOOK_URL
+  - prompt:
+      message: "Message to send to Slack:"
+      as: slack_message
+  - run: 'curl -s -X POST -H "Content-Type: application/json" -d "{\"text\":\"{{slack_message}}\"}" "{{SLACK_WEBHOOK_URL}}"'
+  - run: 'echo "Sent."'

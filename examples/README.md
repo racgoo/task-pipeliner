@@ -2,6 +2,8 @@
 
 This directory contains example workflows and projects demonstrating task-pipeliner.
 
+**Note (third-party examples):** Examples that call external services (Slack, AWS, Discord, GitHub, etc.) may need changes depending on those services’ API versions and specs. They have not been verified to work in all environments; use them as a starting point and adjust as needed.
+
 ## Quick Start Examples
 
 ### 0. tp setup (Recommended for New Projects)
@@ -77,6 +79,84 @@ Contains the **exact structure and file contents** that **`tp setup`** generates
 
 **Location**: `examples/tp-setup-example/`
 
+### 6. Slack examples
+
+Slack integration examples live under `examples/slack/` in feature subdirectories.
+
+- **message/** – Send a message: webhook URL in `env` (cat + KV capture), prompt for text, then script (Node 18+) or curl.
+- **profile/** – User profile: Bot token in `env`, optional user ID prompt, then Node script (`users.info` / `auth.test`).
+- **settings/** – Workspace/auth info: Bot token in `env`, then Node script (`auth.test` + `team.info`).
+
+```bash
+cd examples/slack/message   # or profile, settings
+cp env.example env
+# Edit env (SLACK_WEBHOOK_URL for message; SLACK_TOKEN for profile/settings)
+task-pipeliner run workflow-script.yaml   # message: script or workflow-curl.yaml
+task-pipeliner run workflow.yaml          # profile or settings
+```
+
+**Location**: `examples/slack/` – [slack/README.md](slack/README.md) (index), [slack/message/README.md](slack/message/README.md), [slack/profile/README.md](slack/profile/README.md), [slack/settings/README.md](slack/settings/README.md).
+
+### 7. AWS Examples
+
+AWS service examples live under **`examples/aws/`**, one subdirectory per service.
+
+- **S3** – Load credentials and bucket from `env`, prompt for local file and S3 object key, then upload. Two variants: **CLI** (`aws s3 cp`) or **Script** (Node.js + AWS SDK).
+- **EC2** – Deploy via SSH. Load EC2 host, SSH user, and key path from `env`, prompt for the deploy command to run on the server, then run it over SSH.
+
+```bash
+# S3
+cd examples/aws/s3
+cp env.example env
+# Edit env: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, S3_BUCKET
+task-pipeliner run workflow-cli.yaml      # or workflow-script.yaml (npm install once)
+
+# EC2
+cd examples/aws/ec2
+cp env.example env
+# Edit env: EC2_HOST, SSH_USER, SSH_KEY_PATH
+task-pipeliner run workflow-cli.yaml
+```
+
+**Location**: `examples/aws/` – [aws/README.md](aws/README.md). S3: [aws/s3/README.md](aws/s3/README.md). EC2: [aws/ec2/README.md](aws/ec2/README.md).
+
+### 8. Discord examples
+
+Discord integration examples live under `examples/discord/` in feature subdirectories.
+
+- **message/** – Send a message: webhook URL in `env.example` (cat + KV capture), prompt for text, then script (Node 18+) or curl.
+- **channels/** – List channels: Bot token and guild ID in `env.example`, optional guild ID prompt, then Node script (Node 18+).
+
+```bash
+cd examples/discord/message
+# Edit env.example: set DISCORD_WEBHOOK_URL
+task-pipeliner run workflow-script.yaml   # or workflow-curl.yaml
+
+cd examples/discord/channels
+# Edit env.example: set DISCORD_TOKEN, DISCORD_GUILD_ID
+task-pipeliner run workflow.yaml
+```
+
+**Location**: `examples/discord/` – [discord/README.md](discord/README.md), [discord/message/README.md](discord/message/README.md), [discord/channels/README.md](discord/channels/README.md).
+
+### 9. GitHub examples
+
+GitHub integration examples live under `examples/github/` in feature subdirectories.
+
+- **issue/** – Create an issue: token in `env.example` (cat + KV capture), prompt for repo, title, body, then `gh issue create`.
+- **pr/** – Create a PR: token in `env.example`, prompt for repo, head/base branch, title, body, then `gh pr create`.
+- **pr-list/** – List PRs: token in `env.example`, prompt for repo and state (open/closed/all), then `gh pr list`.
+
+Requires [GitHub CLI](https://cli.github.com/) (`gh`).
+
+```bash
+cd examples/github/issue    # or pr, pr-list
+# Edit env.example: set GITHUB_TOKEN (Personal access token with repo scope)
+task-pipeliner run workflow.yaml
+```
+
+**Location**: `examples/github/` – [github/README.md](github/README.md), [github/issue/README.md](github/issue/README.md), [github/pr/README.md](github/pr/README.md), [github/pr-list/README.md](github/pr-list/README.md).
+
 ## YAML Examples
 
 Simple YAML workflow files (no project structure) are in the `yaml-examples/` directory:
@@ -87,7 +167,7 @@ Simple YAML workflow files (no project structure) are in the `yaml-examples/` di
 - **`conditions.yaml`** - Condition evaluation
 - **`shell-example.yaml`** - Shell configuration (global and step-level)
 - **`capture-example.yaml`** - Stdout capture: extract values from command output into variables (full, regex, JSON/YAML, KV, before/after/between, line strategies; use in later steps with `{{variable}}`)
-- **`env-example.yaml`** - Load .env / command output into variables (runnable with echo or real file). Capture keys and use `{{variable}}` in later steps.
+- **`env-example.yaml`** - Load env / command output into variables (runnable with echo or real file). Capture keys and use `{{variable}}` in later steps.
 - And more...
 
 See [yaml-examples/README.md](yaml-examples/README.md) for details.

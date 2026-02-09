@@ -1,0 +1,30 @@
+name: AWS S3 Upload (CLI only)
+
+# 1) Load credentials and bucket from env.example via cat + KV capture
+# 2) Prompt for local file path and S3 object key
+# 3) Upload using AWS CLI (aws s3 cp)
+# Edit env.example with your values. Run from this directory. Requires: AWS CLI (aws --version).
+
+baseDir: ./
+
+steps:
+  - run: 'cat env.example'
+    captures:
+      - kv: AWS_ACCESS_KEY_ID
+        as: AWS_ACCESS_KEY_ID
+      - kv: AWS_SECRET_ACCESS_KEY
+        as: AWS_SECRET_ACCESS_KEY
+      - kv: AWS_REGION
+        as: AWS_REGION
+      - kv: S3_BUCKET
+        as: S3_BUCKET
+  - prompt:
+      message: "Local file to upload (e.g. sample.txt):"
+      default: sample.txt
+      as: upload_file
+  - prompt:
+      message: "S3 object key (path in bucket):"
+      default: uploads/sample.txt
+      as: s3_key
+  - run: 'export AWS_ACCESS_KEY_ID="{{AWS_ACCESS_KEY_ID}}" AWS_SECRET_ACCESS_KEY="{{AWS_SECRET_ACCESS_KEY}}" AWS_DEFAULT_REGION="{{AWS_REGION}}" && aws s3 cp "{{upload_file}}" "s3://{{S3_BUCKET}}/{{s3_key}}"'
+  - run: 'echo "Uploaded to s3://{{S3_BUCKET}}/{{s3_key}}"'
