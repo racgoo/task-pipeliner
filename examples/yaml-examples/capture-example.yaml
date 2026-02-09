@@ -68,7 +68,7 @@ steps:
       echo "before start:middle content end after"
     captures:
       - after: "start:"
-      - before: " end"
+        before: " end"
         as: between_result
 
   # 7. Line capture - Extract specific line range

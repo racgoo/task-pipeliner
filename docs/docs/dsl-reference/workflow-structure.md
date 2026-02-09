@@ -155,7 +155,7 @@ See the [Profiles](/docs/dsl-reference/profiles) documentation for full details 
 
 Each step in the `steps` array can be one of the following types:
 
-1. **`run`** - Execute shell commands
+1. **`run`** - Execute shell commands (optionally use **`captures`** to extract values from stdout into variables; see [Captures](/docs/dsl-reference/captures))
 2. **`choose`** - User selection menu
 3. **`prompt`** - User text input
 4. **`parallel`** - Parallel execution

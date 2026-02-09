@@ -35,6 +35,20 @@
 
 `as` 필드가 제공되면 해당 이름으로 변수가 생성됩니다. 생략하면 선택한 옵션의 `id`가 변수 이름으로 사용됩니다.
 
+### `run` 단계의 `captures`
+
+`run` 단계에 `captures` 배열을 넣으면 명령의 표준 출력에서 값을 추출해 변수로 만들 수 있습니다. 각 캡처는 전략(전체 stdout, 정규식, JSON/YAML 경로, key-value, 마커 앞뒤, 줄 범위 등)과 `as`에 지정한 변수 이름을 가지며, 이후 스텝에서 해당 변수를 사용할 수 있습니다.
+
+```yaml
+- run: 'echo "version=1.2.3"'
+  captures:
+    - kv: version
+      as: version
+- run: 'echo "Building {{version}}"'
+```
+
+전체 `run` 문법은 **[단계 타입 – run](/docs/dsl-reference/step-types#1-run---명령-실행)**에서, 모든 캡처 전략과 예제는 **[캡처](/docs/dsl-reference/captures)** 문서에서 확인할 수 있습니다.
+
 ## 변수 치환
 
 변수는 `{{variableName}}` 문법을 사용하여 명령에서 사용할 수 있습니다. 선택적으로 공백을 사용할 수 있습니다: `{{var}}`, `{{ var }}`, `{{  var  }}` 모두 작동합니다.

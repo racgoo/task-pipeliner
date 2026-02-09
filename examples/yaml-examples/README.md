@@ -135,6 +135,13 @@ cd examples/yaml-examples
 task-pipeliner run <example-name>.yaml
 ```
 
+**Try the capture example** (extract values from command output into variables):
+
+```bash
+task-pipeliner run examples/yaml-examples/capture-example.yaml
+# or: cd examples/yaml-examples && task-pipeliner run capture-example.yaml
+```
+
 ## Note
 
 These examples run commands in the current working directory. For examples with actual project files, see the project examples in the parent directory:
