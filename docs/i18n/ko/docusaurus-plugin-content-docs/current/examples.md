@@ -40,6 +40,8 @@ task-pipeliner 사용 예제를 확인하세요.
 - **`base-dir-example.yaml`** - baseDir 설정 예제
 - **`timeout-retry-example.yaml`** - 타임아웃 및 재시도 기능
 - **`pm2-like-example.yaml`** - 무한 재시도를 사용한 PM2 같은 프로세스 관리자로 서비스 유지
+- **`capture-example.yaml`** - 표준 출력 캡처 예제 (전략별 추출, 이후 스텝에서 변수 사용)
+- **`env-example.yaml`** - .env 스타일 내용을 변수로 불러오기 (echo로 바로 실행 가능; 실제 파일 사용 선택). 캡처한 값을 이후 스텝에서 `{{변수}}`로 사용. 저장소 루트에서: `task-pipeliner run examples/yaml-examples/env-example.yaml`
 
 ### CI/CD 파이프라인 {#cicd-파이프라인}
 
@@ -59,6 +61,8 @@ task-pipeliner 사용 예제를 확인하세요.
 - **`conditions.json`** - 조건 평가 예제
 - **`prompt.json`** - 사용자 입력 프롬프트
 - **`variables.json`** - 변수 치환 예제
+- **`capture-example.json`** - 표준 출력 캡처 예제 (YAML 버전과 동일)
+- **`env-example.json`** - .env 스타일 내용을 변수로 불러오기 (바로 실행 가능; env-example.yaml과 동일)
 
 **참고:** YAML과 JSON 형식 모두 완전히 지원됩니다. 선호하는 형식을 선택하세요 - 가독성을 위해 YAML, 프로그래밍 방식 생성을 위해 JSON.
 

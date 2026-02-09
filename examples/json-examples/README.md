@@ -13,6 +13,12 @@ cd examples/json-examples
 task-pipeliner run basic.json
 ```
 
+**Try the capture example** (stdout capture strategies and variables):
+
+```bash
+task-pipeliner run examples/json-examples/capture-example.json
+```
+
 ## Available Examples
 
 ### Basic Examples
@@ -59,9 +65,15 @@ task-pipeliner run basic.json
 - **cicd.json** - CI/CD pipeline example
 - **react.json** - React-specific build and deployment workflow
 - **base-dir-example.json** - baseDir configuration example
-- **capture-example.json** - Stdout capture examples
-  - Full, Regex, JSON/YAML, KV, Before/After/Between, and Line capture strategies
-  - Extract values from command output and use them as variables
+- **capture-example.json** - Stdout capture examples (equivalent to capture-example.yaml)
+  - Full capture: store entire stdout as string
+  - Regex: extract first capture group
+  - JSON/YAML: extract using JSONPath
+  - KV: key-value pairs (.env style)
+  - Before/After/Between: extract text around markers
+  - Line: extract line range (1-based, inclusive)
+  - Use captured values in subsequent steps with `{{variable}}`
+- **env-example.json** - Load .env-style content into variables (runnable; same as env-example.yaml). Capture and use in later steps with `{{variable}}`
 
 ## YAML vs JSON
 

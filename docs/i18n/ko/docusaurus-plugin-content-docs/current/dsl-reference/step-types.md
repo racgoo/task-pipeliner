@@ -25,6 +25,25 @@
   retry?: <number> | "Infinity"  # 선택: 실패 시 재시도 횟수 (기본값: 0). "Infinity"로 무한 재시도 가능
   shell?: <array>     # 선택: 쉘 설정 (workflow.shell 오버라이드)
   continue?: <bool>   # 선택: 이 스텝 이후 다음 스텝으로 진행할지 여부 (성공/실패 무관)
+  captures?:           # 선택: 표준 출력에서 값을 추출해 변수로 저장
+    - as: <variable>   # 전체 캡처: stdout 전체 저장
+    - regex: <pattern> # 정규식: 첫 번째 캡처 그룹 추출
+      as: <variable>
+    - json: <jsonpath> # JSON: JSONPath로 추출
+      as: <variable>
+    - yaml: <jsonpath> # YAML: JSONPath로 추출 (yml 별칭 지원)
+      as: <variable>
+    - kv: <key>        # KV: key=value(.env 스타일)에서 값 추출
+      as: <variable>
+    - after: <marker>  # after: 마커 이후 텍스트 추출
+      before?: <marker> # 선택: before도 있으면 구간 추출
+      as: <variable>
+    - before: <marker> # before: 마커 이전 텍스트 추출
+      as: <variable>
+    - line:            # line: 줄 범위 추출 (1부터 시작, inclusive)
+        from: <number>
+        to: <number>
+      as: <variable>
   onError?:            # 선택: 에러 처리 동작
     run: <command>     # 메인 run 명령이 실패했을 때 실행할 대체 명령 (사이드 이펙트)
     timeout?: <number> # 선택: 이 fallback 명령의 타임아웃
@@ -56,6 +75,11 @@
 - `onError.run` (선택): `string` - 메인 `run` 명령이 (자신의 재시도 후에도) 실패했을 때 실행할 대체 명령. **`onError`는 단순히 사이드 이펙트(예: 정리 작업, 롤백, 로깅)를 수행하며, 이 스텝의 성공/실패 여부를 바꾸지 않습니다.** 메인 `run`이 실패하면 이 스텝은 항상 실패로 간주됩니다.
 - `onError.timeout` (선택): `number` - 이 fallback 명령의 타임아웃.
 - `onError.retry` (선택): `number | "Infinity"` - 이 fallback 명령의 재시도 횟수. `"Infinity"`로 무한 재시도 가능.
+- `captures` (선택): 캡처 객체의 `array` - 명령의 표준 출력에서 값을 추출해 변수로 저장합니다. `run` 스텝에서만 사용합니다. 각 항목은 전략(전체/정규식/json/yaml/kv/after·before·between/line)과 `as` 변수 이름을 가집니다. 특정 캡처가 매칭·파싱에 실패하면 해당 변수는 설정되지 않고, 나머지 캡처는 그대로 적용됩니다. 자세한 내용은 아래 [캡처 전략](#캡처-전략) 및 [캡처](/docs/dsl-reference/captures) 문서를 참조하세요.
+
+### 표준 출력 캡처 (captures)
+
+`run` 스텝에 `captures`를 넣으면 명령의 **표준 출력**이 수집된 뒤 각 캡처 전략에 따라 파싱됩니다. 추출된 값은 `as`에 지정한 이름의 변수로 저장되며, 이후 스텝에서 `{{변수이름}}`으로 사용할 수 있습니다. 한 스텝에 여러 캡처를 나열할 수 있으며, 파싱에 성공한 캡처만 해당 변수를 설정합니다. 매칭·파싱에 실패한 캡처는 해당 변수를 설정하지 않고 워크플로우는 계속 진행됩니다. 전략별 상세 설명은 [캡처](/docs/dsl-reference/captures) 문서를 참조하세요.
 
 ### 예제
 
@@ -124,6 +148,180 @@ steps:
 
 - run: 'Write-Host "PowerShell Core로 실행"'
   shell: [pwsh, -Command]
+
+# 표준 출력을 변수로 캡처
+# 전체 캡처: stdout 전체를 한 문자열로 저장
+- run: 'cat config.txt'
+  captures:
+    - as: config_content
+
+# 정규식 캡처: 첫 번째 캡처 그룹 추출
+- run: 'echo "channel=production user=admin"'
+  captures:
+    - regex: "channel=(\\S+)"
+      as: channel
+    - regex: "user=(\\S+)"
+      as: user
+
+# JSON 캡처: JSONPath로 추출
+- run: 'echo "{\"version\":\"1.0.0\"}"'
+  captures:
+    - json: "$.version"
+      as: version
+
+# YAML 캡처: JSONPath로 추출
+- run: |
+    echo "version: 1.0.0"
+    echo "env: production"
+  captures:
+    - yaml: "$.version"
+      as: yaml_version
+
+# KV 캡처: key=value(.env 스타일)에서 추출
+- run: 'cat .env'
+  captures:
+    - kv: DATABASE_URL
+      as: db_url
+    - kv: API_KEY
+      as: api_key
+
+# After/Before/Between 캡처
+- run: 'echo "prefix user=admin suffix"'
+  captures:
+    - after: "user="
+      as: user_value
+
+- run: |
+    echo "content before"
+    echo "end marker"
+  captures:
+    - before: "end marker"
+      as: before_content
+
+- run: 'echo "start:middle content end"'
+  captures:
+    - after: "start:"
+      before: " end"
+      as: between_content
+
+# Line 캡처: 줄 범위 (1부터, inclusive)
+- run: |
+    echo "line 1"
+    echo "line 2"
+    echo "line 3"
+  captures:
+    - line:
+        from: 2
+        to: 3
+      as: line_block
+
+# 캡처한 변수를 이후 스텝에서 사용
+- run: 'echo "Version: {{version}}, Channel: {{channel}}"'
+- run: 'echo "DB: {{db_url}}"'
+```
+
+### 캡처 전략
+
+`captures` 필드를 사용하면 명령의 표준 출력에서 값을 추출해 변수로 저장하고, 이후 스텝에서 사용할 수 있습니다.
+
+#### 전체 캡처 (Full Capture)
+
+표준 출력 전체를 하나의 문자열로 저장합니다.
+
+```yaml
+- run: 'cat file.txt'
+  captures:
+    - as: file_content
+```
+
+#### 정규식 캡처 (Regex Capture)
+
+정규식 매칭의 첫 번째 캡처 그룹을 추출합니다.
+
+```yaml
+- run: 'echo "channel=production"'
+  captures:
+    - regex: "channel=(\\S+)"
+      as: channel
+```
+
+#### JSON 캡처 (JSON Capture)
+
+JSON 출력에서 JSONPath 식으로 값을 추출합니다.
+
+```yaml
+- run: 'echo "{\"meta\":{\"version\":\"1.0.0\"}}"'
+  captures:
+    - json: "$.meta.version"
+      as: version
+```
+
+#### YAML 캡처 (YAML Capture)
+
+YAML 출력에서 JSONPath 식으로 값을 추출합니다. `yaml`과 `yml` 모두 사용 가능합니다.
+
+```yaml
+- run: |
+    echo "meta:"
+    echo "  version: 1.0.0"
+  captures:
+    - yaml: "$.meta.version"
+      as: version
+```
+
+#### KV 캡처 (KV Capture)
+
+`.env` 스타일의 `KEY=value` 형식에서 값을 추출합니다. `KEY = value`(공백 포함)도 지원하며, 빈 줄과 주석은 무시됩니다.
+
+```yaml
+- run: 'cat .env'
+  captures:
+    - kv: DATABASE_URL
+      as: db_url
+    - kv: API_KEY
+      as: api_key
+```
+
+#### After/Before/Between 캡처
+
+마커 이후, 이전, 또는 두 마커 사이의 텍스트를 추출합니다.
+
+```yaml
+# after 마커
+- run: 'echo "prefix value suffix"'
+  captures:
+    - after: "prefix "
+      as: after_value
+
+# before 마커
+- run: 'echo "content before end"'
+  captures:
+    - before: " end"
+      as: before_value
+
+# between (두 마커 사이)
+- run: 'echo "start:middle content:end"'
+  captures:
+    - after: "start:"
+      before: ":end"
+      as: between_value
+```
+
+#### Line 캡처 (Line Capture)
+
+지정한 줄 범위를 추출합니다 (1부터 시작, 끝 줄 포함).
+
+```yaml
+- run: |
+    echo "line 1"
+    echo "line 2"
+    echo "line 3"
+    echo "line 4"
+  captures:
+    - line:
+        from: 2
+        to: 3
+      as: line_block
 ```
 
 ### 동작
@@ -466,6 +664,7 @@ steps:
 
 ## 다음 단계
 
+- **[캡처](/docs/dsl-reference/captures)** - `run` 스텝의 표준 출력 캡처 전략
 - **[조건](/docs/dsl-reference/conditions)** - 조건부 실행 방법
 - **[변수](/docs/dsl-reference/variables)** - 변수 사용법
 - **[완전한 예제](/docs/dsl-reference/complete-example)** - 모든 기능을 포함한 예제

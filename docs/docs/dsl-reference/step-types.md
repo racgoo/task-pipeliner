@@ -62,10 +62,14 @@ Execute a shell command.
   - `continue: true` - Always proceed to the next step (even if this step fails)
   - `continue: false` - Always stop the workflow after this step (even if this step succeeds)
   - `continue` not set (default) - Proceed on success, stop on failure
-- `captures` (optional): `array` of capture objects - Extract values from stdout and store them as variables. See [Capture Strategies](#capture-strategies) below for details.
+- `captures` (optional): `array` of capture objects - Extract values from stdout and store them as variables. Only applies to `run` steps. Each item uses a strategy (full, regex, json, yaml, kv, after/before/between, line) and an `as` variable name. Parsing failures for a given capture are skipped (that variable is not set); other captures in the array are still applied. See [Capture Strategies](#capture-strategies) below and the [Captures](/docs/dsl-reference/captures) page for full details.
 - `onError.run` (optional): `string` - Fallback command executed when the main `run` command (after its retries) fails. **`onError` only performs side effects (cleanup, rollback, logging, etc.) and does not change whether the step is considered successful or failed.** If the main `run` fails, this step is treated as failed regardless of `onError` success.
 - `onError.timeout` (optional): `number` - Timeout for this fallback command.
 - `onError.retry` (optional): `number | "Infinity"` - Retry count for this fallback command. Use `"Infinity"` for infinite retries.
+
+### Stdout capture (`captures`)
+
+When you add `captures` to a `run` step, the command’s **stdout** is collected and then parsed according to each capture strategy. Extracted values are stored as variables (using the `as` field) and can be used in later steps with `{{variableName}}`. You can specify multiple captures in one step; each capture that parses successfully sets its variable. If a capture fails to match or parse, that variable is simply not set and the workflow continues. For a complete reference of all strategies and behavior, see [Captures](/docs/dsl-reference/captures).
 
 ### Examples
 
@@ -185,7 +189,7 @@ Execute a shell command.
 - run: 'echo "start:middle content end"'
   captures:
     - after: "start:"
-    - before: " end"
+      before: " end"
       as: between_content
 
 # Line capture: Extract lines by range (1-based, inclusive)
@@ -492,6 +496,7 @@ Stop the workflow with an error message.
 
 ## Next Steps
 
+- **[Captures](/docs/dsl-reference/captures)** - Stdout capture strategies for `run` steps
 - **[Conditions](/docs/dsl-reference/conditions)** - Conditional execution
 - **[Variables](/docs/dsl-reference/variables)** - Using variables
 - **[Complete Example](/docs/dsl-reference/complete-example)** - Example with all features

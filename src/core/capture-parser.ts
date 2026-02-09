@@ -75,8 +75,12 @@ export function parseCapture(capture: Capture, stdout: string[]): string | null 
     }
 
     // KV capture (key-value, .env style)
-    if ('kv' in capture) {
-      const key = capture.kv;
+    if ('kv' in capture && typeof capture.kv === 'string') {
+      const key = capture.kv.trim();
+      // Require non-empty key so we never match "=value" or mis-handle missing key
+      if (!key) {
+        return null;
+      }
 
       for (const line of stdout) {
         const trimmed = line.trim();
@@ -85,12 +89,13 @@ export function parseCapture(capture: Capture, stdout: string[]): string | null 
           continue;
         }
 
-        // Match key=value (exact key match, not prefix)
-        // Use regex to ensure exact key match (not key2, key3, etc.)
+        // Match key=value (exact key match, not prefix). Keys with underscores (e.g. TOP_SECRET)
+        // are supported; only regex-special chars in the key are escaped.
         const exactKeyPattern = `^${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*=\\s*(.+)$`;
         const match = trimmed.match(new RegExp(exactKeyPattern));
         if (match && match[1]) {
-          // Extract value and remove quotes if present
+          // Extract value and remove surrounding quotes if present.
+          // Value is everything after the first "=" (so KEY=VAL with VAL containing "=" is valid).
           const value = match[1].trim().replace(/^["']|["']$/g, '');
           return value;
         }

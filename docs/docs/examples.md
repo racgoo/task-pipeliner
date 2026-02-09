@@ -44,6 +44,7 @@ Check out `examples/yaml-examples/` for YAML workflow examples:
   - Extract values from command output using various capture strategies
   - Full, Regex, JSON/YAML, KV, Before/After/Between, and Line capture
   - Use captured values in subsequent steps
+- **`env-example.yaml`** - Load .env-style content into variables (runnable with echo; optional: real file). Capture keys and use `{{variable}}` in later steps. Run from repo root: `task-pipeliner run examples/yaml-examples/env-example.yaml`
 
 ### CI/CD Pipeline {#cicd-pipeline}
 
@@ -64,6 +65,7 @@ Check out `examples/json-examples/` for JSON workflow examples (equivalent to YA
 - **`prompt.json`** - User input prompts
 - **`variables.json`** - Variable substitution examples
 - **`capture-example.json`** - Stdout capture examples (equivalent to YAML version)
+- **`env-example.json`** - Load .env-style content into variables (runnable; same as env-example.yaml)
 
 **Note:** Both YAML and JSON formats are fully supported. Choose the format that fits your preference - YAML for readability, JSON for programmatic generation.
 

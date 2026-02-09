@@ -35,6 +35,20 @@ A variable is created with the name specified in the `as` field.
 
 If the `as` field is provided, a variable is created with that name. If omitted, the selected option's `id` is used as the variable name.
 
+### `run` step with `captures`
+
+You can create variables from command output by adding a `captures` array to a `run` step. Each capture uses a strategy (full stdout, regex, JSON/YAML path, key-value, before/after markers, or line range) and stores the extracted value in a variable with the name given in `as`. Those variables are then available for substitution in later steps.
+
+```yaml
+- run: 'echo "version=1.2.3"'
+  captures:
+    - kv: version
+      as: version
+- run: 'echo "Building {{version}}"'
+```
+
+See **[Step Types – run](/docs/dsl-reference/step-types#1-run---execute-command)** for the full `run` syntax and **[Captures](/docs/dsl-reference/captures)** for all capture strategies and examples.
+
 ## Variable Substitution
 
 Variables can be used in commands using the `{{variableName}}` syntax. Optional whitespace is supported: `{{var}}`, `{{ var }}`, and `{{  var  }}` all work.

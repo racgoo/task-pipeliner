@@ -193,6 +193,21 @@ describe('Capture Parser', () => {
       const result = parseCapture(capture, stdout);
       expect(result).toBe('value');
     });
+
+    it('should extract value for key with underscores (e.g. TOP_SECRET)', () => {
+      const capture: Capture = { kv: 'TOP_SECRET', as: 'TOP_SECRET_VARIABLE' };
+      const stdout = ['TOP_SECRET=1234567890'];
+      const result = parseCapture(capture, stdout);
+      expect(result).toBe('1234567890');
+    });
+
+    it('should not return full line when key has underscores', () => {
+      const capture: Capture = { kv: 'TOP_SECRET', as: 'var' };
+      const stdout = ['TOP_SECRET=1234567890'];
+      const result = parseCapture(capture, stdout);
+      expect(result).not.toBe('TOP_SECRET=1234567890');
+      expect(result).toBe('1234567890');
+    });
   });
 
   describe('After Capture', () => {

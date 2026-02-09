@@ -86,6 +86,8 @@ Simple YAML workflow files (no project structure) are in the `yaml-examples/` di
 - **`variables.yaml`** - Variable substitution
 - **`conditions.yaml`** - Condition evaluation
 - **`shell-example.yaml`** - Shell configuration (global and step-level)
+- **`capture-example.yaml`** - Stdout capture: extract values from command output into variables (full, regex, JSON/YAML, KV, before/after/between, line strategies; use in later steps with `{{variable}}`)
+- **`env-example.yaml`** - Load .env / command output into variables (runnable with echo or real file). Capture keys and use `{{variable}}` in later steps.
 - And more...
 
 See [yaml-examples/README.md](yaml-examples/README.md) for details.
