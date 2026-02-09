@@ -45,4 +45,5 @@ jobs:
       - name: Sync generator to S3
         run: aws s3 sync ./generator/dist s3://task-pipeliner-generator --region ap-northeast-2 --delete
 
-      - run: echo "Generator deployed to S3: task-pipeliner-generator"
+      - name: Done
+        run: echo 'Generator deployed to S3: task-pipeliner-generator'
