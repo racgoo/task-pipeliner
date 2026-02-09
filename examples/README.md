@@ -120,6 +120,25 @@ task-pipeliner run workflow-cli.yaml
 
 **Location**: `examples/aws/` – [aws/README.md](aws/README.md). S3: [aws/s3/README.md](aws/s3/README.md). EC2: [aws/ec2/README.md](aws/ec2/README.md).
 
+### 8. Discord examples
+
+Discord integration examples live under `examples/discord/` in feature subdirectories.
+
+- **message/** – Send a message: webhook URL in `env.example` (cat + KV capture), prompt for text, then script (Node 18+) or curl.
+- **channels/** – List channels: Bot token and guild ID in `env.example`, optional guild ID prompt, then Node script (Node 18+).
+
+```bash
+cd examples/discord/message
+# Edit env.example: set DISCORD_WEBHOOK_URL
+task-pipeliner run workflow-script.yaml   # or workflow-curl.yaml
+
+cd examples/discord/channels
+# Edit env.example: set DISCORD_TOKEN, DISCORD_GUILD_ID
+task-pipeliner run workflow.yaml
+```
+
+**Location**: `examples/discord/` – [discord/README.md](discord/README.md), [discord/message/README.md](discord/message/README.md), [discord/channels/README.md](discord/channels/README.md).
+
 ## YAML Examples
 
 Simple YAML workflow files (no project structure) are in the `yaml-examples/` directory:
