@@ -46,4 +46,5 @@ jobs:
         run: aws s3 sync ./docs/build s3://task-pipeliner-docs --region ap-northeast-2 --delete
 
       - name: Done
-        run: echo 'Docs deployed to S3: task-pipeliner-docs'
+        run: |
+          echo "Docs deployed to S3: task-pipeliner-docs"
