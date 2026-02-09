@@ -392,4 +392,4 @@ Copyright (c) 2026 racgoo
 
 ## 📧 Contact
 
-For inquiries, please email lhsung98@naver.com!
+For inquiries, please email lhsung98@naver.com

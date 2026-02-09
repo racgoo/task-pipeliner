@@ -1,4 +1,4 @@
-name: Release Build and Publish
+name: Release Lib
 
 on:
   workflow_dispatch:
@@ -181,4 +181,3 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: false
-
