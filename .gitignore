@@ -6,5 +6,10 @@ dist/
 .env
 .env.local
 
+# Example env files (real secrets; do not commit)
+examples/slack/**/env
+examples/aws/**/env
+env
+
 
 binary-result/
