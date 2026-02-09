@@ -159,6 +159,38 @@
 - **실패**: 캡처가 매칭되지 않거나 파싱에 실패하면 해당 변수는 **설정되지 않습니다**. 같은 스텝의 다른 캡처는 그대로 적용되며, 워크플로우는 실패하지 않습니다.
 - **여러 캡처**: `captures`의 각 항목은 독립적입니다. 한 스텝에서 전략을 섞어 쓸 수 있습니다(예: 정규식 하나, JSON 경로 하나).
 
+## 예: .env 불러와서 변수로 사용
+
+**바로 실행 가능 (파일 없음):** .env 스타일 줄을 echo로 출력한 뒤 키를 캡처하고, 다음 스텝에서 변수를 사용합니다. 저장소 루트 또는 `examples/yaml-examples/`에서 그대로 실행할 수 있습니다.
+
+```yaml
+name: Env Example
+steps:
+  - run: |
+      echo "TOP_SECRET=1234567890"
+      echo "TOP_SECRET2=1234567890"
+    captures:
+      - kv: TOP_SECRET
+        as: TOP_SECRET_VARIABLE
+  - run: "echo {{TOP_SECRET_VARIABLE}}"
+```
+
+**실제 .env 파일 사용:** echo 스텝 대신 `run: "cat ../../.env"`(또는 `cat .env`)를 사용하세요. 해당 파일이 존재해야 합니다(예: 프로젝트 루트에 `TOP_SECRET=1234567890`가 있는 `.env`를 만들거나 경로를 조정). 동일한 `captures`와 `echo {{TOP_SECRET_VARIABLE}}` 스텝으로 파일에서 읽은 값을 사용할 수 있습니다.
+
+## 예시 패턴: CLI 출력 (예: AWS)
+
+`aws ec2 describe-instances ...` 같은 명령은 JSON을 출력합니다. 필드를 캡처해 이후 스텝에서 사용할 수 있습니다.
+
+```yaml
+- run: "aws ec2 describe-instances ..."
+  captures:
+    - json: "$.Reservations[0].Instances[0].InstanceId"
+      as: instance_id
+- run: "echo Deploying to {{instance_id}}"
+```
+
+`run` 명령을 실제 CLI 호출로 바꾸면 되며, `json`으로 캡처하고 `{{변수}}`로 사용하는 패턴은 동일합니다.
+
 ## 참고
 
 - **[단계 타입 – run](/docs/dsl-reference/step-types#1-run---명령-실행)** – `captures`를 포함한 `run` 전체 문법

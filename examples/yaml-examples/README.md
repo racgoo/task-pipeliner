@@ -120,6 +120,8 @@ These are workflow definitions only - no project files included.
   - Line capture: Extract lines by range (1-based, inclusive)
   - Using captured values in subsequent steps
 
+- **`env-example.yaml`** - Load .env-style output into variables (runnable with echo; or use real `cat .env`). Capture `TOP_SECRET` (or similar) and use `{{TOP_SECRET_VARIABLE}}` in the next step.
+
 ## Running Examples
 
 From project root:
@@ -140,6 +142,12 @@ task-pipeliner run <example-name>.yaml
 ```bash
 task-pipeliner run examples/yaml-examples/capture-example.yaml
 # or: cd examples/yaml-examples && task-pipeliner run capture-example.yaml
+```
+
+**Try the env example** (load .env-style content into variables, no file needed):
+
+```bash
+task-pipeliner run examples/yaml-examples/env-example.yaml
 ```
 
 ## Note

@@ -1,0 +1,17 @@
+{
+  "name": "Env Example",
+  "steps": [
+    {
+      "run": "echo \"TOP_SECRET=1234567890\" && echo \"TOP_SECRET2=1234567890\"",
+      "captures": [
+        {
+          "kv": "TOP_SECRET",
+          "as": "TOP_SECRET_VARIABLE"
+        }
+      ]
+    },
+    {
+      "run": "echo {{TOP_SECRET_VARIABLE}}"
+    }
+  ]
+}

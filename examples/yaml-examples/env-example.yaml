@@ -1,0 +1,16 @@
+name: Env Example
+
+# Load .env-style output into variables and use them in later steps.
+# This version is runnable with no external files (echo simulates .env content).
+# To use a real .env file, replace the first run step with e.g.:
+#   run: "cat ../../.env"
+# and ensure the file exists (e.g. create TOP_SECRET=1234567890 in .env at project root).
+
+steps:
+  - run: |
+      echo "TOP_SECRET=1234567890"
+      echo "TOP_SECRET2=1234567890"
+    captures:
+      - kv: TOP_SECRET
+        as: TOP_SECRET_VARIABLE
+  - run: "echo {{TOP_SECRET_VARIABLE}}"

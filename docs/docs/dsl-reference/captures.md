@@ -159,6 +159,38 @@ Extract a range of lines from stdout. Line numbers are **1-based** and **inclusi
 - **Failure**: If a capture doesn’t match or parsing fails, that variable is **not** set. Other captures in the same step are still applied. The workflow does not fail.
 - **Multiple captures**: Each item in `captures` is independent. You can mix strategies in one step (e.g. one regex and one JSON path).
 
+## Example: Loading .env and using variables
+
+**Runnable (no file):** Echo .env-style lines, capture a key, then use the variable in the next step. Run as-is from the repo root or from `examples/yaml-examples/`:
+
+```yaml
+name: Env Example
+steps:
+  - run: |
+      echo "TOP_SECRET=1234567890"
+      echo "TOP_SECRET2=1234567890"
+    captures:
+      - kv: TOP_SECRET
+        as: TOP_SECRET_VARIABLE
+  - run: "echo {{TOP_SECRET_VARIABLE}}"
+```
+
+**With a real .env file:** Use `run: "cat ../../.env"` (or `cat .env`) instead of the echo step. Ensure the file exists (e.g. create a `.env` with `TOP_SECRET=1234567890` at your project root or adjust the path). The same `captures` and `echo {{TOP_SECRET_VARIABLE}}` step then use the value from the file.
+
+## Pseudo: CLI output (e.g. AWS)
+
+Commands like `aws ec2 describe-instances ...` output JSON. You can capture a field and use it in later steps:
+
+```yaml
+- run: "aws ec2 describe-instances ..."
+  captures:
+    - json: "$.Reservations[0].Instances[0].InstanceId"
+      as: instance_id
+- run: "echo Deploying to {{instance_id}}"
+```
+
+Replace the `run` command with your actual CLI call; the pattern (capture with `json` and use `{{variable}}`) stays the same.
+
 ## See also
 
 - **[Step Types – run](/docs/dsl-reference/step-types#1-run---execute-command)** – Full `run` syntax including `captures`
