@@ -91,6 +91,12 @@ These are workflow definitions only - no project files included.
   - Pre-defined variable sets for `tp run --profile <name>`
   - Skips choose/prompt when variable is set in the profile
 
+- **`var-injection-example.yaml`** - CLI variable injection (`-v` / `--var`) and profile override
+  - Inject variables from the command line: `-v key=value` or `--var key=value`
+  - When both a profile and `-v` set the same variable, **the injected value wins** (CLI overrides profile)
+  - Example: `tp run var-injection-example.yaml --profile Test` → mode=dev, label=test-label  
+  - Override: `tp run var-injection-example.yaml --profile Test -v mode=staging -v label=from-cli` → mode=staging, label=from-cli (profile’s env=test unchanged)
+
 ### Advanced Examples
 
 - **`advanced.yaml`** - Advanced workflow patterns
@@ -148,6 +154,16 @@ task-pipeliner run examples/yaml-examples/capture-example.yaml
 
 ```bash
 task-pipeliner run examples/yaml-examples/env-example.yaml
+```
+
+**Try variable injection** (`-v` overrides profile when both set the same variable):
+
+```bash
+# Profile only: mode=dev, label=test-label, env=test
+task-pipeliner run examples/yaml-examples/var-injection-example.yaml --profile Test
+
+# Profile + injection: injected values win for mode and label
+task-pipeliner run examples/yaml-examples/var-injection-example.yaml --profile Test -v mode=staging -v label=from-cli
 ```
 
 ## Note

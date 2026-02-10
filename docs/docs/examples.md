@@ -45,6 +45,7 @@ Check out `examples/yaml-examples/` for YAML workflow examples:
   - Full, Regex, JSON/YAML, KV, Before/After/Between, and Line capture
   - Use captured values in subsequent steps
 - **`env-example.yaml`** - Load .env-style content into variables (runnable with echo; optional: real file). Capture keys and use `{{variable}}` in later steps. Run from repo root: `task-pipeliner run examples/yaml-examples/env-example.yaml`
+- **`var-injection-example.yaml`** - CLI variable injection (`-v` / `--var`). Shows that injected variables override profile variables when both set the same key. Example: `tp run ... --profile Test` then `tp run ... --profile Test -v mode=staging -v label=from-cli`.
 
 ### CI/CD Pipeline {#cicd-pipeline}
 
@@ -66,6 +67,7 @@ Check out `examples/json-examples/` for JSON workflow examples (equivalent to YA
 - **`variables.json`** - Variable substitution examples
 - **`capture-example.json`** - Stdout capture examples (equivalent to YAML version)
 - **`env-example.json`** - Load .env-style content into variables (runnable; same as env-example.yaml)
+- **`var-injection-example.json`** - CLI variable injection (`-v`/`--var`); injected values override profile when same key.
 
 **Note:** Both YAML and JSON formats are fully supported. Choose the format that fits your preference - YAML for readability, JSON for programmatic generation.
 

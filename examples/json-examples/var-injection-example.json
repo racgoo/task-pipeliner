@@ -1,0 +1,43 @@
+{
+  "name": "Variable Injection Example",
+  "profiles": [
+    {
+      "name": "Test",
+      "var": {
+        "mode": "dev",
+        "label": "test-label",
+        "env": "test"
+      }
+    },
+    {
+      "name": "Prod",
+      "var": {
+        "mode": "prod",
+        "label": "prod-label",
+        "env": "production"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "choose": {
+        "message": "Select mode",
+        "options": [
+          { "id": "dev", "label": "Development" },
+          { "id": "prod", "label": "Production" }
+        ],
+        "as": "mode"
+      }
+    },
+    {
+      "prompt": {
+        "message": "Enter label",
+        "as": "label",
+        "default": "my-label"
+      }
+    },
+    {
+      "run": "echo \"mode={{ mode }}, label={{ label }}, env={{ env }}\""
+    }
+  ]
+}

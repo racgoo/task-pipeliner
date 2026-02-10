@@ -13,17 +13,21 @@ tp run workflow.yaml        # Run a workflow
 tp run                      # Select and run a workflow from nearest tp directory
 tp run workflow.yaml --profile Test   # Run with profile (skip choose/prompt for variables set in profile)
 tp run workflow.yaml -p Test         # Short form for profile
+tp run workflow.yaml -v version=1.0.0 -v env=prod   # Inject variables (key=value); overrides profile when same key
+tp run workflow.yaml --profile Test -v mode=staging   # Profile + injection: injected values win for same key
 tp run workflow.yaml --silent  # Run in silent mode (suppress all console output)
 tp run workflow.yaml -s     # Short form for silent mode
 ```
 
 **Options:**
 - `-p, --profile <name>` - Run with a profile (non-interactive mode)
+- `-v, --var <key=value>` - Inject variables from the CLI. Can be passed multiple times (e.g. `-v a=1 -v b=2`). When both a profile and `-v` set the same variable, **the injected value wins**.
 - `-s, --silent` - Run in silent mode (suppress all console output)
 
 **Behavior:**
 - If no file is specified, searches for the nearest `tp` directory and shows an interactive menu
 - Profiles allow non-interactive execution by pre-filling variables
+- **Variable injection** (`-v` / `--var`): You can pass `key=value` pairs to set variables without prompts. Injected variables override profile variables when the same key is set in both. Use single `-v` per pair (e.g. `-v version=1.0.0 -v env=prod`).
 - Silent mode suppresses all output (useful for CI/CD)
 
 ## Open Resources
@@ -201,6 +205,7 @@ tp clean
 |---------|-------------|
 | `tp run [file]` | Run a workflow |
 | `tp run --profile <name>` | Run with profile (non-interactive) |
+| `tp run -v key=value` | Inject variables; overrides profile for same key |
 | `tp run --silent` | Run in silent mode |
 | `tp open generator` | Open visual generator |
 | `tp open docs` | Open documentation |

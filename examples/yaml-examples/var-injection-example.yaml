@@ -1,0 +1,31 @@
+name: Variable Injection Example
+
+# -v / --var: inject variables from CLI. When both profile and -v set the same key,
+# the injected value wins (CLI overrides profile).
+# Example: tp run --profile Test -v mode=staging -v label=from-cli
+profiles:
+  - name: Test
+    var:
+      mode: "dev"
+      label: "test-label"
+      env: "test"
+  - name: Prod
+    var:
+      mode: "prod"
+      label: "prod-label"
+      env: "production"
+
+steps:
+  - choose:
+      message: "Select mode"
+      options:
+        - id: dev
+          label: Development
+        - id: prod
+          label: Production
+      as: mode
+  - prompt:
+      message: "Enter label"
+      as: label
+      default: "my-label"
+  - run: 'echo "mode={{ mode }}, label={{ label }}, env={{ env }}"'

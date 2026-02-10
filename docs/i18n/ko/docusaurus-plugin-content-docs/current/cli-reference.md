@@ -31,17 +31,21 @@ tp run workflow.yaml        # 워크플로우 실행
 tp run                      # 가장 가까운 tp/workflows 디렉터리에서 워크플로우 선택하여 실행
 tp run workflow.yaml --profile Test   # 프로필로 실행 (프로필에 설정된 변수는 choose/prompt 생략)
 tp run workflow.yaml -p Test         # 프로필 짧은 형식
+tp run workflow.yaml -v version=1.0.0 -v env=prod   # 변수 주입 (key=value); 같은 키면 프로필보다 우선
+tp run workflow.yaml --profile Test -v mode=staging   # 프로필 + 주입: 같은 키는 주입값이 적용됨
 tp run workflow.yaml --silent  # 사일런트 모드로 실행 (모든 콘솔 출력 억제)
 tp run workflow.yaml -s     # 사일런트 모드 짧은 형식
 ```
 
 **옵션:**
 - `-p, --profile <name>` - 프로필로 실행 (비대화형 모드)
+- `-v, --var <key=value>` - CLI에서 변수 주입. 여러 번 지정 가능 (예: `-v a=1 -v b=2`). 프로필과 `-v` 둘 다 같은 변수를 설정하면 **주입한 값이 우선**합니다.
 - `-s, --silent` - 사일런트 모드로 실행 (모든 콘솔 출력 억제)
 
 **동작:**
 - 파일이 지정되지 않으면 가장 가까운 `tp` 디렉터리를 찾고 **`tp/workflows/`**의 워크플로우를 나열한 뒤 대화형 메뉴를 표시합니다.
 - 프로필을 사용하면 변수를 미리 채워서 비대화형으로 실행할 수 있습니다.
+- **변수 주입** (`-v` / `--var`): `key=value` 쌍으로 프롬프트 없이 변수를 설정할 수 있습니다. 같은 키가 프로필과 주입 둘 다에 있으면 주입값이 프로필을 덮어씁니다. 한 쌍마다 `-v` 한 번 (예: `-v version=1.0.0 -v env=prod`).
 - 사일런트 모드는 모든 출력을 억제합니다 (CI/CD에 유용).
 
 ## 리소스 열기
@@ -222,6 +226,7 @@ tp clean
 | `tp setup` | tp/, tp/workflows, tp/schedules 및 예시 파일 생성 |
 | `tp run [file]` | 워크플로우 실행 (파일 없음 = tp/workflows/에서 선택) |
 | `tp run --profile <name>` | 프로필로 실행 (비대화형) |
+| `tp run -v key=value` | 변수 주입; 같은 키면 프로필보다 우선 |
 | `tp run --silent` | 사일런트 모드로 실행 |
 | `tp open generator` | 시각적 생성기 열기 |
 | `tp open docs` | 문서 열기 |

@@ -42,7 +42,7 @@ describe('Executor - Profile (profileVars)', () => {
     };
 
     await executor.execute(workflow, {
-      profileVars: { mode: 'dev' },
+      executionVars: { mode: 'dev' },
     });
 
     // Choice prompt must not be called (skipped by profile)
@@ -69,7 +69,7 @@ describe('Executor - Profile (profileVars)', () => {
     };
 
     await executor.execute(workflow, {
-      profileVars: { label: 'profile-label' },
+      executionVars: { label: 'profile-label' },
     });
 
     // Text prompt must not be called (skipped by profile)
@@ -104,7 +104,7 @@ describe('Executor - Profile (profileVars)', () => {
     };
 
     await executor.execute(workflow, {
-      profileVars: { mode: 'prod', name: 'alice' },
+      executionVars: { mode: 'prod', name: 'alice' },
     });
 
     expect(mockChoicePrompt).not.toHaveBeenCalled();
@@ -141,7 +141,7 @@ describe('Executor - Profile (profileVars)', () => {
     mockTextPrompt.mockResolvedValueOnce('typed-extra');
 
     await executor.execute(workflow, {
-      profileVars: { mode: 'dev' },
+      executionVars: { mode: 'dev' },
     });
 
     // Choose skipped (mode in profile), prompt still called (extra not in profile)
@@ -173,7 +173,7 @@ describe('Executor - Profile (profileVars)', () => {
     mockChoicePrompt.mockResolvedValueOnce({ id: 'prod', label: 'Prod' });
 
     await executor.execute(workflow, {
-      profileVars: { mode: 'invalid-option' },
+      executionVars: { mode: 'invalid-option' },
     });
 
     // Profile value "invalid-option" is not in option ids -> prompt is shown
@@ -224,7 +224,7 @@ describe('Executor - Profile (profileVars)', () => {
 
     mockTextPrompt.mockResolvedValueOnce('user-value');
 
-    await executor.execute(workflow, { profileVars: {} });
+    await executor.execute(workflow, { executionVars: {} });
 
     expect(mockTextPrompt).toHaveBeenCalledWith('Enter value', undefined);
     expect(mockRun).toHaveBeenCalled();

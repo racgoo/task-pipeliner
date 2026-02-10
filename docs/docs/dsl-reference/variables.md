@@ -8,7 +8,18 @@ Variables allow you to store user input or selected values and reuse them throug
 
 ## Creating Variables
 
-Variables are created in the following steps:
+Variables can be set in several ways:
+
+### CLI variable injection (`-v` / `--var`)
+
+You can inject variables from the command line when running a workflow:
+
+```bash
+tp run workflow.yaml -v version=1.0.0 -v env=prod
+```
+
+- Use `key=value` format; pass `-v` (or `--var`) once per pair.
+- Injected variables override profile variables when the same key is set in both. See [Profiles – Variable injection from CLI](/docs/dsl-reference/profiles#variable-injection-from-cli--v---var).
 
 ### `prompt` Step
 

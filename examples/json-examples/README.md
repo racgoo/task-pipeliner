@@ -19,6 +19,13 @@ task-pipeliner run basic.json
 task-pipeliner run examples/json-examples/capture-example.json
 ```
 
+**Try variable injection** (`-v` overrides profile when both set the same variable):
+
+```bash
+task-pipeliner run examples/json-examples/var-injection-example.json --profile Test
+task-pipeliner run examples/json-examples/var-injection-example.json --profile Test -v mode=staging -v label=from-cli
+```
+
 ## Available Examples
 
 ### Basic Examples
@@ -58,6 +65,9 @@ task-pipeliner run examples/json-examples/capture-example.json
 - **profiles-example.json** - Profile-based non-interactive runs
   - Pre-defined variable sets for `tp run --profile <name>`
   - Skips choose/prompt when variable is set in the profile
+- **var-injection-example.json** - CLI variable injection (`-v` / `--var`) and profile override
+  - Inject variables from the command line: `-v key=value` or `--var key=value`
+  - When both a profile and `-v` set the same variable, the injected value wins (CLI overrides profile)
 
 ### Advanced Examples
 
