@@ -127,6 +127,20 @@ tp run workflow.yaml --profile ci
 
 프롬프트 없이 `env=prod`, `version=1.0.0` 으로 워크플로우가 실행됩니다.
 
+## CLI 변수 주입 (`-v` / `--var`)
+
+`-v key=value` 또는 `--var key=value` 로 명령줄에서 변수를 주입할 수 있습니다. 프로필과 `-v` 로 같은 변수를 모두 설정한 경우 **주입한 값이 우선**합니다 (CLI가 프로필을 덮어씀).
+
+```bash
+# 프로필만: 프로필 값 사용
+tp run workflow.yaml --profile Test
+
+# 프로필에서 특정 변수만 덮어쓰기
+tp run workflow.yaml --profile Test -v mode=staging -v label=from-cli
+```
+
+두 번째 예에서는 `mode`와 `label`은 CLI에서 오고, 나머지 변수(예: `env`)는 프로필 값을 그대로 씁니다. 자세한 내용은 [CLI 참조 – tp run](/docs/cli-reference#tp-run-file)과 [예제](/docs/examples#yaml-examples)의 **var-injection-example**을 참조하세요.
+
 ## 다음 단계
 
 - [워크플로우 구조](/docs/dsl-reference/workflow-structure) - `profiles` 를 포함한 최상위 필드

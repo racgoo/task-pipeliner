@@ -34,6 +34,7 @@ Check out `examples/yaml-examples/` for YAML workflow examples:
 - **`base-dir-example.yaml`** - baseDir configuration example
 - **`timeout-retry-example.yaml`** - Timeout and retry features
 - **`pm2-like-example.yaml`** - PM2-like process manager using infinite retry to keep services running
+- **`var-injection-example.yaml`** - CLI variable injection (`-v` / `--var`). Shows that injected variables override profile variables when both set the same key (e.g. `tp run ... --profile Test` then `tp run ... --profile Test -v mode=staging -v label=from-cli`).
 
 ### CI/CD Pipeline {#cicd-pipeline}
 
@@ -53,6 +54,7 @@ Check out `examples/json-examples/` for JSON workflow examples (equivalent to YA
 - **`conditions.json`** - Condition evaluation examples
 - **`prompt.json`** - User input prompts
 - **`variables.json`** - Variable substitution examples
+- **`var-injection-example.json`** - CLI variable injection (`-v`/`--var`); injected values override profile when same key.
 
 **Note:** Both YAML and JSON formats are fully supported. Choose the format that fits your preference - YAML for readability, JSON for programmatic generation.
 

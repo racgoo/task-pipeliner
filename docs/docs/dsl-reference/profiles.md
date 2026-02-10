@@ -127,6 +127,20 @@ tp run workflow.yaml --profile ci
 
 No prompts are shown; the workflow runs with `env=prod` and `version=1.0.0`.
 
+## Variable injection from CLI (`-v` / `--var`)
+
+You can inject variables from the command line with `-v key=value` or `--var key=value`. When you use both a profile and `-v` for the same variable, **the injected value wins** (CLI overrides the profile).
+
+```bash
+# Profile only: uses profile values
+tp run workflow.yaml --profile Test
+
+# Override specific variables from the profile
+tp run workflow.yaml --profile Test -v mode=staging -v label=from-cli
+```
+
+In the second example, `mode` and `label` come from the CLI; any other variables (e.g. `env`) still come from the profile. See [CLI Reference – tp run](/docs/cli-reference#tp-run-file) and the **var-injection-example** in [Examples](/docs/examples#yaml-examples) for more.
+
 ## Next Steps
 
 - [Workflow Structure](/docs/dsl-reference/workflow-structure) - Top-level fields including `profiles`

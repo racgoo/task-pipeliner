@@ -116,6 +116,24 @@
   "homepage.features.variables.detail4": {
     "message": "Case-sensitive variable names"
   },
+  "homepage.features.scheduling.title": {
+    "message": "Workflow Scheduling"
+  },
+  "homepage.features.scheduling.description": {
+    "message": "Automatically execute workflows using cron expressions"
+  },
+  "homepage.features.scheduling.detail1": {
+    "message": "Cron-based scheduling"
+  },
+  "homepage.features.scheduling.detail2": {
+    "message": "Background daemon mode"
+  },
+  "homepage.features.scheduling.detail3": {
+    "message": "Real-time status monitoring"
+  },
+  "homepage.features.scheduling.detail4": {
+    "message": "Timezone support"
+  },
   "homepage.features.baseDir.title": {
     "message": "Base Directory"
   },

@@ -8,7 +8,18 @@
 
 ## 변수 생성
 
-변수는 다음 단계에서 생성됩니다:
+변수는 다음 방식으로 설정할 수 있습니다:
+
+### CLI 변수 주입 (`-v` / `--var`)
+
+워크플로우 실행 시 명령줄에서 변수를 주입할 수 있습니다:
+
+```bash
+tp run workflow.yaml -v version=1.0.0 -v env=prod
+```
+
+- `key=value` 형식으로, 한 쌍마다 `-v`(또는 `--var`)를 한 번씩 지정합니다.
+- 같은 키가 프로필과 주입 둘 다에 있으면 주입한 값이 프로필을 덮어씁니다. [프로필 – CLI 변수 주입](/docs/dsl-reference/profiles#variable-injection-from-cli--v---var) 참조.
 
 ### `prompt` 단계
 
