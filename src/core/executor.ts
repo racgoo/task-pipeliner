@@ -31,7 +31,7 @@ export interface ExecuteOptions {
    * Pre-set variables from --profile <name>. Choose/prompt steps that write to these
    * variables are skipped and the profile value is used.
    */
-  profileVars?: Record<string, string>;
+  executionVars?: Record<string, string>;
 }
 
 /**
@@ -200,8 +200,8 @@ export class Executor {
    */
   async execute(workflow: Workflow, options?: ExecuteOptions): Promise<void> {
     // Seed workspace with profile variables when running with --profile
-    if (options?.profileVars && Object.keys(options.profileVars).length > 0) {
-      for (const [key, value] of Object.entries(options.profileVars)) {
+    if (options?.executionVars && Object.keys(options.executionVars).length > 0) {
+      for (const [key, value] of Object.entries(options.executionVars)) {
         this.workspace.setVariable(key, value);
       }
     }

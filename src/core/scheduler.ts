@@ -213,7 +213,7 @@ export class WorkflowScheduler {
       const executor = new Executor();
 
       // Prepare execution options
-      const executeOptions: { profileVars?: Record<string, string> } = {};
+      const executeOptions: { executionVars?: Record<string, string> } = {};
 
       if (schedule.profile) {
         // Find and apply profile
@@ -228,7 +228,7 @@ export class WorkflowScheduler {
             `Profile "${schedule.profile}" not found. Available profiles: ${workflow.profiles.map((p) => p.name).join(', ')}`
           );
         }
-        executeOptions.profileVars = profile.var;
+        executeOptions.executionVars = { ...profile.var };
       }
 
       await executor.execute(workflow, executeOptions);

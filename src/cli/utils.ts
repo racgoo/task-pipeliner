@@ -141,3 +141,24 @@ export function findNearestTpDirectory(startDir?: string): string | null {
 
   return null;
 }
+
+/**
+ * Parse -v/--var key=value pairs into a record. Throws if any pair is invalid.
+ * Splits on the first '='; value may contain '='. Key must be non-empty after trim.
+ */
+export function parseVarPairs(pairs: string[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const pair of pairs) {
+    const eq = pair.indexOf('=');
+    if (eq === -1) {
+      throw new Error(`Invalid -v/--var format: "${pair}". Use key=value (e.g. -v version=1.0.0).`);
+    }
+    const key = pair.slice(0, eq).trim();
+    const value = pair.slice(eq + 1).trim();
+    if (!key) {
+      throw new Error(`Invalid -v/--var format: key is empty in "${pair}". Use key=value.`);
+    }
+    out[key] = value;
+  }
+  return out;
+}
