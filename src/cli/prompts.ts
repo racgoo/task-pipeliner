@@ -2,25 +2,26 @@ import * as readline from 'readline';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 
+/** Number of choices to show at once (pagination). */
 const CHOICE_PAGE_SIZE = 15;
+
+/**
+ * Choice prompt (pick one from a list).
+ * - searchable: false → uses inquirer list
+ * - searchable: true → raw terminal input + search/filter (no alternate screen, in-place redraw)
+ */
 export class ChoicePrompt {
   private searchable: boolean;
 
   /**
-   * Create a new ChoicePrompt instance
-   *
-   * @param searchable - If true, allows searching/filtering options by typing
+   * @param searchable - If true, menu supports typing to search/filter
    */
   constructor(searchable = false) {
     this.searchable = searchable;
   }
 
   /**
-   * Show choice menu to user and return selected option
-   *
-   * @param message - Question to ask user
-   * @param options - List of options (each has id and label)
-   * @returns Selected option object
+   * Show choice menu and return the selected option.
    */
   async prompt(
     message: string,
@@ -30,22 +31,19 @@ export class ChoicePrompt {
       return this.promptWithSearch(message, options);
     }
 
-    // Use inquirer to show interactive menu
     const { choice } = await inquirer.prompt([
       {
         type: 'list',
         name: 'choice',
         message: chalk.cyan(message),
-        // Convert our options format to inquirer format
         choices: options.map((opt) => ({
-          name: opt.label, // What user sees
-          value: opt.id, // What we get back
+          name: opt.label,
+          value: opt.id,
         })),
         pageSize: CHOICE_PAGE_SIZE,
       },
     ]);
 
-    // Find the full option object by id
     const selected = options.find((opt) => opt.id === choice);
     if (!selected) {
       throw new Error(`Invalid choice: ${choice}`);
@@ -54,9 +52,8 @@ export class ChoicePrompt {
   }
 
   /**
-   * Show searchable choice menu using raw terminal input
-   * Navigate with arrow keys, type to filter in real-time
-   * Uses alternate screen buffer to preserve terminal history
+   * Searchable choice menu (raw terminal input).
+   * Arrow keys to move, type to filter. In-place redraw on main screen only (no 1049h/1049l).
    */
   private async promptWithSearch(
     message: string,
@@ -66,6 +63,8 @@ export class ChoicePrompt {
       let searchTerm = '';
       let selectedIndex = 0;
       let filteredOptions = [...options];
+      /** Number of lines drawn last time; used to move up and clear for in-place redraw */
+      let lastDrawnLines = 0;
 
       const rl = readline.createInterface({
         input: process.stdin,
@@ -73,24 +72,41 @@ export class ChoicePrompt {
         terminal: false,
       });
 
-      // Enable raw mode to capture key presses
       if (process.stdin.isTTY) {
         process.stdin.setRawMode(true);
       }
-
-      // Switch to alternate screen buffer (preserves terminal history)
-      process.stdout.write('\x1B[?1049h');
-      // Hide cursor
+      // Hide cursor (25l). No alternate screen (1049h/1049l)
       process.stdout.write('\x1B[?25l');
 
       const render = () => {
-        // Move cursor to top-left and clear screen
-        process.stdout.write('\x1B[H\x1B[2J');
+        const maxVisible = CHOICE_PAGE_SIZE;
+        let startIndex = 0;
+        let endIndex = filteredOptions.length;
 
-        // Show message
+        if (filteredOptions.length > maxVisible) {
+          const halfVisible = Math.floor(maxVisible / 2);
+          startIndex = Math.max(0, selectedIndex - halfVisible);
+          endIndex = Math.min(filteredOptions.length, startIndex + maxVisible);
+          if (endIndex === filteredOptions.length) {
+            startIndex = Math.max(0, endIndex - maxVisible);
+          }
+        }
+
+        const optionLines =
+          filteredOptions.length === 0
+            ? 1
+            : (startIndex > 0 ? 1 : 0) +
+              (endIndex - startIndex) +
+              (endIndex < filteredOptions.length ? 1 : 0);
+        const lineCount = 3 + optionLines;
+
+        // Move up by lastDrawnLines, then clear from cursor to end of screen (0J) for in-place redraw
+        if (lastDrawnLines > 0) {
+          process.stdout.write(`\x1B[${lastDrawnLines}A\x1B[0J`);
+        }
+
         console.log(chalk.cyan(`? ${message}`));
 
-        // Show search input
         const searchDisplay = searchTerm
           ? chalk.gray(`  Filter: ${searchTerm}`) +
             chalk.gray(` (${filteredOptions.length}/${options.length})`)
@@ -98,32 +114,12 @@ export class ChoicePrompt {
         console.log(searchDisplay);
         console.log();
 
-        // Calculate visible range (pagination)
-        const maxVisible = CHOICE_PAGE_SIZE;
-        let startIndex = 0;
-        let endIndex = filteredOptions.length;
-
-        if (filteredOptions.length > maxVisible) {
-          // Center the selected item in the visible range
-          const halfVisible = Math.floor(maxVisible / 2);
-          startIndex = Math.max(0, selectedIndex - halfVisible);
-          endIndex = Math.min(filteredOptions.length, startIndex + maxVisible);
-
-          // Adjust if we're near the end
-          if (endIndex === filteredOptions.length) {
-            startIndex = Math.max(0, endIndex - maxVisible);
-          }
-        }
-
-        // Show options
         if (filteredOptions.length === 0) {
           console.log(chalk.yellow('  No matches found'));
         } else {
-          // Show "more items above" indicator
           if (startIndex > 0) {
             console.log(chalk.gray(`  ↑ ${startIndex} more above`));
           }
-
           for (let i = startIndex; i < endIndex; i++) {
             const opt = filteredOptions[i];
             if (i === selectedIndex) {
@@ -132,21 +128,21 @@ export class ChoicePrompt {
               console.log(chalk.white(`  ${opt.label}`));
             }
           }
-
-          // Show "more items below" indicator
           if (endIndex < filteredOptions.length) {
             console.log(chalk.gray(`  ↓ ${filteredOptions.length - endIndex} more below`));
           }
         }
+
+        lastDrawnLines = lineCount;
       };
 
+      /** Filter options by search term and clamp selected index */
       const updateFilter = () => {
         const term = searchTerm.toLowerCase();
         filteredOptions = term
           ? options.filter((opt) => opt.label.toLowerCase().includes(term))
           : [...options];
 
-        // Reset selection if current selection is out of bounds
         if (selectedIndex >= filteredOptions.length) {
           selectedIndex = Math.max(0, filteredOptions.length - 1);
         }
@@ -155,13 +151,10 @@ export class ChoicePrompt {
       const onData = (key: Buffer) => {
         const keyStr = key.toString();
 
-        // Ctrl+C - exit
         if (keyStr === '\x03') {
           cleanup();
           process.exit(0);
         }
-
-        // Enter - select
         if (keyStr === '\r' || keyStr === '\n') {
           if (filteredOptions.length > 0) {
             cleanup();
@@ -169,8 +162,6 @@ export class ChoicePrompt {
           }
           return;
         }
-
-        // Escape - clear filter or exit
         if (keyStr === '\x1B' && key.length === 1) {
           if (searchTerm) {
             searchTerm = '';
@@ -179,8 +170,6 @@ export class ChoicePrompt {
           }
           return;
         }
-
-        // Arrow up
         if (keyStr === '\x1B[A') {
           if (filteredOptions.length > 0) {
             selectedIndex = selectedIndex > 0 ? selectedIndex - 1 : filteredOptions.length - 1;
@@ -188,8 +177,6 @@ export class ChoicePrompt {
           }
           return;
         }
-
-        // Arrow down
         if (keyStr === '\x1B[B') {
           if (filteredOptions.length > 0) {
             selectedIndex = selectedIndex < filteredOptions.length - 1 ? selectedIndex + 1 : 0;
@@ -197,8 +184,6 @@ export class ChoicePrompt {
           }
           return;
         }
-
-        // Backspace - remove last character from search
         if (keyStr === '\x7F' || keyStr === '\b') {
           if (searchTerm.length > 0) {
             searchTerm = searchTerm.slice(0, -1);
@@ -207,8 +192,6 @@ export class ChoicePrompt {
           }
           return;
         }
-
-        // Printable characters - add to search
         if (keyStr.length === 1 && keyStr >= ' ' && keyStr <= '~') {
           searchTerm += keyStr;
           updateFilter();
@@ -216,51 +199,38 @@ export class ChoicePrompt {
         }
       };
 
+      /** Remove listener, restore raw mode, close readline, show cursor (25h). No 1049l. */
       const cleanup = () => {
         process.stdin.removeListener('data', onData);
         if (process.stdin.isTTY) {
           process.stdin.setRawMode(false);
         }
         rl.close();
-        // Show cursor
         process.stdout.write('\x1B[?25h');
-        // Return to normal screen buffer (restores terminal history)
-        process.stdout.write('\x1B[?1049l');
       };
 
-      // Initial render
       render();
-
       process.stdin.on('data', onData);
     });
   }
 }
 
 /**
- * Text Prompt
- *
- * Asks user to type text input.
- * User can type anything and press Enter.
- *
- * Example:
- *   Enter version number: 1.0.0
+ * Text input prompt (single line).
+ * Uses inquirer input. Example: "Enter version number: 1.0.0"
  */
 export class TextPrompt {
   /**
-   * Ask user for text input
-   *
-   * @param message - Question to ask user
-   * @param defaultValue - Optional default value (shown in brackets)
-   * @returns User's input text
+   * @param message - Prompt text
+   * @param defaultValue - Optional default (shown as [defaultValue] if provided)
    */
   async prompt(message: string, defaultValue?: string): Promise<string> {
-    // Use inquirer to show text input field
     const { value } = await inquirer.prompt([
       {
         type: 'input',
         name: 'value',
         message: chalk.cyan(message),
-        default: defaultValue, // Shown as [defaultValue] if provided
+        default: defaultValue,
       },
     ]);
 

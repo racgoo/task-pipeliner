@@ -132,14 +132,14 @@ describe('ChoicePrompt', () => {
       // Verify raw mode was set
       expect(mockStdin.setRawMode).toHaveBeenCalledWith(true);
 
-      // Verify alternate screen buffer was activated
-      expect(mockStdout.write).toHaveBeenCalledWith('\x1B[?1049h');
+      // In-place mode: cursor hidden only, no alternate screen (1049h/1049l)
       expect(mockStdout.write).toHaveBeenCalledWith('\x1B[?25l');
 
       expect(result).toEqual({ id: '1', label: 'Option 1' });
-      // Verify cleanup
+      // Verify cleanup: cursor restored only (no 1049l)
       expect(mockStdout.write).toHaveBeenCalledWith('\x1B[?25h');
-      expect(mockStdout.write).toHaveBeenCalledWith('\x1B[?1049l');
+      expect(mockStdout.write).not.toHaveBeenCalledWith('\x1B[?1049h');
+      expect(mockStdout.write).not.toHaveBeenCalledWith('\x1B[?1049l');
     });
 
     it('should handle arrow key navigation', async () => {
