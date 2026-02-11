@@ -2,7 +2,7 @@
 
 > 조건 기반 실행과 아름다운 CLI 출력을 제공하는 강력한 워크플로우 오케스트레이션 도구
 
-**버전:** 0.3.12
+**버전:** 0.3.13
 
 ![fox2](https://github.com/user-attachments/assets/fdf8d786-6a91-4d2d-9dc1-72be6f3ccd98)
 
