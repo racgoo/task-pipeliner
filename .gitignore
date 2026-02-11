@@ -12,5 +12,5 @@ examples/aws/**/env
 examples/github/**/env
 env
 
-
+coverage/
 binary-result/

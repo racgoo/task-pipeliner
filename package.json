@@ -19,6 +19,7 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"scripts/**/*.{ts,js}\" \"*.{ts,js,json}\"",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "prepublishOnly": "pnpm build"
   },
   "keywords": [
@@ -88,7 +89,8 @@
     "tsup": "^8.5.1",
     "typescript": "^5.3.3",
     "typescript-eslint": "^8.53.1",
-    "vitest": "^1.1.0"
+    "vitest": "^1.1.0",
+    "@vitest/coverage-v8": "^1.1.0"
   },
   "files": [
     "dist"

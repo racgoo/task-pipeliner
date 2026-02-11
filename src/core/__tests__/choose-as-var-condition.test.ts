@@ -1,7 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { mkdir } from 'fs/promises';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { Workflow } from '../../types/workflow';
 import { ConditionEvaluator } from '../condition-evaluator';
 import { Executor } from '../executor';
+import { WORKFLOW_HISTORY_DIR } from '../history';
 import { Workspace } from '../workspace';
 
 // Mock TaskRunner
@@ -21,11 +23,21 @@ describe('Choose with "as" keyword and var condition - Bug Fix Test', () => {
   let choicePrompt: any;
   let textPrompt: any;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    // Ensure history directory exists
+    try {
+      await mkdir(WORKFLOW_HISTORY_DIR, { recursive: true });
+    } catch {
+      // Ignore if already exists
+    }
     executor = new Executor();
     choicePrompt = (executor as any).choicePrompt;
     textPrompt = (executor as any).textPrompt;
+  });
+
+  afterEach(async () => {
+    // Cleanup is handled by other tests if needed
   });
 
   /**
