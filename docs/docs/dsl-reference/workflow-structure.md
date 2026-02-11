@@ -90,30 +90,10 @@ steps:                                 # Required: Array of steps to execute
 ### `shell` (Optional)
 
 - **Type**: `array` of `string`
-- **Description**: Global shell configuration for all `run` commands in the workflow
-- **Format**: `[program, ...args]` - First element is the shell program, rest are arguments
-- **Priority**: Step-level `shell` > Workflow-level `shell` > User's current shell
-- **User's current shell** (when omitted):
-  - **Linux/macOS**: Uses `$SHELL` environment variable (e.g., `/bin/zsh`, `/bin/bash`)
-  - **Windows**: Uses `%COMSPEC%` (typically `cmd.exe`)
-  - **Behavior**: Commands run in the same shell environment as where you execute `tp run`
-- **Example**:
-  ```yaml
-  # Unix/Linux/macOS
-  shell: [bash, -lc]         # Use bash login shell
-  shell: [zsh, -c]           # Use zsh
-  shell: [sh, -c]            # Use sh (POSIX)
-  
-  # Windows
-  shell: [cmd, /c]           # Command Prompt
-  shell: [powershell, -Command]  # Windows PowerShell
-  shell: [pwsh, -Command]    # PowerShell Core
-  ```
-- **Cross-platform examples**:
-  - **Linux/macOS**: `[bash, -lc]`, `[zsh, -c]`, `[/bin/bash, -c]`
-  - **Windows**: `[cmd, /c]`, `[powershell, -Command]`, `[pwsh, -Command]`
-  - **Git Bash (Windows)**: `[bash, -c]`
-  - **WSL**: `[wsl, bash, -c]` or use `wsl` command directly
+- **Description**: Global shell configuration for all `run` commands in the workflow. Format: `[program, ...args]`. When omitted, uses the user's current shell (`$SHELL` on Linux/macOS, `cmd.exe` on Windows if `SHELL` is not set).
+- **Priority**: Step-level `shell` > Workflow-level `shell` > Default shell.
+
+See **[Shell configuration](/docs/dsl-reference/shell)** for full details, format, and examples (Unix, Windows, step-level override).
 
 ### `profiles` (Optional)
 
@@ -232,6 +212,7 @@ See the [Variables](/docs/dsl-reference/variables) documentation for detailed in
 ## Next Steps
 
 - **[Step Types](/docs/dsl-reference/step-types)** - All available step types
+- **[Shell configuration](/docs/dsl-reference/shell)** - Configure shell for run commands (workflow and step level)
 - **[Conditions](/docs/dsl-reference/conditions)** - Conditional execution
 - **[Variables](/docs/dsl-reference/variables)** - Using variables
 - **[Profiles](/docs/dsl-reference/profiles)** - Non-interactive runs with pre-set variables

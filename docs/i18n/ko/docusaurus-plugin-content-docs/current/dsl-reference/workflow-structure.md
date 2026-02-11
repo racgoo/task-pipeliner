@@ -87,6 +87,14 @@ steps:                                 # 필수: 실행할 단계 배열
   }
   ```
 
+### `shell` (선택사항)
+
+- **타입**: `string` 배열
+- **설명**: 모든 `run` 명령에 적용되는 전역 셸 설정. 형식: `[program, ...args]`. 생략 시 사용자 현재 셸 사용 (Linux/macOS는 `$SHELL`, Windows는 `SHELL` 미설정 시 `cmd.exe`).
+- **우선순위**: 단계 `shell` > 워크플로우 `shell` > 기본 셸.
+
+자세한 내용과 예시는 **[Shell 설정](/docs/dsl-reference/shell)** 문서를 참조하세요.
+
 ### `profiles` (선택사항)
 
 - **타입**: `{ name: string, var: object }` 의 `array`
@@ -212,6 +220,7 @@ steps:
 ## 다음 단계
 
 - **[단계 타입](/docs/dsl-reference/step-types)** - 사용 가능한 모든 단계 타입
+- **[Shell 설정](/docs/dsl-reference/shell)** - run 명령용 셸 설정 (워크플로우·단계별)
 - **[조건](/docs/dsl-reference/conditions)** - 조건부 실행 방법
 - **[변수](/docs/dsl-reference/variables)** - 변수 사용법
 - **[프로필](/docs/dsl-reference/profiles)** - 미리 설정된 변수로 비대화형 실행

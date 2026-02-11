@@ -32,6 +32,8 @@ Check out `examples/yaml-examples/` for YAML workflow examples:
 - **`var-value-example.yaml`** - Variable value comparison examples
 - **`choice-as-example.yaml`** - Using `as` keyword in choices
 - **`base-dir-example.yaml`** - baseDir configuration example
+- **`shell-example.yaml`** - Shell configuration (global and step-level; bash, zsh, sh). See [Shell configuration](/docs/dsl-reference/shell).
+- **`shell-windows-example.yaml`** - Windows shell examples (cmd, PowerShell, pwsh, Git Bash, WSL).
 - **`timeout-retry-example.yaml`** - Timeout and retry features
 - **`pm2-like-example.yaml`** - PM2-like process manager using infinite retry to keep services running
 - **`var-injection-example.yaml`** - CLI variable injection (`-v` / `--var`). Shows that injected variables override profile variables when both set the same key (e.g. `tp run ... --profile Test` then `tp run ... --profile Test -v mode=staging -v label=from-cli`).
@@ -55,6 +57,8 @@ Check out `examples/json-examples/` for JSON workflow examples (equivalent to YA
 - **`prompt.json`** - User input prompts
 - **`variables.json`** - Variable substitution examples
 - **`var-injection-example.json`** - CLI variable injection (`-v`/`--var`); injected values override profile when same key.
+- **`shell-example.json`** - Shell configuration (equivalent to shell-example.yaml).
+- **`shell-windows-example.json`** - Windows shell examples (equivalent to shell-windows-example.yaml).
 
 **Note:** Both YAML and JSON formats are fully supported. Choose the format that fits your preference - YAML for readability, JSON for programmatic generation.
 

@@ -57,7 +57,7 @@ Execute a shell command.
 - `when` (optional): `Condition` - Condition to check before execution
 - `timeout` (optional): `number` - Maximum execution time in seconds. Command will be killed if it exceeds this time.
 - `retry` (optional): `number | "Infinity"` - Number of retry attempts if command fails (default: 0, meaning no retry). Use `"Infinity"` for infinite retries until success
-- `shell` (optional): `array` of `string` - Shell configuration for this step. Overrides workflow's global `shell`. Format: `[program, ...args]`. Example: `[bash, -lc]`.
+- `shell` (optional): `array` of `string` - Shell configuration for this step. Overrides workflow's global `shell`. Format: `[program, ...args]`. See [Shell configuration](/docs/dsl-reference/shell) for details and examples.
 - `continue` (optional): `boolean` - Controls whether to proceed to the next step after this step completes, regardless of success or failure.
   - `continue: true` - Always proceed to the next step (even if this step fails)
   - `continue: false` - Always stop the workflow after this step (even if this step succeeds)

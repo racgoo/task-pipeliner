@@ -23,6 +23,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'dsl-reference/workflow-structure',
         'dsl-reference/step-types',
+        'dsl-reference/shell',
         'dsl-reference/captures',
         'dsl-reference/conditions',
         'dsl-reference/variables',

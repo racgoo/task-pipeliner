@@ -77,6 +77,14 @@ steps:                                 # Required: Array of steps to execute
   baseDir: /app/frontend     # Absolute path
   ```
 
+### `shell` (Optional)
+
+- **Type**: `array` of `string`
+- **Description**: Global shell configuration for all `run` commands. Format: `[program, ...args]`. When omitted, uses the user's current shell (`$SHELL` on Linux/macOS, `cmd.exe` on Windows if `SHELL` is not set).
+- **Priority**: Step-level `shell` > Workflow-level `shell` > Default shell.
+
+See **[Shell configuration](/docs/dsl-reference/shell)** for full details and examples.
+
 ### `profiles` (Optional)
 
 - **Type**: `array` of `{ name: string, var: object }`
@@ -194,6 +202,7 @@ See the [Variables](/docs/dsl-reference/variables) documentation for detailed in
 ## Next Steps
 
 - **[Step Types](/docs/dsl-reference/step-types)** - All available step types
+- **[Shell configuration](/docs/dsl-reference/shell)** - Configure shell for run commands (workflow and step level)
 - **[Conditions](/docs/dsl-reference/conditions)** - Conditional execution
 - **[Variables](/docs/dsl-reference/variables)** - Using variables
 - **[Profiles](/docs/dsl-reference/profiles)** - Non-interactive runs with pre-set variables

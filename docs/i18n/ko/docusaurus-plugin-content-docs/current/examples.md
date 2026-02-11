@@ -38,6 +38,8 @@ task-pipeliner 사용 예제를 확인하세요.
 - **`var-value-example.yaml`** - 변수 값 비교 예제
 - **`choice-as-example.yaml`** - 선택에서 `as` 키워드 사용
 - **`base-dir-example.yaml`** - baseDir 설정 예제
+- **`shell-example.yaml`** - Shell 설정 (전역·단계별; bash, zsh, sh). [Shell 설정](/docs/dsl-reference/shell) 참조.
+- **`shell-windows-example.yaml`** - Windows 셸 예제 (cmd, PowerShell, pwsh, Git Bash, WSL).
 - **`timeout-retry-example.yaml`** - 타임아웃 및 재시도 기능
 - **`pm2-like-example.yaml`** - 무한 재시도를 사용한 PM2 같은 프로세스 관리자로 서비스 유지
 - **`capture-example.yaml`** - 표준 출력 캡처 예제 (전략별 추출, 이후 스텝에서 변수 사용)
@@ -65,6 +67,8 @@ task-pipeliner 사용 예제를 확인하세요.
 - **`capture-example.json`** - 표준 출력 캡처 예제 (YAML 버전과 동일)
 - **`env-example.json`** - .env 스타일 내용을 변수로 불러오기 (바로 실행 가능; env-example.yaml과 동일)
 - **`var-injection-example.json`** - CLI 변수 주입 (`-v`/`--var`); 같은 키면 주입값이 프로필을 덮어씀.
+- **`shell-example.json`** - Shell 설정 (shell-example.yaml과 동일).
+- **`shell-windows-example.json`** - Windows 셸 예제 (shell-windows-example.yaml과 동일).
 
 **참고:** YAML과 JSON 형식 모두 완전히 지원됩니다. 선호하는 형식을 선택하세요 - 가독성을 위해 YAML, 프로그래밍 방식 생성을 위해 JSON.
 
