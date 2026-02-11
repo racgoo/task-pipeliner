@@ -45,17 +45,6 @@ jobs:
           node-version: 18
           cache: pnpm
 
-      - name: Install Rust (for NAPI build)
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-          components: rustfmt, clippy
-
-      - name: Setup Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: rust
-
       - name: Install just
         uses: extractions/setup-just@v2
 
@@ -64,7 +53,6 @@ jobs:
 
       - name: Build project
         run: |
-          just build-rs
           just build-ts
 
       - name: Install pkg

@@ -10,10 +10,8 @@
     "tp": "./dist/index.cjs"
   },
   "scripts": {
-    "build": "pnpm build:napi && pnpm build:ts && pnpm build:cleanup",
-    "build:napi": "napi build dist --cargo-cwd rust --release",
+    "build": "pnpm build:ts",
     "build:ts": "tsup",
-    "build:cleanup": "rm -f ./task-pipeliner*.node ./index.d.ts",
     "dev": "tsc --watch",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -74,7 +72,6 @@
     "zod": "^4.3.5"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^2.16.0",
     "@types/cli-truncate": "^2.0.3",
     "@types/inquirer": "^9.0.7",
     "@types/node": "^20.10.0",
@@ -93,22 +90,12 @@
     "typescript-eslint": "^8.53.1",
     "vitest": "^1.1.0"
   },
-  "napi": {
-    "name": "task-pipeliner-rs",
-    "packageName": "task-pipeliner-rs",
-    "outputDir": "./dist",
-    "triples": {
-      "defaults": true,
-      "additional": []
-    }
-  },
   "files": [
     "dist"
   ],
   "pkg": {
     "noBytecode": true,
     "assets": [
-      "dist/**/*.node",
       "package.json",
       "node_modules/chalk/**/*",
       "node_modules/boxen/**/*",

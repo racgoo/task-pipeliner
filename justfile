@@ -8,10 +8,8 @@ inject-force:
     just install
     just clean-record
     just lint
-    just build-rs
     just build-ts
     just update-license
-    just clean-up
     pnpm pack --out task-pipeliner.tgz
     npm i -g task-pipeliner.tgz
     just clean-package
@@ -35,10 +33,8 @@ build:
     just test
     just clean-record
     just lint
-    just build-rs
     just build-ts
     just update-license
-    just clean-up
 
 build-all:
     just build
@@ -54,9 +50,6 @@ bump-version:
 clean-record:
     pnpm exec node scripts/clean-record.js
 
-build-rs:
-    pnpm exec napi build dist --cargo-cwd rust --release
-    
 build-ts:
     pnpm run build
 
@@ -83,8 +76,6 @@ deploy:
 publish:
     pnpm publish
 
-clean-up:
-    rm -f ./task-pipeliner*.node ./index.d.ts
 
 clean-package:
     rm -f ./task-pipeliner.tgz
@@ -99,12 +90,8 @@ lint-ts:
     pnpm exec tsc --noEmit
     pnpm exec eslint .  --fix
 
-lint-rs:
-    cd rust && cargo clippy --workspace --all-targets --all-features -- -D warnings
-
 lint:
     just lint-ts
-    just lint-rs
 
 update-license:
     npx -y license-checker --json --onlyDirectDependencies --excludePrivatePackages | jq -r 'to_entries | .[] | "\(.key): \(.value.licenses // .value.license // "Unknown")"' | sort > OPEN_SOURCE_LICENSE

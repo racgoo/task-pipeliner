@@ -1,5 +1,4 @@
 @eslint/js@9.39.2: MIT
-@napi-rs/cli@2.18.4: MIT
 @types/cli-truncate@2.0.3: MIT
 @types/inquirer@9.0.9: MIT
 @types/node-cron@3.0.11: MIT
@@ -25,7 +24,7 @@ node-cron@4.2.1: ISC
 ora@5.4.1: MIT
 prettier@3.8.1: MIT
 string-width@4.2.3: MIT
-task-pipeliner@0.3.11: MIT
+task-pipeliner@0.3.13: MIT
 tsup@8.5.1: MIT
 typescript-eslint@8.53.1: MIT
 typescript@5.9.3: Apache-2.0
