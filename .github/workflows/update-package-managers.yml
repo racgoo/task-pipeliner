@@ -252,9 +252,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build project
-        run: |
-          just build-rs
-          just build-ts
+        run: just build-ts
 
       - name: Publish to npm
         run: pnpm publish --no-git-checks
