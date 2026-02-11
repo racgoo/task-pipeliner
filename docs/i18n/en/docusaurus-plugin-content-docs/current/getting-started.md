@@ -67,8 +67,9 @@ task-pipeliner --version
 tp --version
 ```
 
-**Updating:**
+**Updating:** Refresh the bucket so Scoop sees the latest manifest, then update the app:
 ```bash
+scoop update
 scoop update task-pipeliner
 ```
 

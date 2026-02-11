@@ -67,8 +67,9 @@ task-pipeliner --version
 tp --version
 ```
 
-**업데이트:**
+**업데이트:** 버킷을 먼저 갱신한 뒤 앱을 업데이트하세요.
 ```bash
+scoop update
 scoop update task-pipeliner
 ```
 
