@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import type { Schedule } from '../../types/schedule';
-import { formatUptime, formatScheduleStatus, generateStatusDisplay, showSchedulerStatus, clearScreenToTop } from '../schedule-status';
+import {
+  formatUptime,
+  formatScheduleStatus,
+  generateStatusDisplay,
+  showSchedulerStatus,
+  clearScreenToTop,
+} from '../schedule-status';
 
 // Mock dependencies
 const mockGetDaemonStatus = vi.fn();
@@ -77,7 +83,9 @@ describe('ScheduleStatus', () => {
     });
 
     it('should combine multiple time units', () => {
-      const startTime = new Date(Date.now() - (2 * 24 * 60 * 60 + 3 * 60 * 60 + 30 * 60) * 1000).toISOString();
+      const startTime = new Date(
+        Date.now() - (2 * 24 * 60 * 60 + 3 * 60 * 60 + 30 * 60) * 1000
+      ).toISOString();
       const result = formatUptime(startTime);
       expect(result).toContain('d');
       expect(result).toContain('h');
@@ -242,21 +250,27 @@ describe('ScheduleStatus', () => {
       const mockResume = vi.fn();
       const mockPause = vi.fn();
       const mockSetEncoding = vi.fn();
-      Object.defineProperty(process.stdin, 'setRawMode', { value: mockSetRawMode, configurable: true });
+      Object.defineProperty(process.stdin, 'setRawMode', {
+        value: mockSetRawMode,
+        configurable: true,
+      });
       Object.defineProperty(process.stdin, 'resume', { value: mockResume, configurable: true });
       Object.defineProperty(process.stdin, 'pause', { value: mockPause, configurable: true });
-      Object.defineProperty(process.stdin, 'setEncoding', { value: mockSetEncoding, configurable: true });
+      Object.defineProperty(process.stdin, 'setEncoding', {
+        value: mockSetEncoding,
+        configurable: true,
+      });
 
       // This will hang, so we'll use a timeout
       const statusPromise = showSchedulerStatus(true);
-      await Promise.race([
-        statusPromise,
-        new Promise((resolve) => setTimeout(resolve, 100)),
-      ]);
+      await Promise.race([statusPromise, new Promise((resolve) => setTimeout(resolve, 100))]);
 
       // Restore
       Object.defineProperty(process.stdin, 'isTTY', { value: originalIsTTY, configurable: true });
-      Object.defineProperty(process.stdout, 'isTTY', { value: originalStdoutIsTTY, configurable: true });
+      Object.defineProperty(process.stdout, 'isTTY', {
+        value: originalStdoutIsTTY,
+        configurable: true,
+      });
 
       expect(stdoutWriteSpy).toHaveBeenCalled();
     });
@@ -275,14 +289,14 @@ describe('ScheduleStatus', () => {
       mockLoadSchedules.mockResolvedValue([]);
 
       const statusPromise = showSchedulerStatus(true);
-      await Promise.race([
-        statusPromise,
-        new Promise((resolve) => setTimeout(resolve, 200)),
-      ]);
+      await Promise.race([statusPromise, new Promise((resolve) => setTimeout(resolve, 200))]);
 
       // Restore
       Object.defineProperty(process.stdin, 'isTTY', { value: originalIsTTY, configurable: true });
-      Object.defineProperty(process.stdout, 'isTTY', { value: originalStdoutIsTTY, configurable: true });
+      Object.defineProperty(process.stdout, 'isTTY', {
+        value: originalStdoutIsTTY,
+        configurable: true,
+      });
 
       // logUpdate may be called or not depending on timing
       expect(stdoutWriteSpy).toHaveBeenCalled();

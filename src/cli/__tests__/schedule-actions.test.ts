@@ -1,7 +1,10 @@
 import { mkdir, writeFile, rm } from 'fs/promises';
-import { join } from 'path';
 import { tmpdir } from 'os';
+import { join } from 'path';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { ScheduleManager } from '../../core/schedule-manager';
+import type { Schedule } from '../../types/schedule';
+import type { ScheduleDefinition } from '../../types/schedule-file';
 import {
   addSchedules,
   removeSchedule,
@@ -13,9 +16,6 @@ import {
   resolveWorkflowPath,
   scheduleChoiceLabel,
 } from '../schedule-actions';
-import { ScheduleManager } from '../../core/schedule-manager';
-import type { Schedule } from '../../types/schedule';
-import type { ScheduleDefinition } from '../../types/schedule-file';
 
 // Mock dependencies
 const mockGetDaemonStatus = vi.fn();
@@ -107,7 +107,9 @@ describe('ScheduleActions', () => {
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     processExitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {}) as any);
-    testDir = await mkdir(join(tmpdir(), `schedule-actions-test-${Date.now()}`), { recursive: true });
+    testDir = await mkdir(join(tmpdir(), `schedule-actions-test-${Date.now()}`), {
+      recursive: true,
+    });
   });
 
   afterEach(async () => {
@@ -240,7 +242,7 @@ describe('ScheduleActions', () => {
   describe('addSchedules()', () => {
     it('should exit when file does not exist', async () => {
       const nonExistentFile = join(testDir, 'nonexistent.yaml');
-      
+
       try {
         await addSchedules(nonExistentFile);
       } catch {
@@ -544,7 +546,11 @@ describe('ScheduleActions', () => {
       ];
 
       vi.spyOn(ScheduleManager.prototype, 'loadSchedules').mockResolvedValue(schedules);
-      mockGetDaemonStatus.mockResolvedValue({ running: true, pid: 12345, startTime: new Date().toISOString() });
+      mockGetDaemonStatus.mockResolvedValue({
+        running: true,
+        pid: 12345,
+        startTime: new Date().toISOString(),
+      });
 
       await listSchedules();
 
@@ -583,13 +589,14 @@ describe('ScheduleActions', () => {
   describe('startScheduler()', () => {
     it('should exit when daemon is already running', async () => {
       mockIsDaemonRunning.mockResolvedValue(true);
-      mockGetDaemonStatus.mockResolvedValue({ running: true, pid: 12345, startTime: new Date().toISOString() });
+      mockGetDaemonStatus.mockResolvedValue({
+        running: true,
+        pid: 12345,
+        startTime: new Date().toISOString(),
+      });
 
       const startPromise = startScheduler(false);
-      await Promise.race([
-        startPromise,
-        new Promise((resolve) => setTimeout(resolve, 100)),
-      ]);
+      await Promise.race([startPromise, new Promise((resolve) => setTimeout(resolve, 100))]);
 
       // process.exit may be called synchronously or asynchronously
       expect(consoleErrorSpy).toHaveBeenCalled();
@@ -603,10 +610,7 @@ describe('ScheduleActions', () => {
 
       // This will hang, so we'll just verify it's called
       const startPromise = startScheduler(false);
-      await Promise.race([
-        startPromise,
-        new Promise((resolve) => setTimeout(resolve, 100)),
-      ]);
+      await Promise.race([startPromise, new Promise((resolve) => setTimeout(resolve, 100))]);
 
       // May not reach start if it hangs before
       expect(true).toBe(true);
@@ -619,16 +623,17 @@ describe('ScheduleActions', () => {
         .mockResolvedValueOnce(false)
         .mockResolvedValueOnce(false)
         .mockResolvedValueOnce(true);
-      mockGetDaemonStatus.mockResolvedValue({ running: true, pid: 12345, startTime: new Date().toISOString() });
+      mockGetDaemonStatus.mockResolvedValue({
+        running: true,
+        pid: 12345,
+        startTime: new Date().toISOString(),
+      });
       mockSpawn.mockReturnValue({
         unref: vi.fn(),
       });
 
       const startPromise = startScheduler(true);
-      await Promise.race([
-        startPromise,
-        new Promise((resolve) => setTimeout(resolve, 100)),
-      ]);
+      await Promise.race([startPromise, new Promise((resolve) => setTimeout(resolve, 100))]);
 
       expect(mockSpawn).toHaveBeenCalled();
 
@@ -653,10 +658,7 @@ describe('ScheduleActions', () => {
       });
 
       const startPromise = startScheduler(true);
-      await Promise.race([
-        startPromise,
-        new Promise((resolve) => setTimeout(resolve, 200)),
-      ]);
+      await Promise.race([startPromise, new Promise((resolve) => setTimeout(resolve, 200))]);
 
       // Should attempt to read error log when daemon fails to start
       // Note: This may not be called if timing is different, so we just verify spawn was called
@@ -671,7 +673,11 @@ describe('ScheduleActions', () => {
 
   describe('stopScheduler()', () => {
     it('should stop daemon when running', async () => {
-      mockGetDaemonStatus.mockResolvedValue({ running: true, pid: 12345, startTime: new Date().toISOString() });
+      mockGetDaemonStatus.mockResolvedValue({
+        running: true,
+        pid: 12345,
+        startTime: new Date().toISOString(),
+      });
       mockStopDaemon.mockResolvedValue(true);
 
       await stopScheduler();
@@ -688,7 +694,11 @@ describe('ScheduleActions', () => {
     });
 
     it('should handle stop failure', async () => {
-      mockGetDaemonStatus.mockResolvedValue({ running: true, pid: 12345, startTime: new Date().toISOString() });
+      mockGetDaemonStatus.mockResolvedValue({
+        running: true,
+        pid: 12345,
+        startTime: new Date().toISOString(),
+      });
       mockStopDaemon.mockResolvedValue(false);
 
       await stopScheduler();
@@ -743,7 +753,11 @@ describe('ScheduleActions', () => {
       vi.spyOn(ScheduleManager.prototype, 'loadSchedules').mockResolvedValue([schedule]);
       vi.spyOn(ScheduleManager.prototype, 'toggleSchedule').mockResolvedValue(undefined);
       mockChoicePrompt.mockResolvedValue({ id: 'test1', label: 'test' });
-      mockGetDaemonStatus.mockResolvedValue({ running: true, pid: 12345, startTime: new Date().toISOString() });
+      mockGetDaemonStatus.mockResolvedValue({
+        running: true,
+        pid: 12345,
+        startTime: new Date().toISOString(),
+      });
 
       await toggleSchedule();
 
@@ -799,7 +813,9 @@ describe('ScheduleActions', () => {
         },
       ];
 
-      const saveSchedulesSpy = vi.spyOn(ScheduleManager.prototype, 'saveSchedules').mockResolvedValue(undefined);
+      const saveSchedulesSpy = vi
+        .spyOn(ScheduleManager.prototype, 'saveSchedules')
+        .mockResolvedValue(undefined);
       vi.spyOn(ScheduleManager.prototype, 'loadSchedules').mockResolvedValue(schedules);
       mockInquirerPrompt.mockResolvedValue({ confirm: true });
 

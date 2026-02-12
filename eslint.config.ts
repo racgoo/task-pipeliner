@@ -78,15 +78,6 @@ export default tseslint.config(
     },
   },
   {
-    // Test files
-    files: ['**/*.test.ts', '**/__tests__/**/*.ts'],
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      'no-console': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'off',
-    },
-  },
-  {
     // Config files and scripts
     files: ['*.config.ts', '*.config.js', 'scripts/**/*.js', 'scripts/**/*.ts'],
     languageOptions: {
@@ -120,6 +111,8 @@ export default tseslint.config(
       'examples/**',
       '*.node',
       '*.d.ts',
+      '**/__tests__/**',
+      '**/*.test.ts',
     ],
   }
 );

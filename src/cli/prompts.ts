@@ -53,7 +53,9 @@ export class ChoicePrompt {
 
   /**
    * Searchable choice menu (raw terminal input).
-   * Arrow keys to move, type to filter. In-place redraw on main screen only (no 1049h/1049l).
+   * Arrow keys to move, type to filter. In-place redraw on main screen (no 1049h/1049l).
+   * Redraw: move cursor up by last-drawn line count, clear to end of screen (0J), then single write
+   * of the full frame so content above the prompt is not erased.
    */
   private async promptWithSearch(
     message: string,
@@ -63,7 +65,7 @@ export class ChoicePrompt {
       let searchTerm = '';
       let selectedIndex = 0;
       let filteredOptions = [...options];
-      /** Number of lines drawn last time; used to move up and clear for in-place redraw */
+      /** Lines drawn last time; move up by this many so we only clear/redraw our block (not above) */
       let lastDrawnLines = 0;
 
       const rl = readline.createInterface({
@@ -92,48 +94,36 @@ export class ChoicePrompt {
           }
         }
 
-        const optionLines =
-          filteredOptions.length === 0
-            ? 1
-            : (startIndex > 0 ? 1 : 0) +
-              (endIndex - startIndex) +
-              (endIndex < filteredOptions.length ? 1 : 0);
-        const lineCount = 3 + optionLines;
-
-        // Move up by lastDrawnLines, then clear from cursor to end of screen (0J) for in-place redraw
-        if (lastDrawnLines > 0) {
-          process.stdout.write(`\x1B[${lastDrawnLines}A\x1B[0J`);
-        }
-
-        console.log(chalk.cyan(`? ${message}`));
-
         const searchDisplay = searchTerm
           ? chalk.gray(`  Filter: ${searchTerm}`) +
             chalk.gray(` (${filteredOptions.length}/${options.length})`)
           : chalk.gray('  Type to filter, ↑↓ to navigate, Enter to select');
-        console.log(searchDisplay);
-        console.log();
 
+        const lines: string[] = [chalk.cyan(`? ${message}`), searchDisplay, ''];
         if (filteredOptions.length === 0) {
-          console.log(chalk.yellow('  No matches found'));
+          lines.push(chalk.yellow('  No matches found'));
         } else {
           if (startIndex > 0) {
-            console.log(chalk.gray(`  ↑ ${startIndex} more above`));
+            lines.push(chalk.gray(`  ↑ ${startIndex} more above`));
           }
           for (let i = startIndex; i < endIndex; i++) {
             const opt = filteredOptions[i];
-            if (i === selectedIndex) {
-              console.log(chalk.cyan(`❯ ${opt.label}`));
-            } else {
-              console.log(chalk.white(`  ${opt.label}`));
-            }
+            lines.push(
+              i === selectedIndex ? chalk.cyan(`❯ ${opt.label}`) : chalk.white(`  ${opt.label}`)
+            );
           }
           if (endIndex < filteredOptions.length) {
-            console.log(chalk.gray(`  ↓ ${filteredOptions.length - endIndex} more below`));
+            lines.push(chalk.gray(`  ↓ ${filteredOptions.length - endIndex} more below`));
           }
         }
 
-        lastDrawnLines = lineCount;
+        // One write: cursor up N (exact block height), 0J clear, then frame. Preserves lines above.
+        const drawn = lines.length;
+        const moveUp = lastDrawnLines > 0 ? lastDrawnLines : 0;
+        const prefix = moveUp > 0 ? `\x1B[${moveUp}A\x1B[0J` : '';
+        process.stdout.write(`${prefix}${lines.join('\n')}\n`);
+
+        lastDrawnLines = drawn;
       };
 
       /** Filter options by search term and clamp selected index */

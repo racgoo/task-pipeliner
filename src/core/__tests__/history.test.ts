@@ -179,8 +179,12 @@ describe('WorkflowHistoryManager', () => {
       const names = await historyManager.getHistoryNames();
       // Newest should be first (higher timestamp in filename)
       if (names.length >= 2) {
-        const firstTimestamp = names[0].match(/workflow-(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})-/)?.[1];
-        const secondTimestamp = names[1].match(/workflow-(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})-/)?.[1];
+        const firstTimestamp = names[0].match(
+          /workflow-(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})-/
+        )?.[1];
+        const secondTimestamp = names[1].match(
+          /workflow-(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})-/
+        )?.[1];
         if (firstTimestamp && secondTimestamp) {
           expect(firstTimestamp >= secondTimestamp).toBe(true);
         }
@@ -258,4 +262,3 @@ describe('WorkflowHistoryManager', () => {
     });
   });
 });
-

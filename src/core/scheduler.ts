@@ -207,7 +207,7 @@ export class WorkflowScheduler {
 
       // Set workflow file path for baseDir resolution
       workflow._filePath = workflowPath;
-      workflow._fileName = workflowPath.split(/[/\\]/).pop() || 'workflow';
+      workflow._fileName = workflowPath.split(/[/\\]/).pop() ?? 'workflow';
 
       // Execute workflow with options
       const executor = new Executor();

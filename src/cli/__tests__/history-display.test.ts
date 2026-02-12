@@ -205,10 +205,7 @@ describe('HistoryDisplay', () => {
     it('should display parallel step', () => {
       const record: WorkflowRecord = {
         step: {
-          parallel: [
-            { run: 'echo "task1"' },
-            { run: 'echo "task2"' },
-          ],
+          parallel: [{ run: 'echo "task1"' }, { run: 'echo "task2"' }],
         },
         status: 'success',
         duration: 200,
@@ -284,4 +281,3 @@ describe('HistoryDisplay', () => {
     });
   });
 });
-

@@ -31,7 +31,9 @@ describe('WorkflowSelect', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    testDir = await mkdir(join(tmpdir(), `workflow-select-test-${Date.now()}`), { recursive: true });
+    testDir = await mkdir(join(tmpdir(), `workflow-select-test-${Date.now()}`), {
+      recursive: true,
+    });
     workflowsDir = join(testDir, 'tp', 'workflows');
     await mkdir(workflowsDir, { recursive: true });
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -111,7 +113,10 @@ describe('WorkflowSelect', () => {
       await writeFile(join(workflowsDir, 'test.txt'), 'not a workflow');
 
       mockFindNearestTpDirectory.mockReturnValue(join(testDir, 'tp'));
-      mockChoicePrompt.mockResolvedValue({ id: join(workflowsDir, 'test.yaml'), label: 'test.yaml - Test' });
+      mockChoicePrompt.mockResolvedValue({
+        id: join(workflowsDir, 'test.yaml'),
+        label: 'test.yaml - Test',
+      });
 
       const result = await selectWorkflowFromTpDirectory();
 
@@ -165,7 +170,10 @@ describe('WorkflowSelect', () => {
       await writeFile(workflowFile, 'name: My Workflow\nsteps:\n  - run: echo "test"');
 
       mockFindNearestTpDirectory.mockReturnValue(join(testDir, 'tp'));
-      mockChoicePrompt.mockResolvedValue({ id: workflowFile, label: 'named-workflow.yaml - My Workflow' });
+      mockChoicePrompt.mockResolvedValue({
+        id: workflowFile,
+        label: 'named-workflow.yaml - My Workflow',
+      });
 
       const result = await selectWorkflowFromTpDirectory();
 
@@ -181,7 +189,10 @@ describe('WorkflowSelect', () => {
       await writeFile(workflowFile, '{"name":"My JSON Workflow","steps":[]}');
 
       mockFindNearestTpDirectory.mockReturnValue(join(testDir, 'tp'));
-      mockChoicePrompt.mockResolvedValue({ id: workflowFile, label: 'named-workflow.json - My JSON Workflow' });
+      mockChoicePrompt.mockResolvedValue({
+        id: workflowFile,
+        label: 'named-workflow.json - My JSON Workflow',
+      });
 
       const result = await selectWorkflowFromTpDirectory();
 

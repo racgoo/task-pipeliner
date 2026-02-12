@@ -6,6 +6,7 @@
 @types/string-width@4.0.1: MIT
 @typescript-eslint/eslint-plugin@8.53.1: MIT
 @typescript-eslint/parser@8.53.1: MIT
+@vitest/coverage-v8@1.6.1: MIT
 boxen@5.1.2: MIT
 chalk@4.1.2: MIT
 cli-truncate@2.1.0: MIT
@@ -24,7 +25,7 @@ node-cron@4.2.1: ISC
 ora@5.4.1: MIT
 prettier@3.8.1: MIT
 string-width@4.2.3: MIT
-task-pipeliner@0.3.13: MIT
+task-pipeliner@0.3.14: MIT
 tsup@8.5.1: MIT
 typescript-eslint@8.53.1: MIT
 typescript@5.9.3: Apache-2.0

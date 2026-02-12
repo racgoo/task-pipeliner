@@ -468,7 +468,7 @@ export class Executor {
           recordBranch: recorder
             ? (branchStep, branchContext, branchOutput, branchStatus, resolved) => {
                 recorder.recordStart();
-                const resolvedValues = resolved || this.getRecordResolved(branchStep);
+                const resolvedValues = resolved ?? this.getRecordResolved(branchStep);
                 recorder.recordEnd(
                   branchStep,
                   branchContext,

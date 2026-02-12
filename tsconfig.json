@@ -17,5 +17,5 @@
     "types": ["node"]
   },
   "include": ["src/**/*", "scripts/**/*"],
-  "exclude": ["node_modules", "dist", "rust"]
+  "exclude": ["node_modules", "dist", "rust", "**/__tests__/**", "**/*.test.ts"]
 }
