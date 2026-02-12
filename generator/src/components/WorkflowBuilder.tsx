@@ -19,11 +19,16 @@ export default function WorkflowBuilder() {
   const [dagNodePositions, setDagNodePositions] = useState<NodePositions>({});
   const [selectedStepIndex, setSelectedStepIndex] = useState<number | null>(null);
   const dagEditorDrawerRef = useRef<HTMLDivElement>(null);
+  const dagSectionRef = useRef<HTMLDivElement>(null);
+  const stepsListRef = useRef<HTMLDivElement>(null);
+  const [centerDagOnFirst, setCenterDagOnFirst] = useState(false);
   const [shellInput, setShellInput] = useState('');
   const [outputFormat, setOutputFormat] = useState<'yaml' | 'json'>('yaml');
   const [preview, setPreview] = useState('');
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [syncToCodeError, setSyncToCodeError] = useState<string | null>(null);
+  const [draggedStepIndex, setDraggedStepIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const toggleStep = (index: number) => {
     setExpandedSteps((prev) => {
@@ -97,6 +102,102 @@ export default function WorkflowBuilder() {
       ...prev,
       steps: newSteps,
     }));
+  };
+
+  const handleDragStart = (index: number) => {
+    setDraggedStepIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (draggedStepIndex !== null && draggedStepIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    setDragOverIndex(null);
+
+    if (draggedStepIndex === null || draggedStepIndex === dropIndex) {
+      setDraggedStepIndex(null);
+      return;
+    }
+
+    const newSteps = [...workflow.steps];
+    const [draggedStep] = newSteps.splice(draggedStepIndex, 1);
+    newSteps.splice(dropIndex, 0, draggedStep);
+
+    setWorkflow((prev) => ({
+      ...prev,
+      steps: newSteps,
+    }));
+
+    // Update expanded steps indices
+    setExpandedSteps((prev) => {
+      const next = new Set<number>();
+      prev.forEach((i) => {
+        if (i === draggedStepIndex) {
+          next.add(dropIndex);
+        } else if (draggedStepIndex < dropIndex) {
+          // Moved down
+          if (i > draggedStepIndex && i <= dropIndex) {
+            next.add(i - 1);
+          } else {
+            next.add(i);
+          }
+        } else {
+          // Moved up
+          if (i >= dropIndex && i < draggedStepIndex) {
+            next.add(i + 1);
+          } else {
+            next.add(i);
+          }
+        }
+      });
+      return next;
+    });
+
+    setDraggedStepIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedStepIndex(null);
+    setDragOverIndex(null);
+  };
+
+  // Handle view mode change
+  const handleViewModeChange = (mode: 'list' | 'dag') => {
+    setViewMode(mode);
+    
+    if (mode === 'dag') {
+      // Scroll to DAG section first, then center on first node
+      setTimeout(() => {
+        if (dagSectionRef.current) {
+          dagSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 50);
+      // Center on first node in DAG mode
+      setTimeout(() => {
+        setCenterDagOnFirst(true);
+        setTimeout(() => setCenterDagOnFirst(false), 500);
+      }, 200);
+    } else if (mode === 'list') {
+      // Scroll to first step in list mode
+      setTimeout(() => {
+        if (stepsListRef.current && workflow.steps.length > 0) {
+          const firstStep = stepsListRef.current.querySelector('.step-drag-wrapper');
+          if (firstStep) {
+            firstStep.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      }, 100);
+    }
   };
 
   const getCleanProfiles = (): Profile[] | undefined => {
@@ -177,27 +278,7 @@ export default function WorkflowBuilder() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [dagExpanded]);
 
-  // DAG view: Delete key removes selected step
-  useEffect(() => {
-    if (viewMode !== 'dag' || selectedStepIndex == null) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        e.preventDefault();
-        const len = workflow.steps.length;
-        removeStep(selectedStepIndex);
-        const nextLen = len - 1;
-        const next =
-          nextLen <= 0
-            ? null
-            : selectedStepIndex >= len - 1
-              ? nextLen - 1
-              : selectedStepIndex;
-        setSelectedStepIndex(next);
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [viewMode, selectedStepIndex, workflow.steps.length]);
+  // DAG view: Delete key functionality disabled - steps should not be deleted via keyboard
 
   const handleDownload = () => {
     const profiles = getCleanProfiles();
@@ -397,7 +478,7 @@ export default function WorkflowBuilder() {
                       role="tab"
                       aria-selected={viewMode === 'list'}
                       className={viewMode === 'list' ? 'view-mode-btn view-mode-btn--active' : 'view-mode-btn'}
-                      onClick={() => setViewMode('list')}
+                      onClick={() => handleViewModeChange('list')}
                     >
                       List
                     </button>
@@ -406,14 +487,11 @@ export default function WorkflowBuilder() {
                       role="tab"
                       aria-selected={viewMode === 'dag'}
                       className={viewMode === 'dag' ? 'view-mode-btn view-mode-btn--active' : 'view-mode-btn'}
-                      onClick={() => setViewMode('dag')}
+                      onClick={() => handleViewModeChange('dag')}
                     >
                       DAG
                     </button>
                   </div>
-                  <span className="view-mode-hint" title="List and DAG show the same steps; switching only changes how you view and edit them.">
-                    Same steps, different view
-                  </span>
                 </div>
                 <button
                   type="button"
@@ -421,6 +499,7 @@ export default function WorkflowBuilder() {
                   className="collapse-all-btn"
                   title="Collapse all step blocks"
                 >
+                  <span className="btn-icon">−</span>
                   Collapse all
                 </button>
                 <button
@@ -429,6 +508,7 @@ export default function WorkflowBuilder() {
                   className="expand-all-btn"
                   title="Expand all step blocks"
                 >
+                  <span className="btn-icon">+</span>
                   Expand all
                 </button>
                 <button 
@@ -510,21 +590,31 @@ export default function WorkflowBuilder() {
             </div>
 
             {viewMode === 'list' && (
-              <div className="steps-list">
+              <div className="steps-list" ref={stepsListRef}>
                 {workflow.steps.map((step, index) => (
-                  <StepEditor
+                  <div
                     key={index}
-                    step={step}
-                    index={index}
-                    onUpdate={(updatedStep) => updateStep(index, updatedStep)}
-                    onRemove={() => removeStep(index)}
-                    onMoveUp={() => moveStep(index, 'up')}
-                    onMoveDown={() => moveStep(index, 'down')}
-                    canMoveUp={index > 0}
-                    canMoveDown={index < workflow.steps.length - 1}
-                    isExpanded={expandedSteps.has(index)}
-                    onToggle={() => toggleStep(index)}
-                  />
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, index)}
+                    onDragEnd={handleDragEnd}
+                    className={`step-drag-wrapper ${draggedStepIndex === index ? 'step-drag-wrapper--dragging' : ''} ${dragOverIndex === index ? 'step-drag-wrapper--drag-over' : ''}`}
+                  >
+                    <StepEditor
+                      step={step}
+                      index={index}
+                      onUpdate={(updatedStep) => updateStep(index, updatedStep)}
+                      onRemove={() => removeStep(index)}
+                      onMoveUp={() => moveStep(index, 'up')}
+                      onMoveDown={() => moveStep(index, 'down')}
+                      canMoveUp={index > 0}
+                      canMoveDown={index < workflow.steps.length - 1}
+                      isExpanded={expandedSteps.has(index)}
+                      onToggle={() => toggleStep(index)}
+                    />
+                  </div>
                 ))}
                 {workflow.steps.length === 0 && (
                   <div className="empty-state">
@@ -535,7 +625,7 @@ export default function WorkflowBuilder() {
             )}
 
             {viewMode === 'dag' && (
-              <div className="dag-section">
+              <div className="dag-section" ref={dagSectionRef}>
                 <div className="dag-section-toolbar">
                   <button
                     type="button"
@@ -562,6 +652,7 @@ export default function WorkflowBuilder() {
                     }
                     setDagNodePositions(filtered);
                   }}
+                  centerOnFirstNode={centerDagOnFirst}
                 />
                 {selectedStepIndex != null && workflow.steps[selectedStepIndex] != null && (
                   <div className="dag-editor-drawer" ref={dagEditorDrawerRef}>
@@ -630,12 +721,22 @@ export default function WorkflowBuilder() {
                         }
                         setDagNodePositions(filtered);
                       }}
+                      centerOnFirstNode={centerDagOnFirst}
                     />
                   </div>
                   {selectedStepIndex != null && workflow.steps[selectedStepIndex] != null && (
                     <div className="dag-expanded-drawer">
                       <div className="dag-editor-drawer__title">
-                        Edit step {selectedStepIndex + 1}
+                        <span>Edit step {selectedStepIndex + 1}</span>
+                        <button
+                          type="button"
+                          className="dag-editor-drawer__close"
+                          onClick={() => setSelectedStepIndex(null)}
+                          title="Close editor"
+                          aria-label="Close editor"
+                        >
+                          ×
+                        </button>
                       </div>
                       <StepEditor
                         step={workflow.steps[selectedStepIndex]}
@@ -709,7 +810,7 @@ export default function WorkflowBuilder() {
           <div className="variable-hint">
             <strong>💡 Variable Usage:</strong> Use <code>{'{{variableName}}'}</code> or <code>{'{{ variableName }}'}</code> (with spaces) in commands to reference variables from <code>prompt</code> or <code>choose</code> steps. Variables are highlighted in <span className="variable-highlight">green</span>.
             <br />
-            <strong>⚠️ YAML Syntax:</strong> If command contains quotes and colons before variables, wrap entire command in single quotes: <code>{'\'echo "mode: {{var}}\"\''}</code>
+            <strong>⚠️ YAML Syntax:</strong> If command contains quotes and colons before variables, wrap entire command in single quotes: <code>{'\'echo "mode: {{var}}" \''}</code>
           </div>
         </div>
       </div>

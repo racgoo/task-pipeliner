@@ -37,15 +37,83 @@
   font-size: 10px;
 }
 
-/* Softer edges so they read as flow, not editable connections */
-.dag-view .dag-flow-edge {
-  stroke: #94a3b8;
+/* MiniMap styling - make it smaller */
+.dag-view .react-flow__minimap {
+  width: 120px !important;
+  height: 80px !important;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--dag-border, #dee2e6);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+
+.dag-view .react-flow__minimap-mask {
+  fill: rgba(0, 0, 0, 0.1);
+}
+
+/* Edges styling - ensure edges are visible */
+.dag-view .react-flow__edges {
+  z-index: 10 !important;
+  pointer-events: none;
+  overflow: visible !important;
+}
+
+.dag-view .react-flow__edge {
+  z-index: 10 !important;
+  pointer-events: stroke;
+  overflow: visible !important;
+}
+
+.dag-view .dag-flow-edge {
+  stroke: #64748b !important;
+  stroke-width: 2.5 !important;
+}
+
 .dag-view .react-flow__edge-path {
-  stroke-width: 1.5;
+  stroke-width: 2.5 !important;
+  stroke: #64748b !important;
+  pointer-events: stroke;
+  fill: none;
+}
+
+.dag-view .react-flow__edge.selected .react-flow__edge-path {
+  stroke: #0d6efd !important;
+  stroke-width: 3 !important;
+}
+
+.dag-view .react-flow__edge-marker {
+  fill: #64748b !important;
+  stroke: #64748b !important;
+}
+
+.dag-view .react-flow__edge.selected .react-flow__edge-marker {
+  fill: #0d6efd !important;
+  stroke: #0d6efd !important;
+}
+
+.dag-view .react-flow__edge-text {
+  fill: #64748b;
+  font-size: 12px;
+}
+
+.dag-view .react-flow__connection-line {
+  stroke: #0d6efd;
+  stroke-width: 2.5;
+  stroke-dasharray: 5, 5;
+}
+
+/* Ensure handles are visible and clickable */
+.dag-view .react-flow__handle {
+  width: 8px !important;
+  height: 8px !important;
+  background: #495057 !important;
+  border: 2px solid #fff !important;
+  border-radius: 50% !important;
+  z-index: 100 !important;
 }
 
 .dag-step-node {
+  position: relative;
   padding: 8px 12px;
   min-width: 140px;
   max-width: 220px;
@@ -54,6 +122,11 @@
   border: 1px solid #adb5bd;
   background: #fff;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  cursor: grab;
+}
+
+.dag-step-node:active {
+  cursor: grabbing;
 }
 
 .dag-step-node--selected {
@@ -81,16 +154,161 @@
   border-left: 3px solid #dc3545;
 }
 
+.dag-step-node--first {
+  border: 2px solid #0d6efd;
+  background: linear-gradient(135deg, #e7f1ff 0%, #fff 100%);
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(13, 110, 253, 0.2);
+}
+
+/* START badge inside label/header */
+.dag-step-node__start-badge,
+.dag-parallel-group__start-badge {
+  display: inline-block;
+  background: #0d6efd;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  margin-right: 6px;
+  vertical-align: middle;
+  line-height: 1.2;
+}
+
 .dag-step-node__label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .dag-step-handle {
   width: 8px;
   height: 8px;
   background: #495057;
+}
+
+/* Parallel Group Node Styles */
+.dag-parallel-group {
+  position: relative;
+  /* Don't use 100% - use the actual width/height from props */
+  min-width: 280px;
+  min-height: 100px;
+  border-radius: 8px;
+  border: 2px solid #6f42c1;
+  background: linear-gradient(135deg, #f8f5ff 0%, #fff 100%);
+  box-shadow: 0 2px 8px rgba(111, 66, 193, 0.15);
+  cursor: grab;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* No special padding needed since START is now inside header */
+
+/* Ensure React Flow respects the width/height from node.width/height */
+.dag-view .react-flow__node.react-flow__node-parallelGroup {
+  /* React Flow will set width/height based on node.width/height */
+  /* Don't override with !important */
+  overflow: visible !important; /* Allow START label to be visible outside node bounds */
+}
+
+.dag-view .react-flow__node.react-flow__node-parallelGroup.dag-step-node--first {
+  overflow: visible !important; /* Ensure START label is visible for first node */
+}
+
+.dag-view .react-flow__node.react-flow__node-parallelGroup > div {
+  /* The inner div should use the width/height from the component's style */
+  /* Don't override - let the component's inline style handle it */
+}
+
+.dag-parallel-group:active {
+  cursor: grabbing;
+}
+
+.dag-parallel-group--selected {
+  border-color: var(--dag-selected, #0d6efd);
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+}
+
+.dag-parallel-group__header {
+  padding: 6px 10px;
+  border-bottom: 1px solid #e0d4ff;
+  background: rgba(111, 66, 193, 0.05);
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: grab;
+  pointer-events: auto;
+}
+
+.dag-parallel-group__header:active {
+  cursor: grabbing;
+}
+
+.dag-parallel-group__label {
+  font-weight: 600;
+  font-size: 12px;
+  color: #6f42c1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  flex: 1;
+  min-width: 0; /* Allow flex item to shrink */
+}
+
+.dag-parallel-group__content {
+  padding: 0;
+  min-height: 0;
+  position: relative;
+  /* Add top padding to separate first child from header */
+  padding-top: 0;
+  /* Make content area draggable to move the parent */
+  pointer-events: auto;
+  cursor: grab;
+  flex: 1;
+}
+
+.dag-parallel-group__content:active {
+  cursor: grabbing;
+}
+
+/* Sub-nodes inside parallel group - display only, not draggable */
+/* Completely disable pointer events on child nodes to prevent dragging */
+.dag-view .react-flow__node[data-parent-id],
+.dag-view .react-flow__node[data-parent-id] > div,
+.dag-view .react-flow__node[data-parent-id] * {
+  pointer-events: none !important;
+  cursor: default !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  touch-action: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+
+/* Ensure parent nodes contain their children */
+.dag-view .react-flow__node[data-parent-id] .react-flow__handle {
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Prevent child nodes from overflowing parent */
+.dag-view .react-flow__node.react-flow__node-parallelGroup {
+  overflow: hidden !important;
+  contain: layout !important;
+}
+
+.dag-view .react-flow__node.react-flow__node-parallelGroup > div {
+  overflow: hidden !important;
 }
 
 .dag-actions {
