@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -50,13 +50,21 @@ function FitViewOnNodesChange() {
  * Inner flow: uses useNodesState/useEdgesState so React Flow has internal state.
  * Parent gives key={steps.length} so we remount when step count changes and get correct initial nodes.
  */
+const FALLBACK_WIDTH = 800;
+const FALLBACK_HEIGHT = 400;
+
 function DagFlowInner({
   steps,
   selectedStepIndex,
   onSelectStep,
   customPositions,
   onPositionsChange,
-}: Pick<DagViewProps, 'steps' | 'selectedStepIndex' | 'onSelectStep' | 'customPositions' | 'onPositionsChange'>) {
+  width,
+  height,
+}: Pick<DagViewProps, 'steps' | 'selectedStepIndex' | 'onSelectStep' | 'customPositions' | 'onPositionsChange'> & {
+  width: number;
+  height: number;
+}) {
   const { nodes: baseNodes, edges: baseEdges } = useMemo(
     () => workflowToGraph(steps),
     [steps]
@@ -139,6 +147,8 @@ function DagFlowInner({
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
+        width={width}
+        height={height}
         fitView
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.2}
@@ -148,7 +158,7 @@ function DagFlowInner({
         elementsSelectable
         proOptions={{ hideAttribution: true }}
         defaultEdgeOptions={{ className: 'dag-flow-edge', style: { strokeWidth: 1.5 } }}
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: '100%', height: '100%', minHeight: 400 }}
       >
         <Background />
         <Controls />
@@ -167,21 +177,46 @@ export default function DagView({
   customPositions,
   onPositionsChange,
 }: DagViewProps) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ width: FALLBACK_WIDTH, height: FALLBACK_HEIGHT });
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const { width, height } = entries[0]?.contentRect ?? {};
+      if (width > 0 && height > 0) setSize({ width, height });
+    });
+    ro.observe(el);
+    const { width, height } = el.getBoundingClientRect();
+    if (width > 0 && height > 0) setSize({ width, height });
+    return () => ro.disconnect();
+  }, []);
+
+  const heightPx = fillContainer ? undefined : 400;
   return (
     <div
       className={`dag-view ${fillContainer ? 'dag-view--fill' : ''}`}
-      style={{ width: '100%', minHeight: fillContainer ? 400 : 400, height: fillContainer ? '100%' : 400 }}
+      style={{ width: '100%', minHeight: 400, height: fillContainer ? '100%' : 400 }}
     >
-      <ReactFlowProvider>
-        <DagFlowInner
-          key={`dag-flow-${steps.length}`}
-          steps={steps}
-          selectedStepIndex={selectedStepIndex}
-          onSelectStep={onSelectStep}
-          customPositions={customPositions}
-          onPositionsChange={onPositionsChange}
-        />
-      </ReactFlowProvider>
+      <div
+        ref={wrapRef}
+        className="dag-view__canvas-wrap"
+        style={{ width: '100%', height: heightPx ?? '100%', minHeight: 400 }}
+      >
+        <ReactFlowProvider>
+          <DagFlowInner
+            key={`dag-flow-${steps.length}`}
+            steps={steps}
+            selectedStepIndex={selectedStepIndex}
+            onSelectStep={onSelectStep}
+            customPositions={customPositions}
+            onPositionsChange={onPositionsChange}
+            width={size.width}
+            height={size.height}
+          />
+        </ReactFlowProvider>
+      </div>
     </div>
   );
 }

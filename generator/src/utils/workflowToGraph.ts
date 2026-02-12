@@ -60,7 +60,9 @@ export function workflowToGraph(steps: Step[]): {
   const nodes: Node<StepNodeData>[] = steps.map((step, i) => ({
     id: String(i),
     type: 'stepNode',
-    position: { x: i * SPACING_X, y: 0 },
+    position: { x: i * SPACING_X, y: 50 },
+    width: NODE_WIDTH,
+    height: NODE_HEIGHT,
     data: {
       label: getStepLabel(step, i),
       stepIndex: i,
