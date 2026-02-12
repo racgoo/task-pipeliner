@@ -21,6 +21,7 @@ export function generateYAML(workflow: Workflow): string {
   return doc.toString({
     indent: 2,
     lineWidth: 0,
+    collectionStyle: 'block',
   });
 }
 
