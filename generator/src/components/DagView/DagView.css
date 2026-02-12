@@ -1,0 +1,96 @@
+.dag-view {
+  width: 100%;
+  height: 400px;
+  min-height: 300px;
+  background: var(--dag-bg, #f8f9fa);
+  border-radius: 8px;
+  border: 1px solid var(--dag-border, #dee2e6);
+}
+
+.dag-view--fill {
+  height: 100%;
+  min-height: 400px;
+  flex: 1;
+}
+
+.dag-view .react-flow__attribution {
+  font-size: 10px;
+}
+
+/* Softer edges so they read as flow, not editable connections */
+.dag-view .dag-flow-edge {
+  stroke: #94a3b8;
+}
+.dag-view .react-flow__edge-path {
+  stroke-width: 1.5;
+}
+
+.dag-step-node {
+  padding: 8px 12px;
+  min-width: 140px;
+  max-width: 220px;
+  border-radius: 6px;
+  font-size: 12px;
+  border: 1px solid #adb5bd;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.dag-step-node--selected {
+  border-color: var(--dag-selected, #0d6efd);
+  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+}
+
+.dag-step-node--run {
+  border-left: 3px solid #198754;
+}
+
+.dag-step-node--choose {
+  border-left: 3px solid #0d6efd;
+}
+
+.dag-step-node--prompt {
+  border-left: 3px solid #fd7e14;
+}
+
+.dag-step-node--parallel {
+  border-left: 3px solid #6f42c1;
+}
+
+.dag-step-node--fail {
+  border-left: 3px solid #dc3545;
+}
+
+.dag-step-node__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dag-step-handle {
+  width: 8px;
+  height: 8px;
+  background: #495057;
+}
+
+.dag-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.dag-editor-drawer {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--dag-drawer-bg, #fff);
+  border: 1px solid var(--dag-border, #dee2e6);
+  border-radius: 8px;
+}
+
+.dag-editor-drawer__title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}

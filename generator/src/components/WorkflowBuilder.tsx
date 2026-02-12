@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Workflow, Step, Profile } from '../types/workflow';
 import { generateYAML, generateJSON, downloadYAML, downloadJSON, parseYAML, parseJSON } from '../utils/generator';
 import StepEditor from './StepEditor';
+import { DagView, type NodePositions } from './DagView';
 import './WorkflowBuilder.css';
 
 export default function WorkflowBuilder() {
@@ -13,10 +14,16 @@ export default function WorkflowBuilder() {
     steps: [],
   });
   const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set());
+  const [viewMode, setViewMode] = useState<'list' | 'dag'>('list');
+  const [dagExpanded, setDagExpanded] = useState(false);
+  const [dagNodePositions, setDagNodePositions] = useState<NodePositions>({});
+  const [selectedStepIndex, setSelectedStepIndex] = useState<number | null>(null);
+  const dagEditorDrawerRef = useRef<HTMLDivElement>(null);
   const [shellInput, setShellInput] = useState('');
   const [outputFormat, setOutputFormat] = useState<'yaml' | 'json'>('yaml');
   const [preview, setPreview] = useState('');
   const [previewError, setPreviewError] = useState<string | null>(null);
+  const [syncToCodeError, setSyncToCodeError] = useState<string | null>(null);
 
   const toggleStep = (index: number) => {
     setExpandedSteps((prev) => {
@@ -42,6 +49,18 @@ export default function WorkflowBuilder() {
       steps: [...prev.steps, step],
     }));
     setExpandedSteps((prev) => new Set([...prev, newIndex]));
+  };
+
+  const insertStep = (atIndex: number, step: Step) => {
+    setWorkflow((prev) => ({
+      ...prev,
+      steps: [
+        ...prev.steps.slice(0, atIndex),
+        step,
+        ...prev.steps.slice(atIndex),
+      ],
+    }));
+    setExpandedSteps((prev) => new Set([...prev, atIndex]));
   };
 
   const updateStep = (index: number, step: Step) => {
@@ -91,16 +110,22 @@ export default function WorkflowBuilder() {
   };
 
   const generatePreview = () => {
-    const profiles = getCleanProfiles();
-    const cleanWorkflow: Workflow = {
-      ...workflow,
-      name: workflow.name || undefined,
-      baseDir: workflow.baseDir || undefined,
-      shell: workflow.shell && workflow.shell.length > 0 ? workflow.shell : undefined,
-      profiles: profiles && profiles.length > 0 ? profiles : undefined,
-    };
-    setPreview(outputFormat === 'yaml' ? generateYAML(cleanWorkflow) : generateJSON(cleanWorkflow));
-    setPreviewError(null);
+    setSyncToCodeError(null);
+    try {
+      const profiles = getCleanProfiles();
+      const cleanWorkflow: Workflow = {
+        ...workflow,
+        name: workflow.name || undefined,
+        baseDir: workflow.baseDir || undefined,
+        shell: workflow.shell && workflow.shell.length > 0 ? workflow.shell : undefined,
+        profiles: profiles && profiles.length > 0 ? profiles : undefined,
+      };
+      setPreview(outputFormat === 'yaml' ? generateYAML(cleanWorkflow) : generateJSON(cleanWorkflow));
+      setPreviewError(null);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setSyncToCodeError(`→ Code failed: ${message}`);
+    }
   };
 
   const handlePreviewChange = (value: string) => {
@@ -109,6 +134,7 @@ export default function WorkflowBuilder() {
   };
 
   const loadFromPreview = () => {
+    setPreviewError(null);
     try {
       const parsed = outputFormat === 'yaml' ? parseYAML(preview) : parseJSON(preview);
       setWorkflow({
@@ -120,9 +146,10 @@ export default function WorkflowBuilder() {
       });
       setShellInput(parsed.shell?.join(' ') ?? '');
       setExpandedSteps(new Set()); // collapse all after load so user can open what they need
-      setPreviewError(null);
+      setSyncToCodeError(null);
     } catch (error) {
-      setPreviewError(error instanceof Error ? error.message : 'Failed to parse');
+      const message = error instanceof Error ? error.message : String(error);
+      setPreviewError(`← Visual failed: ${message}`);
     }
   };
 
@@ -133,6 +160,44 @@ export default function WorkflowBuilder() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [outputFormat]);
+
+  // DAG mode: scroll editor drawer into view when a step is selected
+  useEffect(() => {
+    if (viewMode !== 'dag' || selectedStepIndex == null) return;
+    dagEditorDrawerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [viewMode, selectedStepIndex]);
+
+  // DAG expanded overlay: Escape to close
+  useEffect(() => {
+    if (!dagExpanded) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setDagExpanded(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [dagExpanded]);
+
+  // DAG view: Delete key removes selected step
+  useEffect(() => {
+    if (viewMode !== 'dag' || selectedStepIndex == null) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        const len = workflow.steps.length;
+        removeStep(selectedStepIndex);
+        const nextLen = len - 1;
+        const next =
+          nextLen <= 0
+            ? null
+            : selectedStepIndex >= len - 1
+              ? nextLen - 1
+              : selectedStepIndex;
+        setSelectedStepIndex(next);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [viewMode, selectedStepIndex, workflow.steps.length]);
 
   const handleDownload = () => {
     const profiles = getCleanProfiles();
@@ -170,6 +235,11 @@ export default function WorkflowBuilder() {
           <div className="panel-header">
             <h2>Visual Editor</h2>
           </div>
+          {syncToCodeError && (
+            <div className="sync-error sync-error--to-code" role="alert">
+              <strong>Error:</strong> {syncToCodeError}
+            </div>
+          )}
           <div className="workflow-config">
             <h3 className="section-title">Workflow Configuration</h3>
             <div className="form-group">
@@ -320,6 +390,31 @@ export default function WorkflowBuilder() {
             <div className="section-header">
               <h3 className="section-title">Steps</h3>
               <div className="section-header-actions">
+                <div className="view-mode-toggle-wrap">
+                  <div className="view-mode-toggle" role="tablist" aria-label="Steps view mode">
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={viewMode === 'list'}
+                      className={viewMode === 'list' ? 'view-mode-btn view-mode-btn--active' : 'view-mode-btn'}
+                      onClick={() => setViewMode('list')}
+                    >
+                      List
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={viewMode === 'dag'}
+                      className={viewMode === 'dag' ? 'view-mode-btn view-mode-btn--active' : 'view-mode-btn'}
+                      onClick={() => setViewMode('dag')}
+                    >
+                      DAG
+                    </button>
+                  </div>
+                  <span className="view-mode-hint" title="List and DAG show the same steps; switching only changes how you view and edit them.">
+                    Same steps, different view
+                  </span>
+                </div>
                 <button
                   type="button"
                   onClick={collapseAllSteps}
@@ -347,39 +442,221 @@ export default function WorkflowBuilder() {
               </div>
             </div>
             <div className="step-type-buttons">
-              <button onClick={() => addStep({ run: '' })}>+ Run</button>
-              <button onClick={() => addStep({ choose: { message: '', options: [] } })}>
+              <button
+                onClick={() => {
+                  if (viewMode === 'dag' && selectedStepIndex != null) {
+                    insertStep(selectedStepIndex + 1, { run: '' });
+                    setSelectedStepIndex(selectedStepIndex + 1);
+                  } else {
+                    addStep({ run: '' });
+                    if (viewMode === 'dag') setSelectedStepIndex(workflow.steps.length);
+                  }
+                }}
+              >
+                + Run
+              </button>
+              <button
+                onClick={() => {
+                  if (viewMode === 'dag' && selectedStepIndex != null) {
+                    insertStep(selectedStepIndex + 1, { choose: { message: '', options: [] } });
+                    setSelectedStepIndex(selectedStepIndex + 1);
+                  } else {
+                    addStep({ choose: { message: '', options: [] } });
+                    if (viewMode === 'dag') setSelectedStepIndex(workflow.steps.length);
+                  }
+                }}
+              >
                 + Choose
               </button>
-              <button onClick={() => addStep({ prompt: { message: '', as: '' } })}>
+              <button
+                onClick={() => {
+                  if (viewMode === 'dag' && selectedStepIndex != null) {
+                    insertStep(selectedStepIndex + 1, { prompt: { message: '', as: '' } });
+                    setSelectedStepIndex(selectedStepIndex + 1);
+                  } else {
+                    addStep({ prompt: { message: '', as: '' } });
+                    if (viewMode === 'dag') setSelectedStepIndex(workflow.steps.length);
+                  }
+                }}
+              >
                 + Prompt
               </button>
-              <button onClick={() => addStep({ parallel: [] })}>+ Parallel</button>
-              <button onClick={() => addStep({ fail: { message: '' } })}>+ Fail</button>
+              <button
+                onClick={() => {
+                  if (viewMode === 'dag' && selectedStepIndex != null) {
+                    insertStep(selectedStepIndex + 1, { parallel: [] });
+                    setSelectedStepIndex(selectedStepIndex + 1);
+                  } else {
+                    addStep({ parallel: [] });
+                    if (viewMode === 'dag') setSelectedStepIndex(workflow.steps.length);
+                  }
+                }}
+              >
+                + Parallel
+              </button>
+              <button
+                onClick={() => {
+                  if (viewMode === 'dag' && selectedStepIndex != null) {
+                    insertStep(selectedStepIndex + 1, { fail: { message: '' } });
+                    setSelectedStepIndex(selectedStepIndex + 1);
+                  } else {
+                    addStep({ fail: { message: '' } });
+                    if (viewMode === 'dag') setSelectedStepIndex(workflow.steps.length);
+                  }
+                }}
+              >
+                + Fail
+              </button>
             </div>
 
-            <div className="steps-list">
-              {workflow.steps.map((step, index) => (
-                <StepEditor
-                  key={index}
-                  step={step}
-                  index={index}
-                  onUpdate={(updatedStep) => updateStep(index, updatedStep)}
-                  onRemove={() => removeStep(index)}
-                  onMoveUp={() => moveStep(index, 'up')}
-                  onMoveDown={() => moveStep(index, 'down')}
-                  canMoveUp={index > 0}
-                  canMoveDown={index < workflow.steps.length - 1}
-                  isExpanded={expandedSteps.has(index)}
-                  onToggle={() => toggleStep(index)}
-                />
-              ))}
-              {workflow.steps.length === 0 && (
-                <div className="empty-state">
-                  <p>No steps yet. Add a step to get started!</p>
+            {viewMode === 'list' && (
+              <div className="steps-list">
+                {workflow.steps.map((step, index) => (
+                  <StepEditor
+                    key={index}
+                    step={step}
+                    index={index}
+                    onUpdate={(updatedStep) => updateStep(index, updatedStep)}
+                    onRemove={() => removeStep(index)}
+                    onMoveUp={() => moveStep(index, 'up')}
+                    onMoveDown={() => moveStep(index, 'down')}
+                    canMoveUp={index > 0}
+                    canMoveDown={index < workflow.steps.length - 1}
+                    isExpanded={expandedSteps.has(index)}
+                    onToggle={() => toggleStep(index)}
+                  />
+                ))}
+                {workflow.steps.length === 0 && (
+                  <div className="empty-state">
+                    <p>No steps yet. Add a step to get started!</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {viewMode === 'dag' && (
+              <div className="dag-section">
+                <div className="dag-section-toolbar">
+                  <button
+                    type="button"
+                    className="dag-expand-btn"
+                    onClick={() => setDagExpanded(true)}
+                    title="Expand DAG view"
+                  >
+                    Expand DAG
+                  </button>
                 </div>
-              )}
-            </div>
+                <p className="dag-ux-hint">
+                  Drag nodes to rearrange the layout. Step order can be changed in List view or with ↑↓ in the editor below.
+                </p>
+                <DagView
+                  steps={workflow.steps}
+                  selectedStepIndex={selectedStepIndex}
+                  onSelectStep={setSelectedStepIndex}
+                  customPositions={dagNodePositions}
+                  onPositionsChange={(positions) => {
+                    const ids = new Set(workflow.steps.map((_, i) => String(i)));
+                    const filtered: NodePositions = {};
+                    for (const [id, pos] of Object.entries(positions)) {
+                      if (ids.has(id)) filtered[id] = pos;
+                    }
+                    setDagNodePositions(filtered);
+                  }}
+                />
+                {selectedStepIndex != null && workflow.steps[selectedStepIndex] != null && (
+                  <div className="dag-editor-drawer" ref={dagEditorDrawerRef}>
+                    <div className="dag-editor-drawer__title">
+                      Edit step {selectedStepIndex + 1}
+                    </div>
+                    <StepEditor
+                      step={workflow.steps[selectedStepIndex]}
+                      index={selectedStepIndex}
+                      onUpdate={(updatedStep) => updateStep(selectedStepIndex, updatedStep)}
+                      onRemove={() => {
+                        removeStep(selectedStepIndex);
+                        setSelectedStepIndex(null);
+                      }}
+                      onMoveUp={() => moveStep(selectedStepIndex, 'up')}
+                      onMoveDown={() => moveStep(selectedStepIndex, 'down')}
+                      canMoveUp={selectedStepIndex > 0}
+                      canMoveDown={selectedStepIndex < workflow.steps.length - 1}
+                      isExpanded={true}
+                      onToggle={() => {}}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {viewMode === 'dag' && dagExpanded && (
+              <div
+                className="dag-expanded-overlay"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Expand DAG view"
+              >
+                <div
+                  className="dag-expanded-backdrop"
+                  onClick={() => setDagExpanded(false)}
+                />
+                <div className="dag-expanded-content">
+                  <div className="dag-expanded-header">
+                    <span className="dag-expanded-title">DAG View</span>
+                    <button
+                      type="button"
+                      className="dag-expanded-close"
+                      onClick={() => setDagExpanded(false)}
+                      title="Close"
+                      aria-label="Close"
+                    >
+                      Close
+                    </button>
+                  </div>
+                  <div className="dag-expanded-body">
+                    <p className="dag-ux-hint dag-ux-hint--overlay">
+                      Drag nodes to rearrange. Step order: List view or ↑↓ in the editor below.
+                    </p>
+                    <DagView
+                      steps={workflow.steps}
+                      selectedStepIndex={selectedStepIndex}
+                      onSelectStep={setSelectedStepIndex}
+                      fillContainer
+                      customPositions={dagNodePositions}
+                      onPositionsChange={(positions) => {
+                        const ids = new Set(workflow.steps.map((_, i) => String(i)));
+                        const filtered: NodePositions = {};
+                        for (const [id, pos] of Object.entries(positions)) {
+                          if (ids.has(id)) filtered[id] = pos;
+                        }
+                        setDagNodePositions(filtered);
+                      }}
+                    />
+                  </div>
+                  {selectedStepIndex != null && workflow.steps[selectedStepIndex] != null && (
+                    <div className="dag-expanded-drawer">
+                      <div className="dag-editor-drawer__title">
+                        Edit step {selectedStepIndex + 1}
+                      </div>
+                      <StepEditor
+                        step={workflow.steps[selectedStepIndex]}
+                        index={selectedStepIndex}
+                        onUpdate={(updatedStep) => updateStep(selectedStepIndex, updatedStep)}
+                        onRemove={() => {
+                          removeStep(selectedStepIndex);
+                          setSelectedStepIndex(null);
+                        }}
+                        onMoveUp={() => moveStep(selectedStepIndex, 'up')}
+                        onMoveDown={() => moveStep(selectedStepIndex, 'down')}
+                        canMoveUp={selectedStepIndex > 0}
+                        canMoveDown={selectedStepIndex < workflow.steps.length - 1}
+                        isExpanded={true}
+                        onToggle={() => {}}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -416,7 +693,7 @@ export default function WorkflowBuilder() {
             </div>
           </div>
           {previewError && (
-            <div className="preview-error">
+            <div className="preview-error sync-error" role="alert">
               <strong>Error:</strong> {previewError}
             </div>
           )}
