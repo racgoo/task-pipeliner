@@ -1,4 +1,3 @@
-import type { ExecutionContext, TaskRunResult } from '@tp-types/execution';
 import type { History, Workflow } from '@tp-types/workflow';
 
 export interface PromptOption {
@@ -61,6 +60,3 @@ export interface SchedulerOutputPort {
   showScheduledWorkflowCompleted(name: string): void;
   showScheduledWorkflowFailed(name: string, error: unknown): void;
 }
-
-export type ExecutionStepContext = ExecutionContext;
-export type TaskRunResultLike = TaskRunResult;

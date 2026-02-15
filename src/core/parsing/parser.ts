@@ -10,7 +10,7 @@ import type { Workflow } from '@tp-types/workflow';
 import { parse } from 'yaml';
 import { ZodError } from 'zod';
 import { validateWorkflow } from '../workflow/schema';
-import { fixMalformedStep } from './malformed-step';
+import { normalizeWorkflowStep } from './malformed-step';
 import { formatZodIssue, preValidateWorkflow } from './validation';
 
 /**
@@ -29,45 +29,61 @@ export interface WorkflowParser {
   extractStepLineNumbers(content: string): Map<number, number>;
 }
 
+function normalizeWorkflowSteps(parsed: unknown): unknown {
+  if (!parsed || typeof parsed !== 'object' || !('steps' in parsed)) {
+    return parsed;
+  }
+
+  const workflow = parsed as { steps?: unknown[] };
+  if (Array.isArray(workflow.steps)) {
+    workflow.steps = workflow.steps.map((step) => normalizeWorkflowStep(step));
+  }
+
+  return parsed;
+}
+
+function validateParsedWorkflow(parsed: unknown): Workflow {
+  preValidateWorkflow(parsed);
+
+  try {
+    return validateWorkflow(parsed) as Workflow;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const issues = error.issues
+        .map((issue) => formatZodIssue(issue, parsed))
+        .filter((message) => message !== null)
+        .join('\n');
+      throw new Error(`Invalid workflow structure:\n${issues}`);
+    }
+
+    throw error;
+  }
+}
+
+function parseAndValidate(
+  content: string,
+  formatLabel: 'YAML' | 'JSON',
+  parser: (input: string) => unknown
+): Workflow {
+  let parsed: unknown;
+  try {
+    parsed = parser(content);
+  } catch (error) {
+    throw new Error(
+      `Invalid ${formatLabel} format: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+
+  const normalized = normalizeWorkflowSteps(parsed);
+  return validateParsedWorkflow(normalized);
+}
+
 /**
  * YAML Parser
  */
 export class YAMLParser implements WorkflowParser {
   parse(content: string): Workflow {
-    let parsed: unknown;
-    try {
-      parsed = parse(content);
-    } catch (error) {
-      throw new Error(
-        `Invalid YAML format: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-
-    // Fix malformed steps before validation
-    if (parsed && typeof parsed === 'object' && 'steps' in parsed) {
-      const workflow = parsed as { steps?: unknown[] };
-      if (Array.isArray(workflow.steps)) {
-        workflow.steps = workflow.steps.map((step) => fixMalformedStep(step));
-      }
-    }
-
-    // Pre-validate for common errors with friendly messages
-    preValidateWorkflow(parsed);
-
-    // Validate using Zod schema
-    try {
-      const validated = validateWorkflow(parsed);
-      return validated as Workflow;
-    } catch (error) {
-      if (error instanceof ZodError) {
-        const issues = error.issues
-          .map((issue) => formatZodIssue(issue, parsed))
-          .filter((msg) => msg !== null)
-          .join('\n');
-        throw new Error(`Invalid workflow structure:\n${issues}`);
-      }
-      throw error;
-    }
+    return parseAndValidate(content, 'YAML', (input) => parse(input));
   }
 
   extractStepLineNumbers(content: string): Map<number, number> {
@@ -96,40 +112,7 @@ export class YAMLParser implements WorkflowParser {
  */
 export class JSONParser implements WorkflowParser {
   parse(content: string): Workflow {
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(content);
-    } catch (error) {
-      throw new Error(
-        `Invalid JSON format: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-
-    // Fix malformed steps before validation
-    if (parsed && typeof parsed === 'object' && 'steps' in parsed) {
-      const workflow = parsed as { steps?: unknown[] };
-      if (Array.isArray(workflow.steps)) {
-        workflow.steps = workflow.steps.map((step) => fixMalformedStep(step));
-      }
-    }
-
-    // Pre-validate for common errors with friendly messages
-    preValidateWorkflow(parsed);
-
-    // Validate using Zod schema
-    try {
-      const validated = validateWorkflow(parsed);
-      return validated as Workflow;
-    } catch (error) {
-      if (error instanceof ZodError) {
-        const issues = error.issues
-          .map((issue) => formatZodIssue(issue, parsed))
-          .filter((msg) => msg !== null)
-          .join('\n');
-        throw new Error(`Invalid workflow structure:\n${issues}`);
-      }
-      throw error;
-    }
+    return parseAndValidate(content, 'JSON', (input) => JSON.parse(input));
   }
 
   extractStepLineNumbers(content: string): Map<number, number> {

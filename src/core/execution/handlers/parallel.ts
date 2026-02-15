@@ -4,8 +4,8 @@ import type { Workspace } from '@core/workflow/workspace';
 import type { ExecutionContext, TaskRunResult } from '@tp-types/execution';
 import type { Step, StepResult } from '@tp-types/workflow';
 import logUpdate from 'log-update';
-
-export const PARALLEL_STEP_INDEX_MULTIPLIER = 1000;
+import { PARALLEL_STEP_INDEX_MULTIPLIER } from '../constants';
+export { PARALLEL_STEP_INDEX_MULTIPLIER };
 
 export interface IParallelStepHandlerDeps {
   outputPort: TaskRunOutputPort;

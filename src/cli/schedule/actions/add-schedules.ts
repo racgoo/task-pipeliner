@@ -1,33 +1,33 @@
 import { existsSync } from 'fs';
 import { readdir } from 'fs/promises';
 import { extname, join, resolve } from 'path';
-import { getDaemonStatus } from '@core/scheduling/daemon-manager';
 import { parseScheduleFile } from '@core/scheduling/schedule-file-parser';
-import { ScheduleManager } from '@core/scheduling/schedule-manager';
 import { uiText as chalk } from '@ui/primitives';
 import inquirer from 'inquirer';
 import cron from 'node-cron';
 import { ChoicePrompt } from '../../prompts';
+import { throwHandledCliError } from '../../shared/command-runtime';
 import { findNearestTpDirectory } from '../../shared/utils';
 import { formatScheduleCard } from '../card-format';
+import { createScheduleManager, loadDaemonStatus } from './action-helpers';
 import { resolveWorkflowPath } from './shared';
 
 /**
  * Add schedules from a schedule file
  */
 export async function addSchedules(scheduleFilePath?: string): Promise<void> {
-  const manager = new ScheduleManager();
+  const manager = createScheduleManager();
 
   if (!scheduleFilePath) {
     const tpDir = findNearestTpDirectory();
     if (!tpDir) {
       console.error(chalk.red('\n✗ No tp directory found'));
-      process.exit(1);
+      throwHandledCliError(1);
     }
     const schedulesDir = join(tpDir, 'schedules');
     if (!existsSync(schedulesDir)) {
       console.error(chalk.red(`\n✗ No schedules directory found at ${schedulesDir}`));
-      process.exit(1);
+      throwHandledCliError(1);
     }
     const files = await readdir(schedulesDir);
     const scheduleFiles = files.filter((file) => {
@@ -36,7 +36,7 @@ export async function addSchedules(scheduleFilePath?: string): Promise<void> {
     });
     if (scheduleFiles.length === 0) {
       console.error(chalk.red(`\n✗ No schedule files found in ${schedulesDir}`));
-      process.exit(1);
+      throwHandledCliError(1);
     }
     const choices = scheduleFiles.map((file) => ({
       id: join(schedulesDir, file),
@@ -51,7 +51,7 @@ export async function addSchedules(scheduleFilePath?: string): Promise<void> {
 
   if (!existsSync(resolvedPath)) {
     console.error(`✗ File not found: ${resolvedPath}`);
-    process.exit(1);
+    throwHandledCliError(1);
   }
 
   let scheduleFile;
@@ -61,7 +61,7 @@ export async function addSchedules(scheduleFilePath?: string): Promise<void> {
     console.error(
       `✗ Failed to parse schedule file: ${error instanceof Error ? error.message : String(error)}`
     );
-    process.exit(1);
+    throwHandledCliError(1);
   }
 
   const invalidCrons = scheduleFile.schedules.filter((s) => !cron.validate(s.cron));
@@ -70,7 +70,7 @@ export async function addSchedules(scheduleFilePath?: string): Promise<void> {
     for (const s of invalidCrons) {
       console.error(`  - ${s.name}: "${s.cron}"`);
     }
-    process.exit(1);
+    throwHandledCliError(1);
   }
 
   const missingWorkflows = scheduleFile.schedules.filter((s) => {
@@ -83,7 +83,7 @@ export async function addSchedules(scheduleFilePath?: string): Promise<void> {
       const resolvedWorkflowPath = resolveWorkflowPath(resolvedPath, s);
       console.error(`  - ${s.name}: ${s.workflow} (resolved: ${resolvedWorkflowPath})`);
     }
-    process.exit(1);
+    throwHandledCliError(1);
   }
 
   console.log(`\nFound ${scheduleFile.schedules.length} schedule(s) in file.\n`);
@@ -112,7 +112,7 @@ export async function addSchedules(scheduleFilePath?: string): Promise<void> {
     addedSchedules.push(schedule);
   }
 
-  const daemonStatus = await getDaemonStatus();
+  const daemonStatus = await loadDaemonStatus();
   console.log(`\n✓ Added ${addedSchedules.length} schedule(s) successfully\n`);
   for (const s of addedSchedules) {
     console.log(formatScheduleCard(s, { daemonRunning: daemonStatus.running }));

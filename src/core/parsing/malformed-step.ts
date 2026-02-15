@@ -2,7 +2,7 @@
  * Fix malformed step (YAML indentation issue)
  * When choose/prompt is null but properties exist at step level.
  */
-export function fixMalformedStep(step: unknown): unknown {
+export function normalizeWorkflowStep(step: unknown): unknown {
   const stepAsRecord = step as Record<string, unknown>;
 
   if (
@@ -41,9 +41,12 @@ export function fixMalformedStep(step: unknown): unknown {
   if ('parallel' in stepAsRecord && Array.isArray(stepAsRecord.parallel)) {
     return {
       ...stepAsRecord,
-      parallel: stepAsRecord.parallel.map((subStep: unknown) => fixMalformedStep(subStep)),
+      parallel: stepAsRecord.parallel.map((subStep: unknown) => normalizeWorkflowStep(subStep)),
     };
   }
 
   return step;
 }
+
+// Backward-compatible alias
+export const fixMalformedStep = normalizeWorkflowStep;
