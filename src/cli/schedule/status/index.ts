@@ -45,25 +45,25 @@ function setupTTYInput(
   readState: () => ViewportState,
   writeState: (state: ViewportState) => void,
   cleanup: () => void
-): void {
+): () => void {
   if (!(process.stdin.isTTY && process.stdout.isTTY)) {
-    return;
+    return () => {};
   }
 
   process.stdin.setRawMode(true);
   process.stdin.resume();
   process.stdin.setEncoding('utf8');
 
-  process.stdin.on('data', (data: Buffer | string) => {
-    const buf = typeof data === 'string' ? Buffer.from(data, 'utf8') : data;
+  const onData = (data: Buffer | string) => {
+    const buffer = typeof data === 'string' ? Buffer.from(data, 'utf8') : data;
 
     // In raw mode Ctrl+C sends 0x03 (ETX), not SIGINT; handle it explicitly
-    if (buf.length === 1 && buf[0] === 0x03) {
+    if (buffer.length === 1 && buffer[0] === 0x03) {
       cleanup();
       return;
     }
 
-    const key = parseScrollKey(buf);
+    const key = parseScrollKey(buffer);
     if (!key) {
       return;
     }
@@ -81,7 +81,13 @@ function setupTTYInput(
       scrollOffset: nextOffset,
     });
     writeState(nextState);
-  });
+  };
+
+  process.stdin.on('data', onData);
+
+  return () => {
+    process.stdin.off('data', onData);
+  };
 }
 
 async function refreshFollowView(
@@ -117,24 +123,75 @@ async function showSchedulerStatusFollowMode(): Promise<void> {
     scrollOffset: 0,
   };
 
-  const cleanup = () => {
-    running = false;
+  let resolveDone: (() => void) | undefined;
+  const done = new Promise<void>((resolve) => {
+    resolveDone = resolve;
+  });
+
+  const teardown: {
+    removeInputListener: () => void;
+    interval?: NodeJS.Timeout;
+    signalHandler?: () => void;
+  } = {
+    removeInputListener: () => {},
+  };
+
+  const finalize = () => {
+    if (teardown.interval) {
+      clearInterval(teardown.interval);
+      teardown.interval = undefined;
+    }
+
+    if (teardown.signalHandler) {
+      process.off('SIGINT', teardown.signalHandler);
+      process.off('SIGTERM', teardown.signalHandler);
+      teardown.signalHandler = undefined;
+    }
+
+    teardown.removeInputListener();
+
     if (isTTY && process.stdin.isTTY) {
       process.stdin.setRawMode(false);
       process.stdin.pause();
     }
+
     logUpdate.done();
-    process.exit(0);
   };
 
-  process.on('SIGINT', cleanup);
-  process.on('SIGTERM', cleanup);
+  const cleanup = () => {
+    if (!running) {
+      return;
+    }
 
-  setupTTYInput(
+    running = false;
+    finalize();
+    resolveDone?.();
+  };
+
+  const fail = (error: unknown) => {
+    if (!running) {
+      return;
+    }
+
+    running = false;
+    finalize();
+    console.error('Error updating status:', error);
+    process.exitCode = 1;
+    resolveDone?.();
+  };
+
+  const onSignal = () => {
+    cleanup();
+  };
+  teardown.signalHandler = onSignal;
+  process.on('SIGINT', onSignal);
+  process.on('SIGTERM', onSignal);
+
+  teardown.removeInputListener = setupTTYInput(
     viewportHeight,
     () => state,
-    (next) => {
-      state = next;
+    (nextState) => {
+      state = nextState;
     },
     cleanup
   );
@@ -143,24 +200,22 @@ async function showSchedulerStatusFollowMode(): Promise<void> {
     try {
       state = await refreshFollowView(isTTY, viewportHeight, state);
     } catch (error) {
-      logUpdate.done();
-      console.error('Error updating status:', error);
-      process.exit(1);
+      fail(error);
     }
   };
 
-  const updateInterval = setInterval(async () => {
+  teardown.interval = setInterval(() => {
     if (!running) {
-      clearInterval(updateInterval);
       return;
     }
-    await safeRefresh();
+
+    void safeRefresh();
   }, 1000);
 
   clearScreenToTop();
   await safeRefresh();
 
-  await new Promise(() => {});
+  await done;
 }
 
 /**

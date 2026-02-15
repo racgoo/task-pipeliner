@@ -1,15 +1,12 @@
-import { getDaemonStatus } from '@core/scheduling/daemon-manager';
-import { ScheduleManager } from '@core/scheduling/schedule-manager';
 import inquirer from 'inquirer';
-import { ChoicePrompt } from '../../prompts';
 import { formatScheduleCard } from '../card-format';
-import { scheduleChoiceLabel } from './shared';
+import { chooseSchedule, createScheduleManager, loadDaemonStatus } from './action-helpers';
 
 /**
  * Remove a schedule
  */
 export async function removeSchedule(): Promise<void> {
-  const manager = new ScheduleManager();
+  const manager = createScheduleManager();
   const schedules = await manager.loadSchedules();
 
   if (schedules.length === 0) {
@@ -17,14 +14,12 @@ export async function removeSchedule(): Promise<void> {
     return;
   }
 
-  const choices = schedules.map((s) => ({
-    id: s.id,
-    label: scheduleChoiceLabel(s),
-  }));
-  const choicePrompt = new ChoicePrompt(true);
-  const selected = await choicePrompt.prompt('Select schedule to remove:', choices);
-  const scheduleId = selected.id;
-  const scheduleToRemove = schedules.find((s) => s.id === scheduleId);
+  const scheduleToRemove = await chooseSchedule(schedules, 'Select schedule to remove:');
+  if (!scheduleToRemove) {
+    console.log('✗ Schedule not found');
+    return;
+  }
+  const scheduleId = scheduleToRemove.id;
 
   const { confirm } = await inquirer.prompt<{ confirm: boolean }>([
     {
@@ -42,12 +37,10 @@ export async function removeSchedule(): Promise<void> {
 
   const success = await manager.removeSchedule(scheduleId);
 
-  if (success && scheduleToRemove) {
-    const daemonStatus = await getDaemonStatus();
+  if (success) {
+    const daemonStatus = await loadDaemonStatus();
     console.log('\n✓ Schedule removed\n');
     console.log(formatScheduleCard(scheduleToRemove, { daemonRunning: daemonStatus.running }));
-  } else if (success) {
-    console.log('✓ Schedule removed successfully');
   } else {
     console.log('✗ Schedule not found');
   }

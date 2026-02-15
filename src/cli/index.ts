@@ -12,6 +12,7 @@ import { applyProgramMetadata } from './commands/program-metadata';
 import { registerRunCommand } from './commands/run';
 import { registerSetupCommand } from './commands/setup';
 import { createScheduleCommand } from './schedule/index';
+import { CliCommandError } from './shared/command-runtime';
 import { getVersion } from './shared/utils';
 
 export function createProgram(): Command {
@@ -37,5 +38,17 @@ export function createProgram(): Command {
 
 if (typeof require !== 'undefined' && typeof module !== 'undefined' && require.main === module) {
   const program = createProgram();
-  program.parse();
+  program.parseAsync().catch((error: unknown) => {
+    if (error instanceof CliCommandError) {
+      if (!error.handled && error.message) {
+        console.error(error.message);
+      }
+      process.exitCode = error.exitCode;
+      return;
+    }
+
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(message);
+    process.exitCode = 1;
+  });
 }

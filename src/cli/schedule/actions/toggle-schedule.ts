@@ -1,15 +1,12 @@
-import { getDaemonStatus } from '@core/scheduling/daemon-manager';
-import { ScheduleManager } from '@core/scheduling/schedule-manager';
 import { uiText as chalk } from '@ui/primitives';
-import { ChoicePrompt } from '../../prompts';
 import { formatScheduleCard } from '../card-format';
-import { scheduleChoiceLabel } from './shared';
+import { chooseSchedule, createScheduleManager, loadDaemonStatus } from './action-helpers';
 
 /**
  * Toggle schedule enabled/disabled
  */
 export async function toggleSchedule(): Promise<void> {
-  const manager = new ScheduleManager();
+  const manager = createScheduleManager();
   const schedules = await manager.loadSchedules();
 
   if (schedules.length === 0) {
@@ -17,24 +14,17 @@ export async function toggleSchedule(): Promise<void> {
     return;
   }
 
-  const choices = schedules.map((s) => ({
-    id: s.id,
-    label: scheduleChoiceLabel(s, 'color'),
-  }));
-  const choicePrompt = new ChoicePrompt(true);
-  const selected = await choicePrompt.prompt('Select schedule to toggle:', choices);
-  const scheduleId = selected.id;
-
-  const schedule = schedules.find((s) => s.id === scheduleId);
+  const schedule = await chooseSchedule(schedules, 'Select schedule to toggle:', 'color');
   if (!schedule) {
     console.log('✗ Schedule not found');
     return;
   }
+  const scheduleId = schedule.id;
 
   const newStatus = !schedule.enabled;
   await manager.toggleSchedule(scheduleId, newStatus);
 
-  const daemonStatus = await getDaemonStatus();
+  const daemonStatus = await loadDaemonStatus();
   const updated = { ...schedule, enabled: newStatus };
 
   const statusLabel = newStatus ? chalk.bold.green('ENABLED') : chalk.bold.gray('DISABLED');

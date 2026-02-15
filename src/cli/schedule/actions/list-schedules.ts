@@ -1,13 +1,12 @@
-import { getDaemonStatus } from '@core/scheduling/daemon-manager';
-import { ScheduleManager } from '@core/scheduling/schedule-manager';
 import { uiBox as boxen, uiText as chalk } from '@ui/primitives';
 import { formatScheduleCard } from '../card-format';
+import { createScheduleManager, loadDaemonStatus } from './action-helpers';
 
 /**
  * List all schedules (rich table-style UI)
  */
 export async function listSchedules(): Promise<void> {
-  const manager = new ScheduleManager();
+  const manager = createScheduleManager();
   const schedules = await manager.loadSchedules();
 
   if (schedules.length === 0) {
@@ -27,7 +26,7 @@ export async function listSchedules(): Promise<void> {
     return;
   }
 
-  const daemonStatus = await getDaemonStatus();
+  const daemonStatus = await loadDaemonStatus();
   const daemonBadge = daemonStatus.running ? chalk.green('● running') : chalk.gray('○ stopped');
   const enabledCount = schedules.filter((s) => s.enabled).length;
   const title = chalk.bold('📅 Workflow Schedules');

@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { CliCommandError } from '../shared/command-runtime';
 
 const mockExecute = vi.fn();
 const mockParse = vi.fn();
@@ -42,15 +43,11 @@ import { registerRunCommand } from '../commands/run';
 describe('registerRunCommand', () => {
   let consoleLogSpy: ReturnType<typeof vi.spyOn>;
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
-  let processExitSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    processExitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {
-      throw new Error('process.exit');
-    }) as never);
 
     mockReadFileSync.mockReturnValue('steps: []');
     mockExtractStepLineNumbers.mockReturnValue(new Map([[0, 1]]));
@@ -66,7 +63,6 @@ describe('registerRunCommand', () => {
   afterEach(() => {
     consoleLogSpy.mockRestore();
     consoleErrorSpy.mockRestore();
-    processExitSpy.mockRestore();
   });
 
   it('executes workflow with profile and var override', async () => {
@@ -115,8 +111,9 @@ describe('registerRunCommand', () => {
     const program = new Command();
     registerRunCommand(program);
 
-    await expect(program.parseAsync(['node', 'tp', 'run'])).rejects.toThrow('process.exit');
-    expect(processExitSpy).toHaveBeenCalledWith(1);
+    await expect(program.parseAsync(['node', 'tp', 'run'])).rejects.toBeInstanceOf(
+      CliCommandError
+    );
   });
 
   it('exits on invalid profile', async () => {
@@ -130,9 +127,7 @@ describe('registerRunCommand', () => {
 
     await expect(
       program.parseAsync(['node', 'tp', 'run', 'workflow.yaml', '--profile', 'Prod'])
-    ).rejects.toThrow('process.exit');
-
-    expect(processExitSpy).toHaveBeenCalledWith(1);
+    ).rejects.toBeInstanceOf(CliCommandError);
   });
 
   it('exits on invalid var pair', async () => {
@@ -145,9 +140,7 @@ describe('registerRunCommand', () => {
 
     await expect(
       program.parseAsync(['node', 'tp', 'run', 'workflow.yaml', '-v', 'invalid'])
-    ).rejects.toThrow('process.exit');
-
-    expect(processExitSpy).toHaveBeenCalledWith(1);
+    ).rejects.toBeInstanceOf(CliCommandError);
   });
 
   it('exits when workflow has no steps array', async () => {
@@ -156,10 +149,8 @@ describe('registerRunCommand', () => {
     const program = new Command();
     registerRunCommand(program);
 
-    await expect(program.parseAsync(['node', 'tp', 'run', 'workflow.yaml'])).rejects.toThrow(
-      'process.exit'
+    await expect(program.parseAsync(['node', 'tp', 'run', 'workflow.yaml'])).rejects.toBeInstanceOf(
+      CliCommandError
     );
-
-    expect(processExitSpy).toHaveBeenCalledWith(1);
   });
 });

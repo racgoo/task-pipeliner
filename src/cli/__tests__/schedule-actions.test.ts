@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ScheduleManager } from '@core/scheduling/schedule-manager';
 import type { Schedule } from '@tp-types/schedule';
 import type { ScheduleDefinition } from '@tp-types/schedule-file';
+import { CliCommandError } from '../shared/command-runtime';
 import {
   addSchedules,
   removeSchedule,
@@ -99,14 +100,12 @@ vi.mock('node-cron', () => ({
 describe('ScheduleActions', () => {
   let consoleLogSpy: ReturnType<typeof vi.spyOn>;
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
-  let processExitSpy: ReturnType<typeof vi.spyOn>;
   let testDir: string;
 
   beforeEach(async () => {
     vi.clearAllMocks();
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    processExitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {}) as any);
     testDir = await mkdir(join(tmpdir(), `schedule-actions-test-${Date.now()}`), {
       recursive: true,
     });
@@ -115,7 +114,6 @@ describe('ScheduleActions', () => {
   afterEach(async () => {
     consoleLogSpy.mockRestore();
     consoleErrorSpy.mockRestore();
-    processExitSpy.mockRestore();
     try {
       await rm(testDir, { recursive: true, force: true });
     } catch {
@@ -243,14 +241,8 @@ describe('ScheduleActions', () => {
     it('should exit when file does not exist', async () => {
       const nonExistentFile = join(testDir, 'nonexistent.yaml');
 
-      try {
-        await addSchedules(nonExistentFile);
-      } catch {
-        // Expected to exit
-      }
-
+      await expect(addSchedules(nonExistentFile)).rejects.toBeInstanceOf(CliCommandError);
       expect(consoleErrorSpy).toHaveBeenCalled();
-      expect(processExitSpy).toHaveBeenCalledWith(1);
     });
 
     it('should exit when parse fails', async () => {
@@ -259,14 +251,8 @@ describe('ScheduleActions', () => {
 
       mockParseScheduleFile.mockRejectedValue(new Error('Parse error'));
 
-      try {
-        await addSchedules(scheduleFile);
-      } catch {
-        // Expected to exit
-      }
-
+      await expect(addSchedules(scheduleFile)).rejects.toBeInstanceOf(CliCommandError);
       expect(consoleErrorSpy).toHaveBeenCalled();
-      expect(processExitSpy).toHaveBeenCalledWith(1);
     });
 
     it('should exit when cron is invalid', async () => {
@@ -287,14 +273,8 @@ describe('ScheduleActions', () => {
 
       mockParseScheduleFile.mockResolvedValue(mockScheduleFile);
 
-      try {
-        await addSchedules(scheduleFile);
-      } catch {
-        // Expected to exit
-      }
-
+      await expect(addSchedules(scheduleFile)).rejects.toBeInstanceOf(CliCommandError);
       expect(consoleErrorSpy).toHaveBeenCalled();
-      expect(processExitSpy).toHaveBeenCalledWith(1);
     });
 
     it('should exit when workflow file does not exist', async () => {
@@ -313,41 +293,23 @@ describe('ScheduleActions', () => {
 
       mockParseScheduleFile.mockResolvedValue(mockScheduleFile);
 
-      try {
-        await addSchedules(scheduleFile);
-      } catch {
-        // Expected to exit
-      }
-
+      await expect(addSchedules(scheduleFile)).rejects.toBeInstanceOf(CliCommandError);
       expect(consoleErrorSpy).toHaveBeenCalled();
-      expect(processExitSpy).toHaveBeenCalledWith(1);
     });
 
     it('should exit when no tp directory found', async () => {
       mockFindNearestTpDirectory.mockReturnValue(null);
 
-      try {
-        await addSchedules();
-      } catch {
-        // Expected to exit
-      }
-
+      await expect(addSchedules()).rejects.toBeInstanceOf(CliCommandError);
       expect(consoleErrorSpy).toHaveBeenCalled();
-      expect(processExitSpy).toHaveBeenCalledWith(1);
     });
 
     it('should exit when schedules directory does not exist', async () => {
       const tpDir = join(testDir, 'tp');
       mockFindNearestTpDirectory.mockReturnValue(tpDir);
 
-      try {
-        await addSchedules();
-      } catch {
-        // Expected to exit
-      }
-
+      await expect(addSchedules()).rejects.toBeInstanceOf(CliCommandError);
       expect(consoleErrorSpy).toHaveBeenCalled();
-      expect(processExitSpy).toHaveBeenCalledWith(1);
     });
 
     it('should successfully add schedules from valid file', async () => {
@@ -595,13 +557,9 @@ describe('ScheduleActions', () => {
         startTime: new Date().toISOString(),
       });
 
-      const startPromise = startScheduler(false);
-      await Promise.race([startPromise, new Promise((resolve) => setTimeout(resolve, 100))]);
+      await expect(startScheduler(false)).rejects.toBeInstanceOf(CliCommandError);
 
-      // process.exit may be called synchronously or asynchronously
       expect(consoleErrorSpy).toHaveBeenCalled();
-      // Exit may or may not be called depending on timing
-      expect(processExitSpy.mock.calls.length >= 0).toBe(true);
     });
 
     it('should start scheduler in non-daemon mode', async () => {

@@ -1,3 +1,4 @@
+import { PARALLEL_STEP_INDEX_MULTIPLIER } from '@core/execution/constants';
 import type { Record as WorkflowRecord } from '@tp-types/workflow';
 import type { TimelineBranch, TimelineStep } from './types';
 
@@ -9,7 +10,6 @@ import type { TimelineBranch, TimelineStep } from './types';
 export function groupRecordsByStepIndex(records: WorkflowRecord[]): WorkflowRecord[][] {
   const groups: WorkflowRecord[][] = [];
   const stepIndexMap = new Map<number, WorkflowRecord[]>();
-  const PARALLEL_STEP_INDEX_MULTIPLIER = 1000;
 
   // Group all records by base step index
   // Parallel branches have stepIndex >= 1000, so divide by 1000 to get base step index
@@ -156,7 +156,8 @@ export function buildTimelineSteps(stepGroups: WorkflowRecord[][]): TimelineStep
     // Parallel branches have branchIndex !== undefined and stepIndex >= 1000
     // A parallel group must have at least 1 branch with branchIndex
     const hasParallelBranches = group.some(
-      (r) => r.context.branchIndex !== undefined && r.context.stepIndex >= 1000
+      (r) =>
+        r.context.branchIndex !== undefined && r.context.stepIndex >= PARALLEL_STEP_INDEX_MULTIPLIER
     );
     const isParallel = hasParallelBranches && group.length >= 1;
 

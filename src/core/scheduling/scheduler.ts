@@ -54,22 +54,6 @@ export class WorkflowScheduler {
       process.pid,
       Boolean(process.env.TP_DAEMON_MODE)
     );
-
-    const cleanup = async () => {
-      this.schedulerOutputPort.showSchedulerStopping(daemonMode);
-      this.stop();
-      await removeDaemonPid();
-      if (!daemonMode) {
-        process.exit(0);
-      }
-    };
-
-    process.on('SIGINT', cleanup);
-    process.on('SIGTERM', cleanup);
-
-    if (daemonMode) {
-      process.stdin.destroy();
-    }
   }
 
   async reload(): Promise<void> {
@@ -174,6 +158,12 @@ export class WorkflowScheduler {
       task.stop();
     }
     this.tasks.clear();
+  }
+
+  async shutdown(daemonMode: boolean): Promise<void> {
+    this.schedulerOutputPort.showSchedulerStopping(daemonMode);
+    this.stop();
+    await removeDaemonPid();
   }
 
   async stopDaemon(): Promise<boolean> {

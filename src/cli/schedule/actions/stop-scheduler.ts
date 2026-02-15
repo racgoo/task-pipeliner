@@ -1,11 +1,11 @@
-import { getDaemonStatus } from '@core/scheduling/daemon-manager';
 import { createCliScheduler } from '../../core-adapters';
+import { loadDaemonStatus } from './action-helpers';
 
 /**
  * Stop the scheduler daemon
  */
 export async function stopScheduler(): Promise<void> {
-  const status = await getDaemonStatus();
+  const status = await loadDaemonStatus();
 
   if (!status.running) {
     console.log('Scheduler daemon is not running');
