@@ -80,7 +80,7 @@ export function workflowToGraph(steps: Step[]): {
       const branchStartY = HEADER_HEIGHT + PARALLEL_PADDING;
       const childNodes: Array<{ x: number; y: number; width: number; height: number }> = [];
       
-      parallelStep.parallel.forEach((branchStep, branchIndex) => {
+      parallelStep.parallel.forEach((_, branchIndex) => {
         const childY = branchStartY + branchIndex * (NODE_HEIGHT + PARALLEL_BRANCH_SPACING);
         childNodes.push({
           x: PARALLEL_PADDING,
