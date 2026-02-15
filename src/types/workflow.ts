@@ -1,5 +1,5 @@
-import { ExecutionContext } from '../core/executor';
-import { TaskRunResult } from '../core/task-runner';
+import { ExecutionContext } from '@core/executor';
+import { TaskRunResult } from '@core/task-runner';
 import type { Condition } from './condition';
 
 /**

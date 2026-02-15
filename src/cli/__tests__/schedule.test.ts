@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createScheduleCommand } from '../schedule';
+import { createScheduleCommand } from '../schedule/index';
 
 // Mock schedule-actions
-vi.mock('../schedule-actions', () => ({
+vi.mock('../schedule/actions', () => ({
   addSchedules: vi.fn(),
   listSchedules: vi.fn(),
   removeAllSchedules: vi.fn(),
@@ -13,7 +13,7 @@ vi.mock('../schedule-actions', () => ({
 }));
 
 // Mock schedule-status
-vi.mock('../schedule-status', () => ({
+vi.mock('../schedule/status', () => ({
   showSchedulerStatus: vi.fn(),
 }));
 
@@ -117,4 +117,3 @@ describe('ScheduleCommand', () => {
     });
   });
 });
-

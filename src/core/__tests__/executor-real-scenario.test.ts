@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Workflow } from '../../types/workflow';
+import type { Workflow } from '@tp-types/workflow';
 import { Executor } from '../executor';
 
 // Mock TaskRunner
@@ -16,7 +16,7 @@ vi.mock('../task-runner.js', () => {
 
 // Mock ChoicePrompt, TextPrompt
 const mockChoicePrompt = vi.fn();
-vi.mock('../../cli/prompts.js', () => {
+vi.mock('../../cli/prompts/index', () => {
   return {
     ChoicePrompt: vi.fn().mockImplementation(() => {
       return {

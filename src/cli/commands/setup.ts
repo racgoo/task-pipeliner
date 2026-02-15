@@ -1,7 +1,12 @@
+import { existsSync } from 'fs';
+import { mkdir, writeFile } from 'fs/promises';
+import { join } from 'path';
+import { uiMessage, uiTone } from '@ui/primitives';
+import type { Command } from 'commander';
+
 /**
  * Example workflow and schedule contents for tp setup
  */
-
 export const SETUP_WORKFLOW_EXAMPLES: { filename: string; content: string }[] = [
   {
     filename: 'example-hello.yaml',
@@ -99,3 +104,70 @@ export const SETUP_SCHEDULE_EXAMPLES: { filename: string; content: string }[] = 
 `,
   },
 ];
+
+export function registerSetupCommand(program: Command): void {
+  program
+    .command('setup')
+    .description(
+      'Create tp directory with workflows and schedules folders and add 2 example files in each (echo-based dummies). Run from project root for easy initial setup.'
+    )
+    .action(async () => {
+      const cwd = process.cwd();
+      const tpDir = join(cwd, 'tp');
+      const workflowsDir = join(tpDir, 'workflows');
+      const schedulesDir = join(tpDir, 'schedules');
+
+      if (existsSync(tpDir)) {
+        console.log(uiTone.muted(`\n  tp directory already exists at ${tpDir}`));
+      } else {
+        await mkdir(tpDir, { recursive: true });
+        console.log(uiMessage.successLine(`Created ${tpDir}`));
+      }
+
+      const ensureDir = async (dir: string, label: string) => {
+        if (existsSync(dir)) {
+          console.log(uiTone.muted(`  ${label} already exists`));
+        } else {
+          await mkdir(dir, { recursive: true });
+          console.log(uiTone.success(`✓ Created ${label}`));
+        }
+      };
+
+      await ensureDir(workflowsDir, 'tp/workflows');
+      await ensureDir(schedulesDir, 'tp/schedules');
+
+      const created: string[] = [];
+
+      for (const { filename, content } of SETUP_WORKFLOW_EXAMPLES) {
+        const filePath = join(workflowsDir, filename);
+        if (existsSync(filePath)) {
+          console.log(uiTone.muted(`  Skipped (exists): tp/workflows/${filename}`));
+        } else {
+          await writeFile(filePath, content, 'utf-8');
+          created.push(`tp/workflows/${filename}`);
+        }
+      }
+
+      for (const { filename, content } of SETUP_SCHEDULE_EXAMPLES) {
+        const filePath = join(schedulesDir, filename);
+        if (existsSync(filePath)) {
+          console.log(uiTone.muted(`  Skipped (exists): tp/schedules/${filename}`));
+        } else {
+          await writeFile(filePath, content, 'utf-8');
+          created.push(`tp/schedules/${filename}`);
+        }
+      }
+
+      if (created.length > 0) {
+        console.log(uiMessage.successLine(`Added ${created.length} example file(s):`));
+        created.forEach((p) => console.log(uiTone.subtle(`   ${p}`)));
+      }
+
+      console.log(
+        uiTone.subtle(
+          '\n  Next: tp run tp/workflows/example-hello.yaml  |  tp schedule add tp/schedules/example-daily.yaml  |  tp schedule list'
+        )
+      );
+      console.log();
+    });
+}

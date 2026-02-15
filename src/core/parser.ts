@@ -6,9 +6,9 @@
  * Validates parsed data using Zod schemas for type safety.
  */
 
+import type { Workflow } from '@tp-types/workflow';
 import { parse } from 'yaml';
 import { ZodError, ZodIssue } from 'zod';
-import type { Workflow } from '../types/workflow';
 import { validateWorkflow } from './workflow-schema';
 
 /**

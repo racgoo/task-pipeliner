@@ -1,9 +1,7 @@
 import { resolve, isAbsolute, dirname } from 'path';
-import chalk from 'chalk';
-import { ChoicePrompt, TextPrompt } from '../cli/prompts';
-import { generateTimeline } from '../cli/timeline';
-import { createStepFooterMessage, formatDuration } from '../cli/ui';
-import type { Condition } from '../types/condition';
+import { ChoicePrompt, TextPrompt } from '@cli/prompts/index';
+import { generateTimeline } from '@cli/timeline/index';
+import type { Condition } from '@tp-types/condition';
 import type {
   Step,
   Workflow,
@@ -11,7 +9,9 @@ import type {
   PromptStep,
   StepResult,
   RunStep,
-} from '../types/workflow';
+} from '@tp-types/workflow';
+import { createStepFooterMessage, formatDuration } from '@ui/index';
+import chalk from 'chalk';
 import { ConditionEvaluator } from './condition-evaluator';
 import {
   executeParallelStep as executeParallelStepHandler,

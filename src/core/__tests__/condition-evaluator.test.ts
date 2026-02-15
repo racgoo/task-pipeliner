@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Condition } from '../../types/condition';
+import type { Condition } from '@tp-types/condition';
 import { ConditionEvaluator } from '../condition-evaluator';
 import { Workspace } from '../workspace';
 

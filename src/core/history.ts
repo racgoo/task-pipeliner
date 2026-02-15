@@ -1,8 +1,8 @@
 import { mkdir, readdir, readFile, rm, writeFile } from 'fs/promises';
 import { homedir } from 'os';
 import { basename, join } from 'path';
+import { History } from '@tp-types/workflow';
 import dayjs from 'dayjs';
-import { History } from '../types/workflow';
 
 /**
  * Default directory for storing workflow execution history

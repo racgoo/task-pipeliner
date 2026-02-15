@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ChoicePrompt } from '../../cli/prompts';
-import type { Workflow } from '../../types/workflow';
+import { ChoicePrompt } from '@cli/prompts/index';
+import type { Workflow } from '@tp-types/workflow';
 import { Executor } from '../executor';
 
 // Use actual ChoicePrompt and TextPrompt (without mocking)

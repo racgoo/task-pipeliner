@@ -1,6 +1,7 @@
 import inquirer from 'inquirer';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ChoicePrompt, TextPrompt } from '../prompts';
+import { ChoicePrompt } from '../prompts/index';
+import { TextPrompt } from '../prompts/text-prompt';
 
 // Mock inquirer
 vi.mock('inquirer', () => ({

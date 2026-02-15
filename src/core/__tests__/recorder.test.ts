@@ -2,7 +2,7 @@ import { existsSync } from 'fs';
 import { mkdir, readFile, readdir, rm } from 'fs/promises';
 import { join } from 'path';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import type { Step, StepResult, StepStatus } from '../../types/workflow';
+import type { Step, StepResult, StepStatus } from '@tp-types/workflow';
 import type { ExecutionContext } from '../executor';
 import { WORKFLOW_HISTORY_DIR } from '../history';
 import { WorkflowRecorder } from '../recorder';

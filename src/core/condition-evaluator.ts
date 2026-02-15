@@ -1,6 +1,6 @@
 import { existsSync } from 'fs';
 import { resolve } from 'path';
-import type { Condition } from '../types/condition';
+import type { Condition } from '@tp-types/condition';
 import type { Workspace } from './workspace';
 
 /**

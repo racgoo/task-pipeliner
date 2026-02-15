@@ -1,9 +1,9 @@
 import { readFile } from 'fs/promises';
 import { resolve } from 'path';
+import { Schedule } from '@tp-types/schedule';
 import boxen from 'boxen';
 import chalk from 'chalk';
 import cron, { ScheduledTask } from 'node-cron';
-import { Schedule } from '../types/schedule';
 import { getDaemonStatus, isDaemonRunning, removeDaemonPid } from './daemon-manager';
 import { Executor } from './executor';
 import { getParser } from './parser';

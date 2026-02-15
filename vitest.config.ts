@@ -1,6 +1,14 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@cli': '/src/cli',
+      '@core': '/src/core',
+      '@tp-types': '/src/types',
+      '@ui': '/src/ui',
+    },
+  },
   test: {
     globals: true,
     environment: 'node',
@@ -13,7 +21,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json', 'json-summary'],
-      include: ['src/core/**/*.ts', 'src/cli/**/*.ts'],
+      include: ['src/core/**/*.ts', 'src/cli/**/*.ts', 'src/ui/**/*.ts'],
       exclude: [
         'src/**/*.test.ts',
         'src/**/__tests__/**',

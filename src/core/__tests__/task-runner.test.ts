@@ -15,7 +15,7 @@ vi.mock('child_process', () => {
 });
 
 // Mock UI functions
-vi.mock('../../cli/ui', () => ({
+vi.mock('@ui/index', () => ({
   createStepHeaderBox: vi.fn((content, lineNumber?, fileName?, options?) => {
     return `[HEADER] ${content}`;
   }),
@@ -296,7 +296,7 @@ describe('TaskRunner', () => {
     });
 
     it('should use green border for steps with conditions', async () => {
-      const { createStepHeaderBox } = await import('../../cli/ui');
+      const { createStepHeaderBox } = await import('@ui/index');
       const mockChild = createMockChildProcess();
       mockSpawn.mockReturnValue(mockChild);
 
@@ -323,7 +323,7 @@ describe('TaskRunner', () => {
     });
 
     it('should use cyan border for steps without conditions', async () => {
-      const { createStepHeaderBox } = await import('../../cli/ui');
+      const { createStepHeaderBox } = await import('@ui/index');
       const mockChild = createMockChildProcess();
       mockSpawn.mockReturnValue(mockChild);
 
@@ -360,7 +360,7 @@ describe('TaskRunner', () => {
       vi.useFakeTimers();
       const mockChild = createMockChildProcess();
       mockSpawn.mockReturnValue(mockChild);
-      const { createErrorBox } = await import('../../cli/ui');
+      const { createErrorBox } = await import('@ui/index');
 
       const promise = taskRunner.run(
         'sleep 10',

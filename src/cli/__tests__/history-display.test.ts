@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import type { History, Record as WorkflowRecord } from '../../types/workflow';
-import { displayHistory, displayRecord } from '../history-display';
+import type { History, Record as WorkflowRecord } from '@tp-types/workflow';
+import { displayHistory, displayRecord } from '../history/display';
 
 describe('HistoryDisplay', () => {
   let consoleLogSpy: ReturnType<typeof vi.spyOn>;

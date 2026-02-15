@@ -1,4 +1,4 @@
-import type { RunStep, RunStepOnError } from '../../types/workflow';
+import type { RunStep, RunStepOnError } from '@tp-types/workflow';
 import { parseCapture } from '../capture-parser';
 import type { ExecutionContext } from '../executor';
 import { TaskRunner, type TaskRunResult } from '../task-runner';

@@ -1,10 +1,9 @@
-import boxen from 'boxen';
-import chalk from 'chalk';
+import { resolveTimezone } from '@core/timezone-offset';
+import { Schedule } from '@tp-types/schedule';
+import { uiBox as boxen, uiText as chalk } from '@ui/primitives';
 import cronstrue from 'cronstrue';
 import dayjs from 'dayjs';
 import cron from 'node-cron';
-import { resolveTimezone } from '../core/timezone-offset';
-import { Schedule } from '../types/schedule';
 
 export function getCronDescription(cronExpr: string): string | null {
   try {

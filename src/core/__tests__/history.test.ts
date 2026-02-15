@@ -2,7 +2,7 @@ import { existsSync } from 'fs';
 import { mkdir, readdir, readFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import type { History } from '../../types/workflow';
+import type { History } from '@tp-types/workflow';
 import { WORKFLOW_HISTORY_DIR, WorkflowHistoryManager } from '../history';
 
 describe('WorkflowHistoryManager', () => {

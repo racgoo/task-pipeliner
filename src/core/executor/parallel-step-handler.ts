@@ -1,6 +1,6 @@
+import type { Step, StepResult } from '@tp-types/workflow';
+import { createParallelHeaderBox, createParallelFooterMessage, createErrorBox } from '@ui/index';
 import logUpdate from 'log-update';
-import { createParallelHeaderBox, createParallelFooterMessage, createErrorBox } from '../../cli/ui';
-import type { Step, StepResult } from '../../types/workflow';
 import { ConditionEvaluator } from '../condition-evaluator';
 import type { ExecutionContext } from '../executor';
 import type { TaskRunResult } from '../task-runner';

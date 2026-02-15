@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import type { Schedule } from '../../types/schedule';
-import { formatScheduleCard, getCronDescription, getNextRunForSchedule } from '../schedule-card-format';
+import type { Schedule } from '@tp-types/schedule';
+import { formatScheduleCard, getCronDescription, getNextRunForSchedule } from '../schedule/card-format';
 
 describe('ScheduleCardFormat', () => {
   describe('getCronDescription()', () => {
