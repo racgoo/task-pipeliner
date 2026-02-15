@@ -13,11 +13,11 @@ const mockGetDaemonStatus = vi.fn();
 const mockLoadSchedules = vi.fn();
 const mockLogUpdate = vi.fn();
 
-vi.mock('../core/daemon-manager', () => ({
+vi.mock('@core/scheduling/daemon-manager', () => ({
   getDaemonStatus: () => mockGetDaemonStatus(),
 }));
 
-vi.mock('../core/schedule-manager', () => ({
+vi.mock('@core/scheduling/schedule-manager', () => ({
   ScheduleManager: vi.fn().mockImplementation(() => ({
     loadSchedules: () => mockLoadSchedules(),
   })),

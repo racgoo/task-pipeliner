@@ -1,5 +1,5 @@
-import { getDaemonStatus } from '@core/daemon-manager';
-import { WorkflowScheduler } from '@core/scheduler';
+import { getDaemonStatus } from '@core/scheduling/daemon-manager';
+import { createCliScheduler } from '../../core-adapters';
 
 /**
  * Stop the scheduler daemon
@@ -14,7 +14,7 @@ export async function stopScheduler(): Promise<void> {
 
   console.log(`Stopping scheduler daemon (PID: ${status.pid})...`);
 
-  const scheduler = new WorkflowScheduler();
+  const scheduler = createCliScheduler();
   const stopped = await scheduler.stopDaemon();
 
   if (stopped) {

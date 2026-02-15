@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { YAMLParser, JSONParser, getParser } from '../parser';
+import { YAMLParser, JSONParser, getParser } from '../parsing/parser';
 
 describe('Workflow Parser', () => {
   describe('YAMLParser', () => {

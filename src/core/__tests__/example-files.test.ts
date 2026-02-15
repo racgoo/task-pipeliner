@@ -3,7 +3,8 @@ import { join, resolve, dirname } from 'path';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { parse } from 'yaml';
 import type { Workflow } from '@tp-types/workflow';
-import { Executor } from '../executor';
+import { Executor } from '../execution/executor';
+import { createTestExecutor } from './test-helpers';
 
 // Mock ChoicePrompt, TextPrompt
 const mockChoicePrompt = vi.fn();
@@ -26,7 +27,7 @@ vi.mock('../../cli/prompts/index', () => {
 
 // Mock TaskRunner
 const mockRun = vi.fn().mockResolvedValue(true);
-vi.mock('../task-runner.js', () => {
+vi.mock('@core/runtime/task-runner', () => {
   return {
     TaskRunner: vi.fn().mockImplementation(() => {
       return {
@@ -79,7 +80,7 @@ describe('Example Files Integration Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    executor = new Executor();
+    executor = createTestExecutor();
   });
 
   describe('basic.yaml', () => {

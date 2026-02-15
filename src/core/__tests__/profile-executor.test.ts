@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Workflow } from '@tp-types/workflow';
-import { Executor } from '../executor';
+import { Executor } from '../execution/executor';
+import { createTestExecutor } from './test-helpers';
 
 const mockChoicePrompt = vi.fn();
 const mockTextPrompt = vi.fn();
@@ -10,7 +11,7 @@ vi.mock('../../cli/prompts/index', () => ({
 }));
 
 const mockRun = vi.fn().mockResolvedValue(true);
-vi.mock('../task-runner.js', () => ({
+vi.mock('@core/runtime/task-runner', () => ({
   TaskRunner: vi.fn().mockImplementation(() => ({ run: mockRun })),
 }));
 
@@ -19,7 +20,7 @@ describe('Executor - Profile (profileVars)', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    executor = new Executor();
+    executor = createTestExecutor();
   });
 
   it('should seed workspace with profileVars and skip choose step when variable is set', async () => {

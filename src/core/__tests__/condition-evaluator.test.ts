@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Condition } from '@tp-types/condition';
-import { ConditionEvaluator } from '../condition-evaluator';
-import { Workspace } from '../workspace';
+import { ConditionEvaluator } from '../workflow/condition-evaluator';
+import { Workspace } from '../workflow/workspace';
 
 describe('ConditionEvaluator', () => {
   describe('variable value comparison', () => {

@@ -1,59 +1,42 @@
 /**
  * Task Runner
  *
- * Executes shell commands and displays output in a nice box format.
- *
- * Two modes:
- * 1. Real-time mode: Output appears immediately as command runs (normal execution)
- * 2. Buffered mode: Collect all output first, display later (parallel execution)
- *
- * Features:
- * - Box-style output with borders
- * - Line-by-line streaming
- * - Error handling
- * - Working directory support (baseDir)
+ * Executes shell commands and displays output in a box-style format.
  */
 import { spawn } from 'child_process';
-import {
-  createStepHeaderBox,
-  createStepFooterMessage,
-  createErrorBox,
-  formatNestedLine,
-} from '@ui/index';
+import type { TaskRunOutputPort } from '@core/execution/ports';
+import type { TaskRunResult } from '@tp-types/execution';
+import { spawnWithShell as spawnWithShellHelper, type SpawnOptions } from './spawn-with-shell';
+import { processStreamBuffer as processStreamBufferHelper } from './stream-buffer';
 
-export interface TaskRunResult {
-  success: boolean;
-  stdout: string[];
-  stderr: string[];
-}
+export type { TaskRunResult } from '@tp-types/execution';
 
-interface SpawnOptions {
-  stdio: ['inherit', 'pipe', 'pipe'];
-  shell?: boolean | string;
-  cwd?: string;
+interface TaskRunnerDeps {
+  outputPort: TaskRunOutputPort;
 }
 
 export class TaskRunner {
-  /**
-   * Run a task command with box-style output streaming
-   *
-   * @param command - Shell command to execute
-   * @param stepIndex - Step index in workflow (for tracking)
-   * @param stepName - Display name for the step
-   * @param branchIndex - Branch index for parallel execution
-   * @param bufferOutput - If true, collect output instead of displaying immediately
-   * @param hasCondition - If true, step has a condition (affects border color)
-   * @param lineNumber - Line number in YAML file (for error reporting)
-   * @param fileName - YAML file name (for error reporting)
-   * @param cwd - Working directory for command execution
-   * @param timeout - Timeout in seconds (optional)
-   * @param shell - Shell configuration (e.g., ["bash", "-lc"])
-   */
+  private outputPort: TaskRunOutputPort;
+
+  constructor(deps?: TaskRunnerDeps) {
+    this.outputPort = deps?.outputPort ?? {
+      createStepHeaderBox: (content) => content,
+      createStepFooterMessage: (success, _isNested, durationMs) =>
+        success ? `✓ Completed (${durationMs ?? 0}ms)` : `✗ Failed (${durationMs ?? 0}ms)`,
+      createErrorBox: (error) => error,
+      formatNestedLine: (line) => line,
+      createParallelHeaderBox: (branchCount) =>
+        `Starting parallel execution (${branchCount} branches)`,
+      createParallelFooterMessage: (allSucceeded) =>
+        allSucceeded ? 'All parallel branches completed' : 'Some parallel branches failed',
+    };
+  }
+
   async run(
     command: string,
-    stepIndex?: number,
+    _stepIndex?: number,
     stepName?: string,
-    branchIndex?: number,
+    _branchIndex?: number,
     bufferOutput: boolean = false,
     hasCondition: boolean = false,
     lineNumber?: number,
@@ -62,37 +45,29 @@ export class TaskRunner {
     timeout?: number,
     shell?: string[]
   ): Promise<boolean | TaskRunResult> {
-    // Choose mode based on bufferOutput flag
     if (bufferOutput) {
-      // Collect output for later display (parallel execution)
       return this.runBuffered(command, cwd, timeout, shell);
-    } else {
-      // Display output immediately (normal execution)
-      return this.runRealtime(
-        command,
-        stepName ?? command,
-        hasCondition,
-        lineNumber,
-        fileName,
-        cwd,
-        timeout,
-        shell
-      );
     }
+
+    return this.runRealtime(
+      command,
+      stepName ?? command,
+      hasCondition,
+      lineNumber,
+      fileName,
+      cwd,
+      timeout,
+      shell
+    );
   }
 
-  /**
-   * Run command in buffered mode (collect all output for later display)
-   * Used for parallel execution where we need to collect output first
-   */
   private async runBuffered(
     command: string,
     workingDirectory?: string,
     timeoutSeconds?: number,
     shell?: string[]
   ): Promise<TaskRunResult> {
-    return new Promise<TaskRunResult>((resolve, _reject) => {
-      // Spawn child process with shell configuration
+    return new Promise<TaskRunResult>((resolve) => {
       const child = this.spawnWithShell(command, workingDirectory, shell);
       const allStdoutLines: string[] = [];
       const allStderrLines: string[] = [];
@@ -100,7 +75,6 @@ export class TaskRunner {
       let incompleteStderrLine = '';
       let timeoutId: NodeJS.Timeout | null = null;
 
-      // Set up timeout if specified
       if (timeoutSeconds && timeoutSeconds > 0) {
         timeoutId = setTimeout(() => {
           child.kill('SIGTERM');
@@ -110,7 +84,6 @@ export class TaskRunner {
         }, timeoutSeconds * 1000);
       }
 
-      // Collect stdout lines
       child.stdout?.on('data', (data: Buffer) => {
         const dataChunk = data.toString();
         const { lines: completeLines, remaining: incompleteLine } = this.processStreamBuffer(
@@ -121,7 +94,6 @@ export class TaskRunner {
         incompleteStdoutLine = incompleteLine;
       });
 
-      // Collect stderr lines
       child.stderr?.on('data', (data: Buffer) => {
         const dataChunk = data.toString();
         const { lines: completeLines, remaining: incompleteLine } = this.processStreamBuffer(
@@ -132,7 +104,6 @@ export class TaskRunner {
         incompleteStderrLine = incompleteLine;
       });
 
-      // When process finishes, add any remaining incomplete lines
       child.on('close', (exitCode: number | null) => {
         if (timeoutId) {
           clearTimeout(timeoutId);
@@ -161,9 +132,6 @@ export class TaskRunner {
     });
   }
 
-  /**
-   * Run command in real-time mode (output immediately as it happens)
-   */
   private async runRealtime(
     command: string,
     displayName: string,
@@ -174,36 +142,33 @@ export class TaskRunner {
     timeoutSeconds?: number,
     shell?: string[]
   ): Promise<boolean> {
-    // Green border if step has condition, cyan otherwise
     const borderColor = hasWhenCondition ? 'green' : 'cyan';
-    const headerBox = createStepHeaderBox(displayName, lineNumber, fileName, { borderColor });
+    const headerBox = this.outputPort.createStepHeaderBox(displayName, lineNumber, fileName, {
+      borderColor,
+    });
     console.log(headerBox);
 
-    // Record start time for duration calculation
     const startTime = Date.now();
 
     return new Promise<boolean>((resolve) => {
-      // Spawn child process with shell configuration
       const child = this.spawnWithShell(command, workingDirectory, shell);
       let incompleteStdoutLine = '';
       let incompleteStderrLine = '';
       let timeoutId: NodeJS.Timeout | null = null;
 
-      // Set up timeout if specified
       if (timeoutSeconds && timeoutSeconds > 0) {
         timeoutId = setTimeout(() => {
           child.kill('SIGTERM');
           const timeoutMessage = `Command timed out after ${timeoutSeconds} seconds`;
-          const errorBox = createErrorBox(timeoutMessage);
+          const errorBox = this.outputPort.createErrorBox(timeoutMessage);
           console.error(errorBox);
           const duration = Date.now() - startTime;
-          const footerMessage = createStepFooterMessage(false, false, duration);
+          const footerMessage = this.outputPort.createStepFooterMessage(false, false, duration);
           console.log(footerMessage);
           resolve(false);
         }, timeoutSeconds * 1000);
       }
 
-      // Process stdout: output complete lines immediately
       child.stdout?.on('data', (data: Buffer) => {
         const dataChunk = data.toString();
         const { lines: completeLines, remaining: incompleteLine } = this.processStreamBuffer(
@@ -214,7 +179,6 @@ export class TaskRunner {
         incompleteStdoutLine = incompleteLine;
       });
 
-      // Process stderr: output complete lines immediately
       child.stderr?.on('data', (data: Buffer) => {
         const dataChunk = data.toString();
         const { lines: completeLines, remaining: incompleteLine } = this.processStreamBuffer(
@@ -225,7 +189,6 @@ export class TaskRunner {
         incompleteStderrLine = incompleteLine;
       });
 
-      // When process finishes, output any remaining incomplete lines
       child.on('close', (exitCode: number | null) => {
         if (timeoutId) {
           clearTimeout(timeoutId);
@@ -239,7 +202,7 @@ export class TaskRunner {
 
         const success = exitCode === 0;
         const duration = Date.now() - startTime;
-        const footerMessage = createStepFooterMessage(success, false, duration);
+        const footerMessage = this.outputPort.createStepFooterMessage(success, false, duration);
         console.log(footerMessage);
         resolve(success);
       });
@@ -248,16 +211,14 @@ export class TaskRunner {
         if (timeoutId) {
           clearTimeout(timeoutId);
         }
-        const errorBox = createErrorBox(`Error: ${error.message}`);
+        const errorBox = this.outputPort.createErrorBox(`Error: ${error.message}`);
         console.error(errorBox);
         resolve(false);
       });
     });
   }
 
-  /**
-   * Create spawn options with optional working directory
-   */
+  // Kept for compatibility with existing unit tests
   private createSpawnOptions(workingDirectory?: string): SpawnOptions {
     const options: SpawnOptions = {
       stdio: ['inherit', 'pipe', 'pipe'],
@@ -269,81 +230,23 @@ export class TaskRunner {
     return options;
   }
 
-  /**
-   * Spawn child process with shell configuration
-   *
-   * @param command - Command to execute
-   * @param workingDirectory - Working directory
-   * @param shell - Shell configuration (e.g., ["bash", "-lc"])
-   * @returns ChildProcess
-   */
+  // Kept for compatibility with existing unit tests
   private spawnWithShell(
     command: string,
     workingDirectory?: string,
     shell?: string[]
   ): ReturnType<typeof spawn> {
-    if (shell && shell.length > 0) {
-      // Use custom shell: shell[0] is program, shell[1..] are args, command is final arg
-      const program = shell[0];
-      const args = [...shell.slice(1), command];
-      const options: SpawnOptions = {
-        stdio: ['inherit', 'pipe', 'pipe'],
-      };
-      if (workingDirectory) {
-        options.cwd = workingDirectory;
-      }
-      return spawn(program, args, options);
-    } else {
-      // Use user's current shell (from $SHELL or platform default)
-      // This ensures commands run in the same shell environment as the user
-      const userShell = process.env.SHELL ?? (process.platform === 'win32' ? 'cmd.exe' : '/bin/sh');
-      const shellArg = process.platform === 'win32' ? '/c' : '-c';
-      const options: SpawnOptions = {
-        stdio: ['inherit', 'pipe', 'pipe'],
-      };
-      if (workingDirectory) {
-        options.cwd = workingDirectory;
-      }
-      return spawn(userShell, [shellArg, command], options);
-    }
+    return spawnWithShellHelper(command, workingDirectory, shell);
   }
 
-  /**
-   * Process stream buffer and extract complete lines
-   *
-   * Command output comes in chunks, not necessarily line-by-line.
-   * This function:
-   * 1. Combines new chunk with existing buffer
-   * 2. Extracts all complete lines (ending with \n)
-   * 3. Keeps incomplete line in buffer for next chunk
-   *
-   * Example:
-   * - Buffer: "Hello "
-   * - Chunk: "World\nHow are"
-   * - Result: lines=["Hello World"], remaining="How are"
-   */
+  // Kept for compatibility with existing unit tests
   private processStreamBuffer(
     chunk: string,
     buffer: string
   ): { lines: string[]; remaining: string } {
-    const newBuffer = buffer + chunk;
-    const lines: string[] = [];
-    let remaining = newBuffer;
-
-    // Extract all complete lines (ending with \n)
-    while (remaining.includes('\n')) {
-      const newlineIndex = remaining.indexOf('\n');
-      const line = remaining.substring(0, newlineIndex);
-      remaining = remaining.substring(newlineIndex + 1);
-      lines.push(line);
-    }
-
-    return { lines, remaining };
+    return processStreamBufferHelper(chunk, buffer);
   }
 
-  /**
-   * Format nested output (add | prefix for nested display)
-   */
   private formatNestedOutput(content: string, isNested: boolean): void {
     if (isNested) {
       content.split('\n').forEach((line) => {
@@ -351,14 +254,12 @@ export class TaskRunner {
           console.log(`| ${line}`);
         }
       });
-    } else {
-      console.log(content);
+      return;
     }
+
+    console.log(content);
   }
 
-  /**
-   * Display buffered output in box format (for parallel execution, nested display)
-   */
   displayBufferedOutput(
     result: TaskRunResult,
     stepName: string,
@@ -366,22 +267,22 @@ export class TaskRunner {
     lineNumber?: number,
     fileName?: string
   ): void {
-    const headerBox = createStepHeaderBox(stepName, lineNumber, fileName, {
+    const headerBox = this.outputPort.createStepHeaderBox(stepName, lineNumber, fileName, {
       borderColor: 'cyan',
       isNested,
     });
     this.formatNestedOutput(headerBox, isNested);
 
     result.stdout.forEach((line) => {
-      const formattedLine = formatNestedLine(line, isNested);
+      const formattedLine = this.outputPort.formatNestedLine(line, isNested);
       process.stdout.write(`${formattedLine}\n`);
     });
     result.stderr.forEach((line) => {
-      const formattedLine = formatNestedLine(line, isNested);
+      const formattedLine = this.outputPort.formatNestedLine(line, isNested);
       process.stderr.write(`${formattedLine}\n`);
     });
 
-    const footerMessage = createStepFooterMessage(result.success, isNested);
+    const footerMessage = this.outputPort.createStepFooterMessage(result.success, isNested);
     console.log(footerMessage);
   }
 }

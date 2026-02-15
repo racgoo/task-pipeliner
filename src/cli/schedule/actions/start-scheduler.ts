@@ -5,9 +5,9 @@ import {
   isDaemonRunning,
   readDaemonErrorLog,
   writeDaemonError,
-} from '@core/daemon-manager';
-import { WorkflowScheduler } from '@core/scheduler';
+} from '@core/scheduling/daemon-manager';
 import { uiText as chalk } from '@ui/primitives';
+import { createCliScheduler } from '../../core-adapters';
 import { formatScheduleCard } from '../card-format';
 
 /**
@@ -24,10 +24,10 @@ export async function startScheduler(daemonMode: boolean): Promise<void> {
   if (daemonMode) {
     if (process.env.TP_DAEMON_MODE === 'true') {
       try {
-        const { saveDaemonPid } = await import('../../../core/daemon-manager');
+        const { saveDaemonPid } = await import('@core/scheduling/daemon-manager');
         await saveDaemonPid();
 
-        const scheduler = new WorkflowScheduler();
+        const scheduler = createCliScheduler();
         await scheduler.start(true);
 
         await new Promise(() => {});
@@ -86,7 +86,7 @@ export async function startScheduler(daemonMode: boolean): Promise<void> {
       process.exit(0);
     }
   } else {
-    const scheduler = new WorkflowScheduler();
+    const scheduler = createCliScheduler();
     await scheduler.start(false, {
       onScheduleStarted: (s) => console.log(formatScheduleCard(s, { daemonRunning: true })),
     });

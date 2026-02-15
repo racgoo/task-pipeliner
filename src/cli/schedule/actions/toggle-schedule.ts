@@ -1,5 +1,5 @@
-import { getDaemonStatus } from '@core/daemon-manager';
-import { ScheduleManager } from '@core/schedule-manager';
+import { getDaemonStatus } from '@core/scheduling/daemon-manager';
+import { ScheduleManager } from '@core/scheduling/schedule-manager';
 import { uiText as chalk } from '@ui/primitives';
 import { ChoicePrompt } from '../../prompts';
 import { formatScheduleCard } from '../card-format';

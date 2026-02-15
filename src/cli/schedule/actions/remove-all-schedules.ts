@@ -1,4 +1,4 @@
-import { ScheduleManager } from '@core/schedule-manager';
+import { ScheduleManager } from '@core/scheduling/schedule-manager';
 import inquirer from 'inquirer';
 
 /**

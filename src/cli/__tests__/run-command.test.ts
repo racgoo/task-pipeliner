@@ -14,13 +14,13 @@ vi.mock('fs', () => ({
   readFileSync: (path: string, encoding: BufferEncoding) => mockReadFileSync(path, encoding),
 }));
 
-vi.mock('../../core/executor', () => ({
+vi.mock('@core/execution/executor', () => ({
   Executor: vi.fn().mockImplementation(() => ({
     execute: (...args: unknown[]) => mockExecute(...args),
   })),
 }));
 
-vi.mock('../../core/parser', () => ({
+vi.mock('@core/parsing/parser', () => ({
   getParser: vi.fn().mockImplementation(() => ({
     parse: (content: string) => mockParse(content),
     extractStepLineNumbers: (content: string) => mockExtractStepLineNumbers(content),

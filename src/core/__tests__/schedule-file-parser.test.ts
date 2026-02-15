@@ -2,7 +2,7 @@ import { mkdtemp, writeFile, rm } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { parseScheduleFile } from '../schedule-file-parser';
+import { parseScheduleFile } from '../scheduling/schedule-file-parser';
 
 describe('ScheduleFileParser', () => {
   let tempDir: string;

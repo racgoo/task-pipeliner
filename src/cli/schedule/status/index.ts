@@ -1,5 +1,5 @@
-import { getDaemonStatus } from '@core/daemon-manager';
-import { ScheduleManager } from '@core/schedule-manager';
+import { getDaemonStatus } from '@core/scheduling/daemon-manager';
+import { ScheduleManager } from '@core/scheduling/schedule-manager';
 import type { Schedule } from '@tp-types/schedule';
 import { uiText as chalk } from '@ui/primitives';
 import logUpdate from 'log-update';

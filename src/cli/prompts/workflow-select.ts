@@ -5,7 +5,7 @@
 import { existsSync, readFileSync } from 'fs';
 import { readdir } from 'fs/promises';
 import { join, extname } from 'path';
-import { getParser } from '@core/parser';
+import { getParser } from '@core/parsing/parser';
 import { uiMessage } from '@ui/primitives';
 import { findNearestTpDirectory } from '../shared/utils';
 import { ChoicePrompt } from './index';

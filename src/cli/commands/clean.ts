@@ -2,10 +2,10 @@ import { existsSync } from 'fs';
 import { rm } from 'fs/promises';
 import { homedir } from 'os';
 import { join } from 'path';
-import { getDaemonStatus, isDaemonRunning } from '@core/daemon-manager';
-import { WorkflowScheduler } from '@core/scheduler';
+import { getDaemonStatus, isDaemonRunning } from '@core/scheduling/daemon-manager';
 import { uiMessage, uiTone } from '@ui/primitives';
 import type { Command } from 'commander';
+import { createCliScheduler } from '../core-adapters';
 import { ChoicePrompt } from '../prompts/index';
 
 const PIPELINER_ROOT = join(homedir(), '.pipeliner');
@@ -39,7 +39,7 @@ export function registerCleanCommand(program: Command): void {
         if (await isDaemonRunning()) {
           const status = await getDaemonStatus();
           console.log(uiTone.muted(`Stopping scheduler daemon (PID: ${status.pid})...`));
-          const scheduler = new WorkflowScheduler();
+          const scheduler = createCliScheduler();
           await scheduler.stopDaemon();
           console.log(uiTone.muted('  Daemon stopped'));
         }

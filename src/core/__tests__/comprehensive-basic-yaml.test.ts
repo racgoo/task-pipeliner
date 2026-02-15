@@ -2,10 +2,11 @@ import { readFileSync } from 'fs';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { parse } from 'yaml';
 import type { RunStep, Workflow } from '@tp-types/workflow';
-import { ConditionEvaluator } from '../condition-evaluator';
-import { Executor } from '../executor';
-import { executeRunStep } from '../executor/run-step-handler';
-import { Workspace } from '../workspace';
+import { ConditionEvaluator } from '../workflow/condition-evaluator';
+import { Executor } from '../execution/executor';
+import { createTestExecutor } from './test-helpers';
+import { executeRunStep } from '../execution/handlers/run';
+import { Workspace } from '../workflow/workspace';
 
 // Perfectly reproduce actual execution
 describe('COMPREHENSIVE: Basic YAML - Must Work', () => {
@@ -15,7 +16,7 @@ describe('COMPREHENSIVE: Basic YAML - Must Work', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    executor = new Executor();
+    executor = createTestExecutor();
     executedCommands = [];
     _workspaceState = [];
 

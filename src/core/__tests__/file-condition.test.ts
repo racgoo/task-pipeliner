@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Workflow } from '@tp-types/workflow';
-import { ConditionEvaluator } from '../condition-evaluator';
-import { Executor } from '../executor';
-import { Workspace } from '../workspace';
+import { ConditionEvaluator } from '../workflow/condition-evaluator';
+import { Executor } from '../execution/executor';
+import { createTestExecutor } from './test-helpers';
+import { Workspace } from '../workflow/workspace';
 
 // Mock ChoicePrompt, TextPrompt
 vi.mock('../../cli/prompts/index', () => {
@@ -22,7 +23,7 @@ vi.mock('../../cli/prompts/index', () => {
 
 // Mock TaskRunner
 const mockRun = vi.fn().mockResolvedValue(true);
-vi.mock('../task-runner.js', () => {
+vi.mock('@core/runtime/task-runner', () => {
   return {
     TaskRunner: vi.fn().mockImplementation(() => {
       return {
@@ -37,7 +38,7 @@ describe('File condition and choice-only when clauses', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    executor = new Executor();
+    executor = createTestExecutor();
   });
 
   describe('file condition', () => {

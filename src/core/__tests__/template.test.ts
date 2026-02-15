@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { substituteVariables } from '../template';
-import { Workspace } from '../workspace';
+import { substituteVariables } from '../workflow/template';
+import { Workspace } from '../workflow/workspace';
 
 describe('Template Variable Substitution', () => {
   it('should substitute variables without spaces', () => {

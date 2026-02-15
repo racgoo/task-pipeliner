@@ -1,13 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ChoicePrompt } from '@cli/prompts/index';
 import type { Workflow } from '@tp-types/workflow';
-import { Executor } from '../executor';
+import { Executor } from '../execution/executor';
+import { createTestExecutor } from './test-helpers';
 
 // Use actual ChoicePrompt and TextPrompt (without mocking)
 
 // Mock only TaskRunner
 const mockRun = vi.fn().mockResolvedValue(true);
-vi.mock('../task-runner.js', () => {
+vi.mock('@core/runtime/task-runner', () => {
   return {
     TaskRunner: vi.fn().mockImplementation(() => {
       return {
@@ -23,7 +24,7 @@ describe('Executor - Choice Integration Test (Real Prompts)', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    executor = new Executor();
+    executor = createTestExecutor();
     choicePrompt = (executor as any).choicePrompt;
   });
 

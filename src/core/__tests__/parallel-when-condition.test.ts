@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Workflow } from '@tp-types/workflow';
-import { Executor } from '../executor';
+import { Executor } from '../execution/executor';
+import { createTestExecutor } from './test-helpers';
 
 // Mock TaskRunner
 const mockRun = vi.fn();
-vi.mock('../task-runner', () => ({
+vi.mock('@core/runtime/task-runner', () => ({
   TaskRunner: vi.fn().mockImplementation(() => ({
     run: mockRun,
     runRealtime: mockRun,
@@ -18,7 +19,7 @@ describe('Parallel with when condition - Bug Fix Test', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    executor = new Executor();
+    executor = createTestExecutor();
     choicePrompt = (executor as any).choicePrompt;
     mockRun.mockResolvedValue({ success: true, stdout: '', stderr: '', exitCode: 0 });
   });

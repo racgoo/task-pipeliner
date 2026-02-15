@@ -3,19 +3,15 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { Schedule } from '@tp-types/schedule';
-import { ScheduleManager } from '../schedule-manager';
-import { WorkflowScheduler } from '../scheduler';
+import type { SchedulerOutputPort } from '../execution/ports';
+import { ScheduleManager } from '../scheduling/schedule-manager';
+import { WorkflowScheduler } from '../scheduling/scheduler';
+import { createTestScheduler } from './test-helpers';
 
 // Mock dependencies - create a shared mock execute function
 const mockExecute = vi.fn().mockResolvedValue(undefined);
 
-vi.mock('../executor', () => ({
-  Executor: vi.fn().mockImplementation(() => ({
-    execute: mockExecute,
-  })),
-}));
-
-vi.mock('../parser', () => ({
+vi.mock('../parsing/parser', () => ({
   getParser: vi.fn().mockReturnValue({
     parse: vi.fn().mockReturnValue({
       steps: [{ run: 'echo "test"' }],
@@ -40,7 +36,7 @@ vi.mock('node-cron', () => {
   };
 });
 
-vi.mock('../daemon-manager', () => ({
+vi.mock('../scheduling/daemon-manager', () => ({
   isDaemonRunning: vi.fn().mockResolvedValue(false),
   getDaemonStatus: vi.fn().mockResolvedValue({
     running: false,
@@ -62,10 +58,26 @@ describe('WorkflowScheduler', () => {
   let scheduler: WorkflowScheduler;
   let scheduleManager: ScheduleManager;
   let tempDir: string;
+  const schedulerOutputPort: SchedulerOutputPort = {
+    showSchedulerStart: vi.fn(),
+    showSchedulerStarted: vi.fn(),
+    showSchedulerStopping: vi.fn(),
+    showNoEnabledSchedules: vi.fn(),
+    showScheduleStartFailed: vi.fn(),
+    showInvalidCronExpression: vi.fn(),
+    showCronScheduleFailed: vi.fn(),
+    showScheduledWorkflowStart: vi.fn(),
+    showScheduledWorkflowCompleted: vi.fn(),
+    showScheduledWorkflowFailed: vi.fn(),
+  };
 
   beforeEach(async () => {
-    scheduler = new WorkflowScheduler();
     scheduleManager = new ScheduleManager();
+    scheduler = createTestScheduler({
+      outputPort: schedulerOutputPort,
+      executor: { execute: mockExecute },
+      scheduleManager,
+    });
     tempDir = await mkdtemp(join(tmpdir(), 'scheduler-test-'));
     vi.clearAllMocks();
     mockExecute.mockClear();
@@ -104,7 +116,7 @@ describe('WorkflowScheduler', () => {
     });
 
     it('should throw error when daemon is already running', async () => {
-      const { isDaemonRunning } = await import('../daemon-manager');
+      const { isDaemonRunning } = await import('../scheduling/daemon-manager');
       vi.mocked(isDaemonRunning).mockResolvedValue(true);
 
       await expect(scheduler.start(false)).rejects.toThrow('already running');
@@ -286,8 +298,7 @@ describe('WorkflowScheduler', () => {
         createdAt: new Date().toISOString(),
       };
 
-      const { Executor } = await import('../executor');
-      const { getParser } = await import('../parser');
+      const { getParser } = await import('../parsing/parser');
       const { readFile } = await import('fs/promises');
 
       vi.mocked(readFile).mockResolvedValue('steps:\n  - run: echo "test"');
@@ -330,9 +341,7 @@ describe('WorkflowScheduler', () => {
         createdAt: new Date().toISOString(),
       };
 
-      const { Executor } = await import('../executor');
-      const mockExecutor = new Executor();
-      vi.mocked(mockExecutor.execute).mockRejectedValue(new Error('Execution failed'));
+      mockExecute.mockRejectedValueOnce(new Error('Execution failed'));
 
       const { readFile } = await import('fs/promises');
       vi.mocked(readFile).mockResolvedValue('steps:\n  - run: echo "test"');
@@ -352,7 +361,7 @@ describe('WorkflowScheduler', () => {
         profile: 'production',
       };
 
-      const { getParser } = await import('../parser');
+      const { getParser } = await import('../parsing/parser');
       const { readFile } = await import('fs/promises');
 
       const mockWorkflow = {
@@ -392,7 +401,7 @@ describe('WorkflowScheduler', () => {
 
   describe('stopDaemon()', () => {
     it('should return false when daemon is not running', async () => {
-      const { getDaemonStatus } = await import('../daemon-manager');
+      const { getDaemonStatus } = await import('../scheduling/daemon-manager');
       vi.mocked(getDaemonStatus).mockResolvedValue({
         running: false,
         pid: null,
@@ -404,7 +413,7 @@ describe('WorkflowScheduler', () => {
     });
 
     it('should send SIGTERM to daemon process', async () => {
-      const { getDaemonStatus, isDaemonRunning } = await import('../daemon-manager');
+      const { getDaemonStatus, isDaemonRunning } = await import('../scheduling/daemon-manager');
       const mockKill = vi.spyOn(process, 'kill').mockImplementation(() => true);
 
       vi.mocked(getDaemonStatus).mockResolvedValue({

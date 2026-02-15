@@ -14,15 +14,15 @@ vi.mock('../prompts/index', () => ({
   })),
 }));
 
-vi.mock('../../core/daemon-manager', () => ({
+vi.mock('@core/scheduling/daemon-manager', () => ({
   isDaemonRunning: () => mockIsDaemonRunning(),
   getDaemonStatus: () => mockGetDaemonStatus(),
 }));
 
-vi.mock('../../core/scheduler', () => ({
-  WorkflowScheduler: vi.fn().mockImplementation(() => ({
+vi.mock('../core-adapters', () => ({
+  createCliScheduler: () => ({
     stopDaemon: () => mockStopDaemon(),
-  })),
+  }),
 }));
 
 vi.mock('fs', () => ({

@@ -3,11 +3,12 @@ import { resolve, dirname } from 'path';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { parse } from 'yaml';
 import type { Workflow } from '@tp-types/workflow';
-import { Executor } from '../executor';
+import { Executor } from '../execution/executor';
+import { createTestExecutor } from './test-helpers';
 
 // Mock TaskRunner
 const mockRun = vi.fn().mockResolvedValue(true);
-vi.mock('../task-runner.js', () => {
+vi.mock('@core/runtime/task-runner', () => {
   return {
     TaskRunner: vi.fn().mockImplementation(() => {
       return {
@@ -40,7 +41,7 @@ describe('Base Directory Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    executor = new Executor();
+    executor = createTestExecutor();
   });
 
   it('should resolve relative baseDir against YAML file directory', async () => {

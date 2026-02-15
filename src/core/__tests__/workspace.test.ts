@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Workspace } from '../workspace';
+import { Workspace } from '../workflow/workspace';
 
 describe('Workspace', () => {
   it('should set and get facts', () => {

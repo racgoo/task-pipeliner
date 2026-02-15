@@ -1,4 +1,4 @@
-import { resolveTimezone } from '@core/timezone-offset';
+import { resolveTimezone } from '@core/scheduling/timezone-offset';
 import { Schedule } from '@tp-types/schedule';
 import { uiBox as boxen, uiText as chalk } from '@ui/primitives';
 import cronstrue from 'cronstrue';
