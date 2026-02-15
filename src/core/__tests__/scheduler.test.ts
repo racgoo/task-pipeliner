@@ -2,7 +2,7 @@ import { readFile, writeFile, mkdtemp, rm } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import type { Schedule } from '../../types/schedule';
+import type { Schedule } from '@tp-types/schedule';
 import { ScheduleManager } from '../schedule-manager';
 import { WorkflowScheduler } from '../scheduler';
 

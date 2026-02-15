@@ -5,9 +5,9 @@
  * to be stored as variables in the workspace.
  */
 
+import type { Capture } from '@tp-types/workflow';
 import { JSONPath } from 'jsonpath-plus';
 import { parse } from 'yaml';
-import type { Capture } from '../types/workflow';
 
 /**
  * Parse stdout using a capture strategy

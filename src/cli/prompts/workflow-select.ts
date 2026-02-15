@@ -5,10 +5,10 @@
 import { existsSync, readFileSync } from 'fs';
 import { readdir } from 'fs/promises';
 import { join, extname } from 'path';
-import chalk from 'chalk';
-import { getParser } from '../core/parser';
-import { ChoicePrompt } from './prompts';
-import { findNearestTpDirectory } from './utils';
+import { getParser } from '@core/parser';
+import { uiMessage } from '@ui/primitives';
+import { findNearestTpDirectory } from '../shared/utils';
+import { ChoicePrompt } from './index';
 
 /**
  * Let user pick a workflow file from the nearest tp/workflows directory.
@@ -17,13 +17,13 @@ import { findNearestTpDirectory } from './utils';
 export async function selectWorkflowFromTpDirectory(): Promise<string | null> {
   const tpDir = findNearestTpDirectory();
   if (!tpDir) {
-    console.error(chalk.red('\n✗ No tp directory found'));
+    console.error(uiMessage.errorLine('No tp directory found'));
     return null;
   }
 
   const workflowsDir = join(tpDir, 'workflows');
   if (!existsSync(workflowsDir)) {
-    console.error(chalk.red(`\n✗ No workflows directory found at ${workflowsDir}`));
+    console.error(uiMessage.errorLine(`No workflows directory found at ${workflowsDir}`));
     return null;
   }
 
@@ -35,7 +35,7 @@ export async function selectWorkflowFromTpDirectory(): Promise<string | null> {
     });
 
     if (workflowFiles.length === 0) {
-      console.error(chalk.red('\n✗ No workflow files found in tp/workflows'));
+      console.error(uiMessage.errorLine('No workflow files found in tp/workflows'));
       return null;
     }
 
@@ -59,7 +59,7 @@ export async function selectWorkflowFromTpDirectory(): Promise<string | null> {
     return selected?.id ?? null;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(chalk.red(`\n✗ Failed to read tp directory: ${errorMessage}`));
+    console.error(uiMessage.errorLine(`Failed to read tp directory: ${errorMessage}`));
     return null;
   }
 }

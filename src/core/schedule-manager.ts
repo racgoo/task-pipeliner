@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import { homedir } from 'os';
 import { join } from 'path';
-import { Schedule, ScheduleConfig } from '../types/schedule';
+import { Schedule, ScheduleConfig } from '@tp-types/schedule';
 
 /**
  * Directory for storing schedule configurations

@@ -2,9 +2,9 @@ import { mkdir, writeFile, rm } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ScheduleManager } from '../../core/schedule-manager';
-import type { Schedule } from '../../types/schedule';
-import type { ScheduleDefinition } from '../../types/schedule-file';
+import { ScheduleManager } from '@core/schedule-manager';
+import type { Schedule } from '@tp-types/schedule';
+import type { ScheduleDefinition } from '@tp-types/schedule-file';
 import {
   addSchedules,
   removeSchedule,
@@ -15,7 +15,7 @@ import {
   removeAllSchedules,
   resolveWorkflowPath,
   scheduleChoiceLabel,
-} from '../schedule-actions';
+} from '../schedule/actions';
 
 // Mock dependencies
 const mockGetDaemonStatus = vi.fn();
@@ -36,7 +36,7 @@ const mockInquirerPrompt = vi.fn();
 const mockFindNearestTpDirectory = vi.fn();
 const mockSpawn = vi.fn();
 
-vi.mock('../core/daemon-manager', () => ({
+vi.mock('../../core/daemon-manager', () => ({
   getDaemonStatus: () => mockGetDaemonStatus(),
   isDaemonRunning: () => mockIsDaemonRunning(),
   getDaemonErrorLogPath: () => mockGetDaemonErrorLogPath(),
@@ -60,7 +60,7 @@ vi.mock('../../core/schedule-file-parser', () => ({
 //   })),
 // }));
 
-vi.mock('../core/scheduler', () => ({
+vi.mock('../../core/scheduler', () => ({
   WorkflowScheduler: vi.fn().mockImplementation(() => ({
     start: (daemon: boolean, options?: any) => mockStart(daemon, options),
     stopDaemon: () => mockStopDaemon(),
@@ -79,7 +79,7 @@ vi.mock('inquirer', () => ({
   },
 }));
 
-vi.mock('../utils', () => ({
+vi.mock('../shared/utils', () => ({
   findNearestTpDirectory: () => mockFindNearestTpDirectory(),
 }));
 

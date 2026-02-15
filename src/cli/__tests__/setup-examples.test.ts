@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SETUP_WORKFLOW_EXAMPLES, SETUP_SCHEDULE_EXAMPLES } from '../setup-examples';
+import { SETUP_WORKFLOW_EXAMPLES, SETUP_SCHEDULE_EXAMPLES } from '../commands/setup';
 
 describe('SetupExamples', () => {
   describe('SETUP_WORKFLOW_EXAMPLES', () => {

@@ -4,9 +4,9 @@
 
 import { readFile } from 'fs/promises';
 import { extname } from 'path';
+import { ScheduleFile } from '@tp-types/schedule-file';
 import { parse as parseYAML } from 'yaml';
 import { ZodError } from 'zod';
-import { ScheduleFile } from '../types/schedule-file';
 import { validateScheduleFile } from './schedule-file-schema';
 
 /**

@@ -1,6 +1,6 @@
 import { mkdir } from 'fs/promises';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { Workflow } from '../../types/workflow';
+import type { Workflow } from '@tp-types/workflow';
 import { ConditionEvaluator } from '../condition-evaluator';
 import { Executor } from '../executor';
 import { WORKFLOW_HISTORY_DIR } from '../history';

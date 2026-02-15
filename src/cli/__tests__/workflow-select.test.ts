@@ -2,25 +2,25 @@ import { mkdir, rm, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { extractFileName, selectWorkflowFromTpDirectory } from '../workflow-select';
+import { extractFileName, selectWorkflowFromTpDirectory } from '../prompts/workflow-select';
 
 // Mock ChoicePrompt
 const mockChoicePrompt = vi.fn();
-vi.mock('../prompts', () => ({
+vi.mock('../prompts/index', () => ({
   ChoicePrompt: vi.fn().mockImplementation(() => ({
     prompt: (message: string, choices: any[]) => mockChoicePrompt(message, choices),
   })),
 }));
 
 // Mock parser - use actual parser for better coverage
-vi.mock('../core/parser', async () => {
-  const actual = await vi.importActual('../core/parser');
+vi.mock('../../core/parser', async () => {
+  const actual = await vi.importActual('../../core/parser');
   return actual;
 });
 
 // Mock utils
 const mockFindNearestTpDirectory = vi.fn();
-vi.mock('../utils', () => ({
+vi.mock('../shared/utils', () => ({
   findNearestTpDirectory: () => mockFindNearestTpDirectory(),
 }));
 

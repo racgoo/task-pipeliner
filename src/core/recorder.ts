@@ -1,4 +1,4 @@
-import { History, Record, Step, StepResult, StepStatus } from '../types/workflow';
+import { History, Record, Step, StepResult, StepStatus } from '@tp-types/workflow';
 import { ExecutionContext } from './executor';
 import { WorkflowHistoryManager } from './history';
 

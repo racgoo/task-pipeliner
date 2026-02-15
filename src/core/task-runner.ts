@@ -19,7 +19,7 @@ import {
   createStepFooterMessage,
   createErrorBox,
   formatNestedLine,
-} from '../cli/ui';
+} from '@ui/index';
 
 export interface TaskRunResult {
   success: boolean;

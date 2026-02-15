@@ -7,8 +7,8 @@ import {
   startScheduler,
   stopScheduler,
   toggleSchedule,
-} from './schedule-actions';
-import { showSchedulerStatus } from './schedule-status';
+} from './actions';
+import { showSchedulerStatus } from './status';
 
 /**
  * Create schedule command

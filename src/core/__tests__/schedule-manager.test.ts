@@ -2,7 +2,7 @@ import { existsSync } from 'fs';
 import { mkdir, readFile, rm, unlink, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import type { Schedule } from '../../types/schedule';
+import type { Schedule } from '@tp-types/schedule';
 import { ScheduleManager, SCHEDULE_DIR } from '../schedule-manager';
 
 describe('ScheduleManager', () => {

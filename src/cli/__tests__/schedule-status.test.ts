@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import type { Schedule } from '../../types/schedule';
+import type { Schedule } from '@tp-types/schedule';
 import {
   formatUptime,
   formatScheduleStatus,
   generateStatusDisplay,
   showSchedulerStatus,
   clearScreenToTop,
-} from '../schedule-status';
+} from '../schedule/status';
 
 // Mock dependencies
 const mockGetDaemonStatus = vi.fn();

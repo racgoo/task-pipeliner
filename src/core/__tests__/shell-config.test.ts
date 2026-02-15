@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { Workflow } from '../../types/workflow';
+import type { Workflow } from '@tp-types/workflow';
 import { Executor } from '../executor';
 
 describe('Shell Configuration', () => {

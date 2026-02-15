@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { parse } from 'yaml';
-import type { RunStep, Workflow } from '../../types/workflow';
+import type { RunStep, Workflow } from '@tp-types/workflow';
 import { ConditionEvaluator } from '../condition-evaluator';
 import { Executor } from '../executor';
 import { executeRunStep } from '../executor/run-step-handler';

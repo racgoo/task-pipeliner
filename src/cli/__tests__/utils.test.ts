@@ -4,7 +4,7 @@ import { join, resolve, dirname } from 'path';
 import { tmpdir } from 'os';
 import { fileURLToPath } from 'url';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { findNearestTpDirectory, parseVarPairs, setSilentMode, getVersion } from '../utils';
+import { findNearestTpDirectory, parseVarPairs, setSilentMode, getVersion } from '../shared/utils';
 
 describe('CLI Utils', () => {
   describe('setSilentMode()', () => {
