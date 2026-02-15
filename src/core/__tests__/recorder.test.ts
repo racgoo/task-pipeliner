@@ -3,10 +3,10 @@ import { mkdir, readFile, readdir, rm } from 'fs/promises';
 import { join } from 'path';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import type { Step, StepResult, StepStatus } from '@tp-types/workflow';
-import type { ExecutionContext } from '../executor';
-import { WORKFLOW_HISTORY_DIR } from '../history';
-import { WorkflowRecorder } from '../recorder';
-import { Workspace } from '../workspace';
+import type { ExecutionContext } from '../execution/executor';
+import { WORKFLOW_HISTORY_DIR } from '../history/manager';
+import { WorkflowRecorder } from '../history/recorder';
+import { Workspace } from '../workflow/workspace';
 
 describe('WorkflowRecorder', () => {
   let recorder: WorkflowRecorder;

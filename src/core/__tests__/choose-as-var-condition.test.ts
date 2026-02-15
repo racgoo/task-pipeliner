@@ -1,14 +1,15 @@
 import { mkdir } from 'fs/promises';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { Workflow } from '@tp-types/workflow';
-import { ConditionEvaluator } from '../condition-evaluator';
-import { Executor } from '../executor';
-import { WORKFLOW_HISTORY_DIR } from '../history';
-import { Workspace } from '../workspace';
+import { ConditionEvaluator } from '../workflow/condition-evaluator';
+import { Executor } from '../execution/executor';
+import { createTestExecutor } from './test-helpers';
+import { WORKFLOW_HISTORY_DIR } from '../history/manager';
+import { Workspace } from '../workflow/workspace';
 
 // Mock TaskRunner
 const mockRun = vi.fn().mockResolvedValue(true);
-vi.mock('../task-runner.js', () => {
+vi.mock('@core/runtime/task-runner', () => {
   return {
     TaskRunner: vi.fn().mockImplementation(() => {
       return {
@@ -31,7 +32,7 @@ describe('Choose with "as" keyword and var condition - Bug Fix Test', () => {
     } catch {
       // Ignore if already exists
     }
-    executor = new Executor();
+    executor = createTestExecutor();
     choicePrompt = (executor as any).choicePrompt;
     textPrompt = (executor as any).textPrompt;
   });
@@ -284,7 +285,7 @@ describe('Choose with "as" keyword and var condition - Bug Fix Test', () => {
     expect(calls).not.toContain('echo "Production environment"');
 
     // Test staging
-    executor = new Executor();
+    executor = createTestExecutor();
     choicePrompt = (executor as any).choicePrompt;
     vi.clearAllMocks();
     vi.spyOn(choicePrompt, 'prompt').mockResolvedValue({ id: 'staging', label: 'Staging' });
@@ -295,7 +296,7 @@ describe('Choose with "as" keyword and var condition - Bug Fix Test', () => {
     expect(calls).not.toContain('echo "Production environment"');
 
     // Test prod
-    executor = new Executor();
+    executor = createTestExecutor();
     choicePrompt = (executor as any).choicePrompt;
     vi.clearAllMocks();
     vi.spyOn(choicePrompt, 'prompt').mockResolvedValue({ id: 'prod', label: 'Production' });

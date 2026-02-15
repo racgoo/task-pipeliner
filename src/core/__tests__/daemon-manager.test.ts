@@ -13,7 +13,7 @@ import {
   removeDaemonPid,
   saveDaemonPid,
   writeDaemonError,
-} from '../daemon-manager';
+} from '../scheduling/daemon-manager';
 
 // Mock process.kill for isProcessRunning
 const originalKill = process.kill;

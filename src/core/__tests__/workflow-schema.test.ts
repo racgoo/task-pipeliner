@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { safeValidateWorkflow, validateWorkflow } from '../workflow-schema';
+import { safeValidateWorkflow, validateWorkflow } from '../workflow/schema';
 
 describe('WorkflowSchema', () => {
   describe('validateWorkflow() - valid workflows', () => {

@@ -1,4 +1,4 @@
-import { WorkflowHistoryManager } from '@core/history';
+import { WorkflowHistoryManager } from '@core/history/manager';
 import { uiMessage } from '@ui/primitives';
 import type { Command } from 'commander';
 import { displayHistory } from '../history/display';

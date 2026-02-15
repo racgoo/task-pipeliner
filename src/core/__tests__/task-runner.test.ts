@@ -3,7 +3,8 @@ import { mkdtemp, rm } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { TaskRunner, type TaskRunResult } from '../task-runner';
+import { TaskRunner, type TaskRunResult } from '../runtime/task-runner';
+import type { TaskRunOutputPort } from '../execution/ports';
 
 // Mock child_process.spawn
 vi.mock('child_process', () => {
@@ -14,25 +15,26 @@ vi.mock('child_process', () => {
   };
 });
 
-// Mock UI functions
-vi.mock('@ui/index', () => ({
-  createStepHeaderBox: vi.fn((content, lineNumber?, fileName?, options?) => {
-    return `[HEADER] ${content}`;
-  }),
-  createStepFooterMessage: vi.fn((success, _isNested, duration) =>
-    success ? `✓ Completed (${duration}ms)` : `✗ Failed (${duration}ms)`
-  ),
-  createErrorBox: vi.fn((error) => `[ERROR] ${error}`),
-  formatNestedLine: vi.fn((line, isNested) => (isNested ? `  │ ${line}` : `│ ${line}`)),
-}));
-
 describe('TaskRunner', () => {
   let taskRunner: TaskRunner;
   let tempDir: string;
   let mockSpawn: ReturnType<typeof vi.fn>;
+  let mockOutputPort: TaskRunOutputPort;
 
   beforeEach(() => {
-    taskRunner = new TaskRunner();
+    mockOutputPort = {
+      createStepHeaderBox: vi.fn((content) => `[HEADER] ${content}`),
+      createStepFooterMessage: vi.fn((success, _isNested, duration) =>
+        success ? `✓ Completed (${duration}ms)` : `✗ Failed (${duration}ms)`
+      ),
+      createErrorBox: vi.fn((error) => `[ERROR] ${error}`),
+      formatNestedLine: vi.fn((line, isNested) => (isNested ? `  │ ${line}` : `│ ${line}`)),
+      createParallelHeaderBox: vi.fn((branchCount) => `parallel ${branchCount}`),
+      createParallelFooterMessage: vi.fn((allSucceeded) =>
+        allSucceeded ? 'parallel done' : 'parallel failed'
+      ),
+    };
+    taskRunner = new TaskRunner({ outputPort: mockOutputPort });
     vi.clearAllMocks();
     mockSpawn = spawn as ReturnType<typeof vi.fn>;
   });
@@ -296,7 +298,6 @@ describe('TaskRunner', () => {
     });
 
     it('should use green border for steps with conditions', async () => {
-      const { createStepHeaderBox } = await import('@ui/index');
       const mockChild = createMockChildProcess();
       mockSpawn.mockReturnValue(mockChild);
 
@@ -314,7 +315,7 @@ describe('TaskRunner', () => {
       await new Promise((resolve) => setImmediate(resolve));
       await promise;
 
-      expect(createStepHeaderBox).toHaveBeenCalledWith(
+      expect(mockOutputPort.createStepHeaderBox).toHaveBeenCalledWith(
         'Test Step',
         undefined,
         undefined,
@@ -323,7 +324,6 @@ describe('TaskRunner', () => {
     });
 
     it('should use cyan border for steps without conditions', async () => {
-      const { createStepHeaderBox } = await import('@ui/index');
       const mockChild = createMockChildProcess();
       mockSpawn.mockReturnValue(mockChild);
 
@@ -348,7 +348,7 @@ describe('TaskRunner', () => {
       await new Promise((resolve) => setImmediate(resolve));
       await promise;
 
-      expect(createStepHeaderBox).toHaveBeenCalledWith(
+      expect(mockOutputPort.createStepHeaderBox).toHaveBeenCalledWith(
         'Test Step',
         undefined,
         undefined,
@@ -360,7 +360,6 @@ describe('TaskRunner', () => {
       vi.useFakeTimers();
       const mockChild = createMockChildProcess();
       mockSpawn.mockReturnValue(mockChild);
-      const { createErrorBox } = await import('@ui/index');
 
       const promise = taskRunner.run(
         'sleep 10',
@@ -387,7 +386,9 @@ describe('TaskRunner', () => {
         new Promise((resolve) => setTimeout(() => resolve('timeout'), 100)),
       ]);
 
-      expect(createErrorBox).toHaveBeenCalledWith(expect.stringContaining('timed out'));
+      expect(mockOutputPort.createErrorBox).toHaveBeenCalledWith(
+        expect.stringContaining('timed out')
+      );
       expect(mockChild.kill).toHaveBeenCalledWith('SIGTERM');
       expect(result).toBe(false); // Should return false on timeout
 

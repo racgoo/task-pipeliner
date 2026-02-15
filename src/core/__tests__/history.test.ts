@@ -3,7 +3,7 @@ import { mkdir, readdir, readFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import type { History } from '@tp-types/workflow';
-import { WORKFLOW_HISTORY_DIR, WorkflowHistoryManager } from '../history';
+import { WORKFLOW_HISTORY_DIR, WorkflowHistoryManager } from '../history/manager';
 
 describe('WorkflowHistoryManager', () => {
   let historyManager: WorkflowHistoryManager;

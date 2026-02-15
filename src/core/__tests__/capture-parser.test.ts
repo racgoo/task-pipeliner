@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Capture } from '@tp-types/workflow';
-import { parseCapture } from '../capture-parser';
+import { parseCapture } from '../workflow/capture-parser';
 
 describe('Capture Parser', () => {
   describe('Full Capture', () => {

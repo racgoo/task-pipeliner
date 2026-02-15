@@ -1,9 +1,9 @@
 import { existsSync } from 'fs';
 import { readdir } from 'fs/promises';
 import { extname, join, resolve } from 'path';
-import { getDaemonStatus } from '@core/daemon-manager';
-import { parseScheduleFile } from '@core/schedule-file-parser';
-import { ScheduleManager } from '@core/schedule-manager';
+import { getDaemonStatus } from '@core/scheduling/daemon-manager';
+import { parseScheduleFile } from '@core/scheduling/schedule-file-parser';
+import { ScheduleManager } from '@core/scheduling/schedule-manager';
 import { uiText as chalk } from '@ui/primitives';
 import inquirer from 'inquirer';
 import cron from 'node-cron';

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Workflow } from '@tp-types/workflow';
-import { Executor } from '../executor';
+import { Executor } from '../execution/executor';
+import { createTestExecutor } from './test-helpers';
 
 // Mock TextPrompt
 const mockTextPrompt = vi.fn();
@@ -21,7 +22,7 @@ vi.mock('../../cli/prompts/index', () => {
 
 // Mock TaskRunner
 const mockRun = vi.fn().mockResolvedValue(true);
-vi.mock('../task-runner.js', () => {
+vi.mock('@core/runtime/task-runner', () => {
   return {
     TaskRunner: vi.fn().mockImplementation(() => {
       return {
@@ -36,7 +37,7 @@ describe('Executor - Prompt Step', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    executor = new Executor();
+    executor = createTestExecutor();
   });
 
   it('should execute prompt step and save as fact', async () => {
@@ -156,7 +157,7 @@ describe('Executor - Prompt Step', () => {
     mockTextPrompt.mockResolvedValueOnce('my-app');
     const mockChoicePrompt = (executor as any).choicePrompt;
     // Mock both choose steps
-    mockChoicePrompt.prompt
+    vi.spyOn(mockChoicePrompt, 'prompt')
       .mockResolvedValueOnce({ id: 'prod', label: 'Production' })
       .mockResolvedValueOnce({ id: 'prod', label: 'Production' });
 

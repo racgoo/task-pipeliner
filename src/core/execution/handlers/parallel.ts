@@ -1,14 +1,14 @@
+import type { TaskRunOutputPort } from '@core/execution/ports';
+import { ConditionEvaluator } from '@core/workflow/condition-evaluator';
+import type { Workspace } from '@core/workflow/workspace';
+import type { ExecutionContext, TaskRunResult } from '@tp-types/execution';
 import type { Step, StepResult } from '@tp-types/workflow';
-import { createParallelHeaderBox, createParallelFooterMessage, createErrorBox } from '@ui/index';
 import logUpdate from 'log-update';
-import { ConditionEvaluator } from '../condition-evaluator';
-import type { ExecutionContext } from '../executor';
-import type { TaskRunResult } from '../task-runner';
-import type { Workspace } from '../workspace';
 
 export const PARALLEL_STEP_INDEX_MULTIPLIER = 1000;
 
 export interface IParallelStepHandlerDeps {
+  outputPort: TaskRunOutputPort;
   workspace: Workspace;
   taskRunner: {
     displayBufferedOutput(
@@ -30,11 +30,13 @@ export interface IParallelStepHandlerDeps {
   ): void;
 }
 
+type BranchContext = ExecutionContext<Workspace>;
+
 function createParallelContexts(
   deps: IParallelStepHandlerDeps,
   step: { parallel: Step[] },
-  baseContext: ExecutionContext
-): ExecutionContext[] {
+  baseContext: BranchContext
+): BranchContext[] {
   return step.parallel.map((_, branchIndex) => ({
     workspace: deps.workspace.clone(),
     stepIndex: baseContext.stepIndex * PARALLEL_STEP_INDEX_MULTIPLIER + branchIndex,
@@ -60,7 +62,7 @@ function getBranchDisplayName(step: Step, index: number): string {
   return `Branch ${index + 1}`;
 }
 
-function countExecutableBranches(steps: Step[], contexts: ExecutionContext[]): number {
+function countExecutableBranches(steps: Step[], contexts: BranchContext[]): number {
   let count = 0;
   for (let i = 0; i < steps.length; i++) {
     const parallelStep = steps[i];
@@ -124,13 +126,13 @@ async function executeParallelBranches(
   deps: IParallelStepHandlerDeps,
   getBranchDisplayNameFn: (step: Step, index: number) => string,
   steps: Step[],
-  contexts: ExecutionContext[]
+  contexts: BranchContext[]
 ): Promise<
   Array<{
     index: number;
     result?: TaskRunResult;
     error?: unknown;
-    context: ExecutionContext;
+    context: BranchContext;
   } | null>
 > {
   const branchStatuses: BranchStatus[] = [];
@@ -216,10 +218,10 @@ function displayParallelResults(
     index: number;
     result?: TaskRunResult;
     error?: unknown;
-    context: ExecutionContext;
+    context: BranchContext;
   } | null>,
   steps: Step[],
-  _context: ExecutionContext
+  _context: BranchContext
 ): boolean {
   let allBranchesSucceeded = true;
   let hasAnyResult = false;
@@ -235,7 +237,7 @@ function displayParallelResults(
     if (error) {
       allBranchesSucceeded = false;
       const errorMessage = `Branch ${index + 1} failed: ${error instanceof Error ? error.message : String(error)}`;
-      const errorBox = createErrorBox(errorMessage);
+      const errorBox = deps.outputPort.createErrorBox(errorMessage);
       console.error(errorBox);
     } else if (stepResult && typeof stepResult === 'object' && 'stdout' in stepResult) {
       const taskResult = stepResult;
@@ -259,13 +261,13 @@ function displayParallelResults(
     console.log('⚠️  All parallel branches were skipped (conditions not met)');
   }
 
-  const parallelFooterMessage = createParallelFooterMessage(allBranchesSucceeded);
+  const parallelFooterMessage = deps.outputPort.createParallelFooterMessage(allBranchesSucceeded);
   console.log(parallelFooterMessage);
 
   return allBranchesSucceeded;
 }
 
-function mergeParallelResults(deps: IParallelStepHandlerDeps, contexts: ExecutionContext[]): void {
+function mergeParallelResults(deps: IParallelStepHandlerDeps, contexts: BranchContext[]): void {
   for (const branchContext of contexts) {
     const facts = branchContext.workspace.getAllFacts();
     const variables = branchContext.workspace.getAllVariables();
@@ -286,12 +288,12 @@ function mergeParallelResults(deps: IParallelStepHandlerDeps, contexts: Executio
 export async function executeParallelStep(
   deps: IParallelStepHandlerDeps,
   step: { parallel: Step[] },
-  context: ExecutionContext
+  context: BranchContext
 ): Promise<void> {
   const parallelContexts = createParallelContexts(deps, step, context);
   const executableBranchCount = countExecutableBranches(step.parallel, parallelContexts);
 
-  const parallelHeaderBox = createParallelHeaderBox(executableBranchCount);
+  const parallelHeaderBox = deps.outputPort.createParallelHeaderBox(executableBranchCount);
   console.log(parallelHeaderBox);
 
   const results = await executeParallelBranches(

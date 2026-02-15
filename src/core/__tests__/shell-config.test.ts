@@ -1,13 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Workflow } from '@tp-types/workflow';
-import { Executor } from '../executor';
+import { Executor } from '../execution/executor';
+import { createTestExecutor } from './test-helpers';
 
 describe('Shell Configuration', () => {
   let executor: Executor;
   let mockRun: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    executor = new Executor();
+    executor = createTestExecutor();
     const taskRunner = (executor as any).taskRunner;
     mockRun = vi.fn().mockResolvedValue(true);
     taskRunner.run = mockRun;

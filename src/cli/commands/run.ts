@@ -1,9 +1,9 @@
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import { Executor } from '@core/executor';
-import { getParser } from '@core/parser';
+import { getParser } from '@core/parsing/parser';
 import { uiMessage, uiTone } from '@ui/primitives';
 import type { Command } from 'commander';
+import { createCliExecutor } from '../core-adapters';
 import { extractFileName, selectWorkflowFromTpDirectory } from '../prompts/workflow-select';
 import { parseVarPairs, setSilentMode } from '../shared/utils';
 
@@ -101,7 +101,7 @@ export function registerRunCommand(program: Command): void {
 
         // Step 7: Execute workflow
         console.log(uiTone.success('Starting workflow execution...\n'));
-        const executor = new Executor();
+        const executor = createCliExecutor();
         await executor.execute(workflow, { executionVars });
 
         // Step 8: Success message

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { offsetHoursToIANA, parseOffsetHours, resolveTimezone } from '../timezone-offset';
+import { offsetHoursToIANA, parseOffsetHours, resolveTimezone } from '../scheduling/timezone-offset';
 
 describe('Timezone Offset', () => {
   describe('parseOffsetHours()', () => {

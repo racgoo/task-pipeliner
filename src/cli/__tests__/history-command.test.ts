@@ -17,7 +17,7 @@ vi.mock('../prompts/index', () => ({
   })),
 }));
 
-vi.mock('../../core/history', () => ({
+vi.mock('@core/history/manager', () => ({
   WorkflowHistoryManager: vi.fn().mockImplementation(() => ({
     getHistoryNames: () => mockGetHistoryNames(),
     getHistory: (name: string) => mockGetHistory(name),

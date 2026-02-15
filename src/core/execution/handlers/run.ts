@@ -1,9 +1,9 @@
+import { TaskRunner } from '@core/runtime/task-runner';
+import { parseCapture } from '@core/workflow/capture-parser';
+import { substituteVariables } from '@core/workflow/template';
+import type { Workspace } from '@core/workflow/workspace';
+import type { ExecutionContext, TaskRunResult } from '@tp-types/execution';
 import type { RunStep, RunStepOnError } from '@tp-types/workflow';
-import { parseCapture } from '../capture-parser';
-import type { ExecutionContext } from '../executor';
-import { TaskRunner, type TaskRunResult } from '../task-runner';
-import { substituteVariables } from '../template';
-import type { Workspace } from '../workspace';
 
 type RunChainNode = Pick<RunStepOnError, 'run' | 'timeout' | 'retry' | 'onError'>;
 

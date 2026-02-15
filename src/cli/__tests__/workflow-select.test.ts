@@ -13,8 +13,8 @@ vi.mock('../prompts/index', () => ({
 }));
 
 // Mock parser - use actual parser for better coverage
-vi.mock('../../core/parser', async () => {
-  const actual = await vi.importActual('../../core/parser');
+vi.mock('@core/parsing/parser', async () => {
+  const actual = await vi.importActual('@core/parsing/parser');
   return actual;
 });
 

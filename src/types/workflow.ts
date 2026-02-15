@@ -1,6 +1,5 @@
-import { ExecutionContext } from '@core/executor';
-import { TaskRunResult } from '@core/task-runner';
 import type { Condition } from './condition';
+import type { ExecutionContext, TaskRunResult } from './execution';
 
 /**
  * Workflow Step Types

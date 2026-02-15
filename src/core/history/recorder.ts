@@ -1,6 +1,6 @@
+import type { ExecutionContext } from '@tp-types/execution';
 import { History, Record, Step, StepResult, StepStatus } from '@tp-types/workflow';
-import { ExecutionContext } from './executor';
-import { WorkflowHistoryManager } from './history';
+import { WorkflowHistoryManager } from './manager';
 
 /**
  * Interface for recording workflow step execution
