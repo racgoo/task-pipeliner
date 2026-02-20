@@ -94,7 +94,6 @@ export type Condition =
   | FileExistsCondition
   | VarExistsCondition
   | StatusCondition
-  | StepCondition
   | ChoiceCondition
   | AllCondition
   | AnyCondition
@@ -114,13 +113,6 @@ export interface StatusCondition {
     fact: string;
     is: 'ready' | 'failed' | 'pending';
   };
-}
-
-export interface StepCondition {
-  step?: {
-    success: boolean;
-  };
-  last_step?: 'success' | 'failure';
 }
 
 export interface ChoiceCondition {

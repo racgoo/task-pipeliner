@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import './VariableHighlightInput.css';
 
 interface VariableHighlightInputProps {
@@ -21,15 +21,9 @@ export default function VariableHighlightInput({
   className = '',
   label,
 }: VariableHighlightInputProps) {
-  const [hasVariables, setHasVariables] = useState(false);
+  const hasVariables = /\{\{[\w]+\}\}/.test(value);
   const [showTooltip, setShowTooltip] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // Check if value contains variables
-  useEffect(() => {
-    const variablePattern = /\{\{[\w]+\}\}/g;
-    setHasVariables(variablePattern.test(value));
-  }, [value]);
 
   const extractVariables = (text: string): string[] => {
     const variablePattern = /\{\{([\w]+)\}\}/g;

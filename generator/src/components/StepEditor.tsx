@@ -1,5 +1,19 @@
 import { useState, useRef, useEffect } from 'react';
-import type { Step, RunStepOnError, Capture } from '../types/workflow';
+import type {
+  Step,
+  RunStep,
+  RunStepOnError,
+  Capture,
+  Condition,
+  FileExistsCondition,
+  VarExistsCondition,
+  AllCondition,
+  AnyCondition,
+  NotCondition,
+  ChooseStep,
+  PromptStep,
+  FailStep,
+} from '../types/workflow';
 import VariableHighlightInput from './VariableHighlightInput';
 import './StepEditor.css';
 
@@ -129,7 +143,7 @@ function RunStepEditor({
   step,
   onUpdate,
 }: {
-  step: Extract<Step, { run: string }>;
+  step: RunStep;
   onUpdate: (step: Step) => void;
 }) {
   const [shellInput, setShellInput] = useState(step.shell?.join(' ') ?? '');
@@ -138,8 +152,8 @@ function RunStepEditor({
   useEffect(() => {
     const fromStep = step.shell?.join(' ') ?? '';
     if (fromStep !== lastShellFromInputRef.current) {
-      setShellInput(fromStep);
       lastShellFromInputRef.current = fromStep;
+      queueMicrotask(() => setShellInput(fromStep));
     }
   }, [step.shell]);
 
@@ -291,6 +305,10 @@ function RunStepEditor({
           When checked, the workflow always proceeds to the next step after this run (even if it fails). When unchecked, it uses the default behavior: continue on success, stop on failure.
         </div>
       </div>
+      <WhenEditor
+        value={step.when}
+        onChange={(when) => onUpdate({ ...step, when: when ?? undefined })}
+      />
       <CapturesEditor
         captures={step.captures || []}
         onChange={(captures) =>
@@ -300,6 +318,281 @@ function RunStepEditor({
           })
         }
       />
+    </div>
+  );
+}
+
+type WhenKind = 'none' | 'file' | 'var' | 'var_match' | 'all' | 'any' | 'not' | 'custom';
+
+function getWhenKind(c: Condition | undefined): WhenKind {
+  if (!c || typeof c !== 'object') return 'none';
+  if ('all' in c) return 'all';
+  if ('any' in c) return 'any';
+  if ('not' in c) return 'not';
+  if ('file' in c && typeof (c as FileExistsCondition).file === 'string') return 'file';
+  if ('var' in c && typeof (c as VarExistsCondition).var === 'object' && (c as VarExistsCondition).var !== null)
+    return 'var_match';
+  if ('var' in c || 'has' in c) return 'var';
+  return 'custom';
+}
+
+function WhenEditor({
+  value,
+  onChange,
+  embedded = false,
+}: {
+  value: Condition | undefined;
+  onChange: (value: Condition | undefined) => void;
+  embedded?: boolean;
+}) {
+  const kind = getWhenKind(value);
+  const [customJson, setCustomJson] = useState(
+    kind === 'custom' && value ? JSON.stringify(value, null, 2) : '{}'
+  );
+
+  const setKind = (k: WhenKind) => {
+    if (k === 'none') {
+      onChange(undefined);
+      setCustomJson('{}');
+      return;
+    }
+    if (k === 'file') onChange({ file: '' });
+    else if (k === 'var') onChange({ var: '' });
+    else if (k === 'var_match') onChange({ var: {} });
+    else if (k === 'all') onChange({ all: [] });
+    else if (k === 'any') onChange({ any: [] });
+    else if (k === 'not') onChange({ not: { file: '' } });
+    else setCustomJson(value ? JSON.stringify(value, null, 2) : '{}');
+  };
+
+  const varObj = kind === 'var_match' && value && 'var' in value && typeof (value as VarExistsCondition).var === 'object'
+    ? ((value as VarExistsCondition).var as Record<string, string>) ?? {}
+    : {};
+  const varPairs = Object.entries(varObj);
+  const [draftKey, setDraftKey] = useState('');
+  const [draftVal, setDraftVal] = useState('');
+  const setVarMatch = (pairs: [string, string][]) => {
+    const obj: Record<string, string> = {};
+    for (const [k, v] of pairs) {
+      if (k.trim()) obj[k.trim()] = v;
+    }
+    onChange(Object.keys(obj).length ? { var: obj } : undefined);
+  };
+  const addVarPair = () => {
+    if (draftKey.trim()) {
+      setVarMatch([...varPairs, [draftKey.trim(), draftVal]]);
+      setDraftKey('');
+      setDraftVal('');
+    }
+  };
+
+  return (
+    <div className="form-group when-editor">
+      {!embedded && <label>When (optional)</label>}
+      <select
+        value={kind}
+        onChange={(e) => setKind(e.target.value as WhenKind)}
+        className="when-kind-select"
+      >
+        <option value="none">None</option>
+        <option value="file">File exists</option>
+        <option value="var">Variable exists</option>
+        <option value="var_match">Variable matching</option>
+        <option value="all">All (AND)</option>
+        <option value="any">Any (OR)</option>
+        <option value="not">Not</option>
+        <option value="custom">Custom (JSON)</option>
+      </select>
+      {kind === 'file' && (
+        <div className="form-group">
+          <input
+            type="text"
+            value={(value as FileExistsCondition).file ?? ''}
+            onChange={(e) => onChange({ file: e.target.value })}
+            placeholder="path/to/file"
+          />
+          <div className="field-hint">Run this step only when the file exists.</div>
+        </div>
+      )}
+      {kind === 'var' && (
+        <div className="form-group">
+          <input
+            type="text"
+            value={
+              typeof (value as VarExistsCondition).var === 'string'
+                ? ((value as VarExistsCondition).var as string) ?? ''
+                : (value as VarExistsCondition).has ?? ''
+            }
+            onChange={(e) => {
+              const v = e.target.value.trim();
+              onChange(v ? { var: v } : undefined);
+            }}
+            placeholder="variableName"
+          />
+          <div className="field-hint">Run only when this variable is set (e.g. from profile or choose).</div>
+        </div>
+      )}
+      {kind === 'var_match' && (
+        <div className="form-group when-var-match">
+          <div className="field-hint" style={{ marginBottom: 6 }}>
+            Run when variable(s) equal value(s), e.g. <code>mode: hi</code>, <code>env: prod</code>
+          </div>
+          {varPairs.length === 0 && (
+            <div className="form-row" style={{ alignItems: 'center', gap: 8 }}>
+              <input
+                type="text"
+                value={draftKey}
+                onChange={(e) => setDraftKey(e.target.value)}
+                placeholder="name"
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addVarPair())}
+              />
+              <span>=</span>
+              <input
+                type="text"
+                value={draftVal}
+                onChange={(e) => setDraftVal(e.target.value)}
+                placeholder="value"
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addVarPair())}
+              />
+              <button type="button" onClick={addVarPair}>Add</button>
+            </div>
+          )}
+          {varPairs.map(([k, v], i) => (
+            <div key={i} className="form-row when-var-row" style={{ alignItems: 'center', gap: 8, marginTop: 4 }}>
+              <input
+                type="text"
+                value={k}
+                onChange={(e) => {
+                  const next = [...varPairs];
+                  next[i] = [e.target.value, next[i][1]];
+                  setVarMatch(next);
+                }}
+                placeholder="name"
+              />
+              <span>=</span>
+              <input
+                type="text"
+                value={v}
+                onChange={(e) => {
+                  const next = [...varPairs];
+                  next[i] = [next[i][0], e.target.value];
+                  setVarMatch(next);
+                }}
+                placeholder="value"
+              />
+              <button
+                type="button"
+                onClick={() => setVarMatch(varPairs.filter((_, j) => j !== i))}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          {varPairs.length > 0 && (
+            <button
+              type="button"
+              className="add-option-btn"
+              style={{ marginTop: 6 }}
+              onClick={() => setVarMatch([...varPairs, ['', '']])}
+            >
+              + Add pair
+            </button>
+          )}
+        </div>
+      )}
+      {kind === 'all' && (
+        <WhenCombinedEditor
+          conditions={(value as AllCondition).all ?? []}
+          onChange={(all) => onChange(all.length ? { all } : undefined)}
+          mode="all"
+        />
+      )}
+      {kind === 'any' && (
+        <WhenCombinedEditor
+          conditions={(value as AnyCondition).any ?? []}
+          onChange={(any) => onChange(any.length ? { any } : undefined)}
+          mode="any"
+        />
+      )}
+      {kind === 'not' && (
+        <div className="when-not-editor">
+          <WhenEditor
+            embedded
+            value={(value as NotCondition).not}
+            onChange={(sub) => onChange(sub ? { not: sub } : undefined)}
+          />
+        </div>
+      )}
+      {kind === 'custom' && (
+        <div className="form-group">
+          <textarea
+            value={customJson}
+            onChange={(e) => {
+              setCustomJson(e.target.value);
+              try {
+                const parsed = JSON.parse(e.target.value) as Condition;
+                if (parsed && typeof parsed === 'object') onChange(parsed);
+              } catch {
+                // keep previous value on parse error
+              }
+            }}
+            placeholder='e.g. {"any": [{"file": "a"}, {"var": {"mode": "hi"}}]}'
+            rows={4}
+            className="when-custom-json"
+          />
+          <div className="field-hint">Any valid condition object (all, any, not, etc.).</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WhenCombinedEditor({
+  conditions,
+  onChange,
+  mode,
+}: {
+  conditions: Condition[];
+  onChange: (conditions: Condition[]) => void;
+  mode: 'all' | 'any';
+}) {
+  const addCondition = () => {
+    onChange([...conditions, { file: '' }]);
+  };
+  const updateAt = (index: number, c: Condition | undefined) => {
+    if (c == null) {
+      onChange(conditions.filter((_, i) => i !== index));
+      return;
+    }
+    const next = [...conditions];
+    next[index] = c;
+    onChange(next);
+  };
+  return (
+    <div className={`when-combined-editor when-combined-editor--${mode}`}>
+      <div className="when-combined-editor__header">
+        <span className="when-combined-editor__badge">
+          {mode === 'all' ? 'All' : 'Any'}
+        </span>
+        <span className="when-combined-editor__title">
+          {mode === 'all' ? 'All of these must be true' : 'At least one must be true'}
+        </span>
+      </div>
+      <div className="when-combined-editor__body">
+        {conditions.map((c, i) => (
+          <div key={i} className="when-combined-item">
+            <div className="when-combined-item__content">
+              <WhenEditor embedded value={c} onChange={(sub) => updateAt(i, sub)} />
+            </div>
+            <button type="button" className="when-combined-item__remove" onClick={() => updateAt(i, undefined)}>
+              Remove
+            </button>
+          </div>
+        ))}
+        <button type="button" className="add-option-btn when-combined-editor__add" onClick={addCondition}>
+          + Add condition
+        </button>
+      </div>
     </div>
   );
 }
@@ -641,7 +934,7 @@ function ChooseStepEditor({
   step,
   onUpdate,
 }: {
-  step: Extract<Step, { choose: any }>;
+  step: ChooseStep;
   onUpdate: (step: Step) => void;
 }) {
   const updateOption = (index: number, field: 'id' | 'label', value: string) => {
@@ -727,7 +1020,7 @@ function PromptStepEditor({
   step,
   onUpdate,
 }: {
-  step: Extract<Step, { prompt: any }>;
+  step: PromptStep;
   onUpdate: (step: Step) => void;
 }) {
   return (
@@ -977,7 +1270,7 @@ function FailStepEditor({
   step,
   onUpdate,
 }: {
-  step: Extract<Step, { fail: any }>;
+  step: FailStep;
   onUpdate: (step: Step) => void;
 }) {
   return (

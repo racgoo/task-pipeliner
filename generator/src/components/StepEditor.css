@@ -258,6 +258,115 @@
   box-shadow: var(--shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
+/* When combined (All / Any) – boxed group */
+.when-combined-editor {
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: var(--border-radius, 6px);
+  background: var(--color-bg-hover, #f9f9f9);
+  overflow: hidden;
+  margin-top: var(--spacing-xs, 0.5rem);
+}
+
+.when-combined-editor--all {
+  border-left: 4px solid var(--color-info, #2196f3);
+}
+
+.when-combined-editor--any {
+  border-left: 4px solid var(--color-success, #4caf50);
+}
+
+.when-combined-editor__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 0.75rem);
+  padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 0.75rem);
+  background: var(--color-bg-panel, white);
+  border-bottom: 1px solid var(--color-border, #eee);
+  font-size: 0.875rem;
+}
+
+.when-combined-editor__badge {
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+}
+
+.when-combined-editor--all .when-combined-editor__badge {
+  background: rgba(33, 150, 243, 0.15);
+  color: var(--color-info, #2196f3);
+}
+
+.when-combined-editor--any .when-combined-editor__badge {
+  background: rgba(76, 175, 80, 0.15);
+  color: var(--color-success, #4caf50);
+}
+
+.when-combined-editor__title {
+  color: var(--color-text-secondary, #666);
+}
+
+.when-combined-editor__body {
+  padding: var(--spacing-sm, 0.75rem);
+}
+
+.when-combined-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm, 0.75rem);
+  margin-bottom: var(--spacing-sm, 0.75rem);
+  padding: var(--spacing-sm, 0.75rem);
+  background: var(--color-bg-panel, white);
+  border: 1px solid var(--color-border, #eee);
+  border-radius: var(--border-radius, 6px);
+}
+
+.when-combined-item:last-of-type {
+  margin-bottom: 0;
+}
+
+.when-combined-item__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.when-combined-item__remove {
+  flex-shrink: 0;
+  padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 0.75rem);
+  border: 1px solid var(--color-error, #f44336);
+  background: var(--color-bg-panel, white);
+  color: var(--color-error, #f44336);
+  border-radius: var(--border-radius, 6px);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  transition: var(--transition, all 0.2s ease-in-out);
+}
+
+.when-combined-item__remove:hover {
+  background: var(--color-error, #f44336);
+  color: white;
+}
+
+.when-combined-editor__add {
+  margin-top: var(--spacing-sm, 0.75rem);
+  margin-bottom: 0;
+}
+
+/* Not condition – single nested condition in a box */
+.when-not-editor {
+  margin-top: var(--spacing-xs, 0.5rem);
+  padding: var(--spacing-sm, 0.75rem);
+  border: 1px solid var(--color-border, #ddd);
+  border-left: 4px solid var(--color-warning, #ff9800);
+  border-radius: var(--border-radius, 6px);
+  background: var(--color-bg-hover, #f9f9f9);
+}
+
+.when-not-editor .when-editor {
+  margin-bottom: 0;
+}
+
 .branches-section {
   margin-top: var(--spacing-md, 1rem);
 }

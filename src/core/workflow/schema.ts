@@ -26,15 +26,6 @@ const StatusConditionSchema = z.object({
   }),
 });
 
-const StepConditionSchema = z.object({
-  step: z
-    .object({
-      success: z.boolean(),
-    })
-    .optional(),
-  last_step: z.enum(['success', 'failure']).optional(),
-});
-
 const ChoiceConditionSchema = z.object({
   choice: z.string(),
 });
@@ -45,7 +36,6 @@ const ConditionPrimitiveSchema = z.union([
   ChoiceConditionSchema,
   VarExistsConditionSchema,
   StatusConditionSchema,
-  StepConditionSchema,
 ]);
 
 const ConditionSchema: z.ZodTypeAny = z.lazy(() =>

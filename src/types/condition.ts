@@ -33,17 +33,7 @@ export interface StatusCondition {
 }
 
 /**
- * 3. Previous step result check
- */
-export interface StepCondition {
-  step?: {
-    success: boolean;
-  };
-  last_step?: 'success' | 'failure';
-}
-
-/**
- * 4. User choice check
+ * 3. User choice check
  */
 export interface ChoiceCondition {
   choice: string; // choice id from choose
